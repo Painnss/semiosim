@@ -1,0 +1,12 @@
+{
+  "name": "SemioSim · Semiología médica interactiva",
+  "short_name": "SemioSim",
+  "description": "Simulaciones interactivas de exploración física para estudiantes de medicina.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "es",
+  "background_color": "#f3f6f9",
+  "theme_color": "#0a4f5a",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

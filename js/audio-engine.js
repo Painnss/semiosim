@@ -49,7 +49,12 @@
     const s1 = spec.s1 == null ? 1 : spec.s1, s2 = spec.s2 == null ? 1 : spec.s2;
     thump(out, tS1, 58, 0.035, 0.9 * s1, 110);
     thump(out, tS1 + 0.03, 46, 0.03, 0.55 * s1);
-    thump(out, tS2, 80, 0.028, 0.7 * s2, 150);
+    if (spec.s2split > 0) {   // desdoblamiento del R2: A2 y P2 separados `s2split` ms
+      thump(out, tS2, 80, 0.026, 0.55 * s2, 150);
+      thump(out, tS2 + spec.s2split / 1000, 90, 0.024, 0.45 * s2, 170);
+    } else {
+      thump(out, tS2, 80, 0.028, 0.7 * s2, 150);
+    }
     if (spec.s3) thump(out, tS2 + 0.14, 38, 0.04, 0.5, 60);
     if (spec.s4) thump(out, T - 0.11, 34, 0.04, 0.4, 55);
     if (spec.snap) thump(out, tS2 + 0.075, 170, 0.012, 0.5, 330);
@@ -87,10 +92,10 @@
     const T = 4, N = T * SR, out = new Float32Array(N);
     const type = spec.type || 'normal';
     const g = type === 'diminished' ? 0.25 : type === 'absent' ? 0.03 : 1;
-    const bronchial = type === 'bronchial';
-    const sig = bronchial ? band(noise(N), 250, 1600) : band(noise(N), 80, 650);
+    const bronchial = type === 'bronchial', bv = type === 'broncovesicular';
+    const sig = bronchial ? band(noise(N), 250, 1600) : bv ? band(noise(N), 150, 1100) : band(noise(N), 80, 650);
     const ins = t => (t < 0.15 || t > 1.65) ? 0 : Math.pow(Math.sin(Math.PI * Math.pow((t - 0.15) / 1.5, 0.8)), 1.5);
-    const e0 = 1.95, e1 = bronchial ? 3.45 : 3.0, ea = bronchial ? 0.85 : 0.28;
+    const e0 = 1.95, e1 = bronchial ? 3.45 : bv ? 3.3 : 3.0, ea = bronchial ? 0.85 : bv ? 0.6 : 0.28;
     const exp = t => (t < e0 || t > e1) ? 0 : Math.pow(Math.sin(Math.PI * (t - e0) / (e1 - e0)), 1.3);
     for (let i = 0; i < N; i++) { const t = i / SR; out[i] = sig[i] * (ins(t) + ea * exp(t)) * 0.5 * g; }
 
@@ -172,7 +177,7 @@
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.Q.value = 0.7;
       lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass'; lpf.Q.value = 0.7;
-      master = ctx.createGain(); master.gain.value = 0.9;
+      master = ctx.createGain(); master.gain.value = Sound.muted ? 0 : Sound.volume;
       hpf.connect(lpf); lpf.connect(master); master.connect(ctx.destination);
     }
     if (ctx.state === 'suspended') ctx.resume();
@@ -193,6 +198,9 @@
   }
 
   const Sound = {
+    volume: 0.9, muted: false,
+    setVolume(v) { this.volume = Math.max(0, Math.min(1, +v)); if (master) master.gain.value = this.muted ? 0 : this.volume; },
+    setMuted(m) { this.muted = !!m; if (master) master.gain.value = this.muted ? 0 : this.volume; },
     /* opts: { heart:{rate,s1,s2,s3,s4,snap,murmur}, heartGain, lung:{type,adv}, lungGain, mode:'diaphragm'|'bell' } */
     listen(opts) {
       ensure(); setMode(opts.mode);

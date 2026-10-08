@@ -129,3 +129,69 @@ table.res td,table.res th{border-bottom:1px solid var(--line);padding:3px 4px;te
 #nav .menu button.active{background:var(--brand);color:var(--brand-ink);font-weight:600}
 .gh{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:26px 0 10px}
 .mcard .go{margin-top:auto}
+
+/* ---- Portada: cómo usar, progreso, hoja de ruta ---- */
+.howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:0 0 20px}
+.howto div{background:var(--soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.howto span{font-size:13px;color:var(--muted)}
+.stat{color:var(--muted);font-size:14px}
+.link{background:none;border:0;color:var(--brand);cursor:pointer;text-decoration:underline;padding:0;font-size:inherit}
+.pmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.pbar{flex:1;min-width:90px;height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--brand);border-radius:999px;transition:width .3s}
+.badge{border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}.badge.mid{background:var(--warn-bg);color:var(--warn)}.badge.low{background:var(--bad-bg);color:var(--bad)}
+.mcard.done{border-color:var(--ok)}
+.roadmap ul{color:var(--muted);padding-left:20px;margin:0}
+.roadmap li{margin-bottom:4px}
+
+/* ---- Barra de progreso del módulo y bibliografía ---- */
+.prog{display:flex;align-items:center;gap:10px;margin:6px 2px 0;font-size:12px;color:var(--muted)}
+.prog .bar{flex:1;max-width:260px;height:6px;background:var(--line);border-radius:999px;overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--brand);transition:width .3s}
+.refs ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--muted)}
+.refs li{margin-bottom:4px}
+
+/* ---- Volumen en la cabecera ---- */
+.vol{display:flex;align-items:center;gap:6px;margin-left:8px}
+.vol button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:15px}
+.vol input{width:80px;accent-color:#fff}
+
+/* ---- Avisos ---- */
+#toasts{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:100}
+.toast{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;font-size:14px;transition:opacity .4s}
+.toast.bad{border-left-color:var(--bad)}.toast.ok{border-left-color:var(--ok)}
+.toast.hide{opacity:0}
+
+/* ---- Accesibilidad ---- */
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:6px}
+svg [data-rid]:focus{outline:none}
+svg [data-rid]:focus-visible > g > *{stroke:var(--brand);stroke-width:3}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+/* ---- Móvil ---- */
+@media (max-width:1150px){
+  .mod{padding:10px}
+  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .left .card.modes label{display:inline-block;margin-right:14px}
+  .left .card.modes small{display:none}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .tabs button{white-space:nowrap}
+}
+@media (max-width:600px){
+  .top{padding:8px 12px;gap:8px}
+  .brand small{display:none}
+  #nav .menu{min-width:240px;right:auto;left:0}
+  .home{padding:18px 14px}
+  .home h1{font-size:22px}
+  .stage svg.scene{max-height:none !important}
+  .say{font-size:14px;padding:6px 12px}
+}
+
+/* ---- Impresión (p. ej. historia clínica o resultado) ---- */
+@media print{
+  .top,.foot,.left,#tabs,.hint,.prog,#toasts{display:none !important}
+  .mod{display:block}
+  .card{break-inside:avoid;border:1px solid #999}
+  body{background:#fff;color:#000}
+}

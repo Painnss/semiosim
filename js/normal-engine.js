@@ -35,7 +35,10 @@
       v: { hr: 74, sbp: 122, dbp: 78, rr: 15, temp: 36.7, spo2: 98, height: 1.76, weight: 77, waist: 88 } },
     { id: 'p3', age: 72, sex: 'M', diag: 'Examen normal', complaint: 'Adulto mayor sano y activo, control rutinario.',
       vitals: 'FC 68 · PA 132/80 · FR 16 · T 36,4 °C · SpO₂ 96 %',
-      v: { hr: 68, sbp: 132, dbp: 80, rr: 16, temp: 36.4, spo2: 96, height: 1.68, weight: 72, waist: 94 } }
+      v: { hr: 68, sbp: 132, dbp: 80, rr: 16, temp: 36.4, spo2: 96, height: 1.68, weight: 72, waist: 94 } },
+    { id: 'p4', age: 60, sex: 'F', diag: 'Examen normal', complaint: 'Mujer posmenopáusica sana, control anual.',
+      vitals: 'FC 72 · PA 128/78 · FR 15 · T 36,5 °C · SpO₂ 97 %',
+      v: { hr: 72, sbp: 128, dbp: 78, rr: 15, temp: 36.5, spo2: 97, height: 1.60, weight: 61, waist: 82 } }
   ];
 
   function build(def) {
@@ -64,7 +67,7 @@
             if (r.short !== '' && (r.lx != null || r.r != null || r.w != null)) {
               text = `<text class="svg-hint hintring" x="${cx}" y="${cy}" text-anchor="${r.anchor || 'middle'}">${esc(r.short || r.label)}</text>`;
             }
-            return `<g class="reg" data-rid="${r.id}" style="cursor:pointer"><g fill="transparent">${shape}</g>${ring}${text}</g>`;
+            return `<g class="reg" data-rid="${r.id}" style="cursor:pointer" tabindex="0" role="button" aria-label="${esc(r.label)}"><g fill="transparent">${shape}</g>${ring}${text}</g>`;
           }).join('');
           stage.innerHTML = `<svg class="scene point" viewBox="${sc.viewBox || '0 0 800 520'}" style="max-height:660px;margin:0 auto">
             <rect width="100%" height="100%" fill="#e8eef4"/>
@@ -72,6 +75,9 @@
             <g id="hits">${hit}</g><g id="flash"></g></svg>`;
           this.svg = stage.querySelector('svg');
           this.svg.addEventListener('click', e => this.click(e));
+          this.svg.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('[data-rid]')) { e.preventDefault(); this.click(e); }
+          });
           this.refresh();
           if (sc.after) sc.after(stage, sh, { svg: this.svg, scene: this, c });
         },
@@ -92,7 +98,9 @@
           if (!g) { sh.log('Haz clic sobre una zona del cuerpo o del instrumento para explorarla.', 'warn'); return; }
           const reg = sc.regions.find(r => r.id === g.dataset.rid);
           const tool = sh.tool;
-          const ctx = { sh, c: sh.case, region: reg, tool, svg: this.svg, scene: this, point: svgPoint(this.svg, e) };
+          const point = e.clientX != null ? svgPoint(this.svg, e)
+            : { x: reg.cx != null ? reg.cx : (reg.x || 0) + (reg.w || 0) / 2, y: reg.cy != null ? reg.cy : (reg.y || 0) + (reg.h || 0) / 2 };
+          const ctx = { sh, c: sh.case, region: reg, tool, svg: this.svg, scene: this, point };
           let f = reg.tools && reg.tools[tool];
           if (f == null) { sh.log(`Esta maniobra no aporta información en: ${esc(reg.label)}.`, 'warn'); return; }
           if (typeof f === 'function') f = f(ctx.c, ctx);
@@ -100,6 +108,7 @@
           if (f && typeof f === 'object') { html = f.html; run = f.run; }
           if (html) sh.log(`<b>${esc(reg.label)}:</b> ${html}`, 'find');
           if (run) run(ctx);
+          sh.explored(`${sc.id}:${reg.id}:${tool}`);
           this.flash(ctx.point);
         },
         flash(p) {
@@ -131,13 +140,19 @@
         if (good) ok++;
         return `<li>${good ? '<span class="m-ok">✔</span>' : '<span class="m-bad">✘</span>'} <b>${esc(q.options[q.a])}</b>. ${q.why || ''}</li>`;
       }).join('');
-      return `<h4>Cuestionario</h4><p><b>${ok}</b> de ${qs.length} correctas.</p><ul>${rows}</ul>`;
+      return { ok, total: qs.length, html: `<h4>Cuestionario</h4><p><b>${ok}</b> de ${qs.length} correctas.</p><ul>${rows}</ul>` };
     };
+
+    // total de claves explorables: por escena, regiones × instrumentos que aportan hallazgo
+    let progressTotal = 0;
+    def.scenes.forEach(sc => (sc.regions || []).forEach(r => {
+      progressTotal += Object.keys(r.tools || {}).filter(t => (sc.tools || []).some(x => x.id === t)).length;
+    }));
 
     const mod = {
       mount(root) {
         const sh = new Shell(root, {
-          cases: people, scenes, order, hideDx: true,
+          id: def.id, cases: people, scenes, order, hideDx: true, refs: def.refs || [], progressTotal,
           checkLabel: 'Comprobar mis respuestas', recordTitle: 'Cuestionario', patientTitle: 'Persona examinada',
           caseLabel: (c, i) => `Persona ${i + 1} · ${c.age} años, ${c.sex}`,
           record: recordHTML, evaluate, teaching: def.teaching || []
@@ -148,7 +163,7 @@
     };
     registerModule({
       id: def.id, title: def.title, icon: def.icon, group: def.group || 'Exploración normal',
-      desc: def.desc, bullets: def.bullets || [], mount: root => mod.mount(root)
+      desc: def.desc, bullets: def.bullets || [], refs: def.refs || [], mount: root => mod.mount(root)
     });
     return mod;
   }
