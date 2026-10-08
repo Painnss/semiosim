@@ -151,7 +151,7 @@
       this.sh = sh; this.alive = true; this.active = null; this.peaks = null;
       const ids = Object.keys(PTS).filter(k => PTS[k].view === this.view);
       const learn = sh.mode === 'learn';
-      const LP = { AO: 'l', PU: 'r', ER: 'r', TR: 'l', MI: 'r' };
+      const LP = { AO: 'l', PU: 'r', ER: 'l', TR: 'l', MI: 'r' };
       const marks = ids.map(k => {
         const p = PTS[k], lp = LP[k] || 'u';
         const tx = lp === 'l' ? p.x - 18 : lp === 'r' ? p.x + 18 : p.x, ty = lp === 'u' ? p.y - 19 : p.y + 4;

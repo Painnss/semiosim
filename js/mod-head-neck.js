@@ -1,6 +1,7 @@
 /* Módulo: Cabeza y cuello (exploración normal).
-   Escenas: cara y cabeza, fondo de ojo, oído, nariz, boca y orofaringe, cuello, tiroides y cadenas ganglionares.
-   Usa NormalEngine.build; los controles extra (ojo D/I, ROM cervical, lengua, etc.) se añaden con el gancho `after`. */
+   Escenas: cara y facies, fondo de ojo, oído, nariz, boca y fauces, cuello, tiroides y cadenas ganglionares.
+   Usa NormalEngine.build; los controles extra (ojo D/I, ROM cervical, lengua, etc.) se añaden con el gancho `after`.
+   Nomenclatura y técnica según Argente-Álvarez (Semiología Médica); hallazgos en el esquema «Técnica / Hallazgo normal». */
 (function () {
   'use strict';
   const { clamp, tween, esc, svgPoint } = U;
@@ -60,7 +61,11 @@
     svg.appendChild(g);
     tween(ms || 1300, u => g.setAttribute('opacity', u < .7 ? 1 : 1 - (u - .7) / .3), () => g.remove());
   }
-  const ageOld = c => c.age >= 60;
+  /* Cambios involutivos (canicie marcada, arco senil, arrugas) solo a partir de los 65 años; la persona de 60 años
+     solo muestra presbicia y canas dispersas. */
+  const ageOld = c => c.age >= 65;
+  /* Esquema de redacción de los hallazgos: «Técnica: … Hallazgo normal: …» */
+  const TH = (t, h) => `<i>Técnica:</i> ${t} <i>Hallazgo normal:</i> ${h}`;
 
   /* ============================================================ 1. CABEZA Y CARA */
   const HX = 270;
@@ -138,13 +143,12 @@
     ${learn ? '' : ''}`;
   }
 
-  const eyeLook = c => 'Párpados simétricos, sin edema ni ptosis (el superior cubre 1-2 mm del limbo superior; hendidura palpebral de ≈ 9-11 mm de alto) y pestañas dirigidas hacia afuera. ' +
-    'Conjuntivas rosadas y húmedas, esclera blanca, córnea transparente y brillante, iris sin lesiones. Pupilas redondas, centrales e isocóricas (3-4 mm).' +
-    (ageOld(c) ? ' Hay un <b>arco senil</b> (anillo blanco-grisáceo periférico en el limbo), variante normal en la edad avanzada.' : '');
-  const snellenTxt = c => 'Agudeza visual <b>20/20 (6/6)</b> con cada ojo por separado a 6 m (cartilla de Snellen) y visión cercana normal (Jaeger 1 a 35 cm).' +
-    (c.age >= 45 ? ' Puede necesitar lentes para leer de cerca: <b>presbicia</b> fisiológica desde los 40-45 años.' : '');
-  const lightTxt = '<b>Reflejo fotomotor</b> directo y consensual presentes: las pupilas pasan de 3-4 mm a ≈ 2 mm en menos de 1 s, de forma simétrica, y se re-dilatan al retirar la luz. ' +
-    'Acomodación-convergencia: al mirar un objeto cercano hay miosis y convergencia (PIRRLA: pupilas isocóricas, redondas, reactivas a la luz y a la acomodación).';
+  const eyeLook = c => TH('inspección de párpados, conjuntivas, esclera, córnea e iris con buena luz, comparando ambos ojos.',
+    `párpados simétricos, sin edema ni ptosis (el superior cubre 1-2 mm del limbo); conjuntivas rosadas y húmedas, esclera blanca, córnea transparente y brillante; pupilas redondas, centrales e isocóricas de <b>2-4 mm</b>.${ageOld(c) ? ' <b>Arco senil</b> (anillo blanco-grisáceo en la periferia de la córnea): variante normal del adulto mayor.' : ''}`);
+  const snellenTxt = c => TH('cartilla de Snellen a 6 m, cada ojo por separado (con sus lentes si los usa); visión cercana con cartilla de Jaeger a 35 cm.',
+    `agudeza visual lejana <b>20/20 (6/6)</b> en ambos ojos y visión cercana normal.${c.age >= 45 ? ' Necesita lentes para leer de cerca: <b>presbicia</b>, pérdida fisiológica de la acomodación desde los 40-45 años.' : ''}`);
+  const lightTxt = TH('en penumbra, luz de la linterna desde el lado hacia una pupila: se observa esa pupila (reflejo fotomotor directo) y la contralateral (consensual); luego se pide mirar un objeto cercano (acomodación-convergencia).',
+    'ambas pupilas se contraen con rapidez y de forma simétrica (de 2-4 mm a ≈ 2 mm) y se redilatan al retirar la luz; miosis y convergencia al mirar de cerca.');
   const pupilRun = ctx => { penlight(ctx.svg, ctx.point, 2200); pupilReflex(ctx.svg); if (ctx.sh.say) ctx.sh.say('(sigue la luz sin molestia)', 'yes', 1800); };
   function pupilReflex(svg) {
     const ps = [['hnPupR', 5, 3], ['hnPupL', 5, 3], ['hnPupI', 17, 10]];
@@ -166,109 +170,118 @@
   }
 
   const faceRegions = [
-    { id: 'cranio', label: 'Cráneo y cuero cabelludo', short: 'Cráneo', cx: 270, cy: 134, r: 34,
+    { id: 'cranio', label: 'Cráneo y cuero cabelludo', short: 'Cráneo', cx: 270, cy: 134, r: 34, lx: 270, ly: 82,
       tools: {
-        look: c => `Cráneo normocéfalo y simétrico (perímetro cefálico del adulto ≈ 54-58 cm), sin deformidades ni cicatrices. ${ageOld(c) ? 'Cabello con canicie y leve adelgazamiento, entradas bitemporales fisiológicas' : 'Cabello bien implantado, de distribución uniforme, brillante'}; sin placas de alopecia, descamación ni lesiones. Línea de implantación frontal simétrica.`,
-        touch: 'Palpación con las yemas, en círculos y de adelante hacia atrás: superficie ósea lisa y uniforme, sin masas, hundimientos, crepitación ni dolor. En el adulto las suturas no se palpan. Cuero cabelludo móvil y sin lesiones.'
+        look: c => TH('inspección del cráneo (tamaño, forma, simetría) y del cabello (implantación, distribución, cantidad).',
+          `cráneo normocéfalo y simétrico, sin deformidades ni cicatrices; ${ageOld(c) ? 'cabello canoso y más ralo, con entradas propias de la edad' : c.age >= 50 ? 'cabello bien implantado, con canas dispersas' : 'cabello bien implantado, de distribución uniforme y brillante'}; cuero cabelludo sin descamación ni lesiones.`),
+        touch: TH('palpación con las yemas, en círculos, de adelante hacia atrás.', 'superficie ósea lisa y uniforme, sin masas, hundimientos, crepitación ni dolor; cuero cabelludo móvil.')
       } },
-    { id: 'frente', label: 'Frente y piel (fascies)', short: 'Frente / fascies', cx: 270, cy: 204, r: 20,
+    { id: 'frente', label: 'Frente y facies', short: 'Frente / facies', cx: 270, cy: 204, r: 20,
       tools: {
-        look: c => `<b>Fascies normal</b>: expresión tranquila, simétrica, mímica conservada (frente que arruga, surcos nasolabiales simétricos), mirada vivaz y atenta. Piel de color uniforme, hidratada, turgente y sin lesiones${ageOld(c) ? ' (arrugas propias de la edad)' : ''}. Sin edema facial ni rasgos de enfermedad.`,
-        touch: 'Piel tibia, seca o ligeramente húmeda, elástica y de temperatura similar a la del resto del cuerpo; sin masas, nódulos ni dolor.'
+        look: c => TH('observar la expresión, la simetría y la mímica mientras el paciente habla.',
+          `<b>facies compuesta</b> (normal): expresión tranquila y atenta, simétrica, mímica conservada (arruga la frente, surcos nasogenianos simétricos); piel de color uniforme, sin edema${ageOld(c) ? ', con arrugas propias de la edad' : ''}.`),
+        touch: TH('palpación de la frente y las mejillas con el dorso y las yemas de los dedos.', 'piel tibia, de humedad normal, elástica; sin masas, nódulos ni dolor.')
       } },
     { id: 'temR', label: 'Arteria temporal superficial derecha', short: 'A. temporal', cx: 148, cy: 206, r: 15, anchor: 'end', lx: 128, ly: 190,
       tools: {
-        look: c => ageOld(c) ? 'Trayecto de la arteria apenas visible, no tortuoso, sin engrosamiento ni eritema (en el adulto mayor puede verse sin ser patológico).' : 'Arteria no visible; sin eritema ni cordón sobre la sien.',
-        touch: c => `Pulso de la arteria temporal superficial palpable por delante del trago, de amplitud normal (≈ ${c.v.hr}/min), simétrico con el contralateral. Pared blanda, elástica, no engrosada ni nodular ni dolorosa a la palpación.`
+        look: 'Arteria no visible o apenas insinuada sobre la sien; sin tortuosidad, engrosamiento ni eritema.',
+        touch: c => TH('palpación con las yemas por delante del trago y sobre la sien.', `pulso temporal superficial presente y simétrico (≈ ${c.v.hr}/min), de amplitud normal; pared blanda, no engrosada, nodular ni dolorosa.`)
       } },
     { id: 'temL', label: 'Arteria temporal superficial izquierda', short: 'A. temporal', cx: 392, cy: 206, r: 15, anchor: 'start', lx: 412, ly: 190,
       tools: {
-        look: c => ageOld(c) ? 'Trayecto de la arteria apenas visible, no tortuoso, sin engrosamiento ni eritema.' : 'Arteria no visible; sin eritema ni cordón sobre la sien.',
-        touch: c => `Pulso temporal superficial palpable y simétrico con el contralateral (≈ ${c.v.hr}/min); pared blanda y elástica, indolora.`
+        look: 'Arteria no visible o apenas insinuada; sin tortuosidad, engrosamiento ni eritema.',
+        touch: c => `Pulso temporal izquierdo presente (≈ ${c.v.hr}/min), de igual amplitud que el derecho; pared blanda e indolora.`
       } },
     { id: 'frontR', label: 'Seno frontal derecho', short: 'S. frontal', cx: 232, cy: 224, r: 12, anchor: 'end', lx: 206, ly: 214,
       tools: {
-        tap: 'Percusión suave del seno frontal con el dedo: <b>indolora</b>, sin molestia a la vibración.',
-        touch: 'Presión con el pulgar bajo el reborde superior de la órbita (techo orbitario) y sobre la frente: indolora. Sin edema ni eritema suprayacente.',
-        look: 'Región frontal sin tumefacción ni eritema.'
+        look: 'Región frontal sin tumefacción ni eritema.',
+        touch: TH('presión con el pulgar hacia arriba, bajo el reborde orbitario superior (techo de la órbita).', '<b>indolora</b>, sin edema ni eritema.'),
+        tap: TH('percusión suave con el dedo sobre el seno frontal.', 'indolora y simétrica con el otro lado.')
       } },
     { id: 'frontL', label: 'Seno frontal izquierdo', short: 'S. frontal', cx: 308, cy: 224, r: 12, anchor: 'start', lx: 334, ly: 214,
       tools: {
-        tap: 'Percusión del seno frontal: indolora y simétrica con el lado opuesto.',
+        look: 'Región frontal sin tumefacción ni eritema.',
         touch: 'Presión bajo el reborde orbitario superior izquierdo: indolora.',
-        look: 'Región frontal sin tumefacción ni eritema.'
+        tap: 'Percusión del seno frontal izquierdo: indolora y simétrica.'
       } },
     { id: 'ojoR', label: 'Ojo derecho (del paciente)', short: 'Ojo D', cx: 210, cy: 272, r: 25, lx: 210, ly: 306,
-      tools: { look: c => eyeLook(c), light: { html: lightTxt, run: pupilRun }, snellen: c => ({ html: snellenTxt(c), run: ctx => ctx.sh.say('Leo toda la línea 20/20', 'yes') }), touch: 'Palpación suave del globo a través del párpado cerrado: tensión similar en ambos ojos (consistencia firme-elástica, sin dureza pétrea ni blandura excesiva); sin dolor.' } },
+      tools: {
+        look: c => eyeLook(c), light: { html: lightTxt, run: pupilRun },
+        snellen: c => ({ html: snellenTxt(c), run: ctx => ctx.sh.say('Leo toda la línea 20/20', 'yes') }),
+        touch: TH('palpación suave del globo ocular a través del párpado cerrado, con ambos índices, mientras el paciente mira hacia abajo.', 'tensión similar en ambos ojos (firme-elástica), sin dolor.')
+      } },
     { id: 'ojoL', label: 'Ojo izquierdo (del paciente)', short: 'Ojo I', cx: 330, cy: 272, r: 25, lx: 330, ly: 306,
-      tools: { look: c => eyeLook(c), light: { html: lightTxt, run: pupilRun }, snellen: c => ({ html: snellenTxt(c), run: ctx => ctx.sh.say('Leo toda la línea 20/20', 'yes') }), touch: 'Palpación suave del globo a través del párpado cerrado: tensión simétrica con el ojo contralateral; sin dolor.' } },
-    { id: 'maxR', label: 'Seno maxilar derecho', short: 'S. maxilar', cx: 212, cy: 350, r: 15, anchor: 'end', lx: 192, ly: 380,
       tools: {
-        tap: 'Percusión sobre la fosa canina (pómulo): indolora, sin molestia dentaria.',
-        touch: 'Presión con los pulgares sobre el pómulo, bajo el reborde orbitario: <b>indolora</b>, sin edema ni eritema de la mejilla.',
-        look: 'Mejillas simétricas, sin tumefacción ni eritema.'
+        look: c => eyeLook(c), light: { html: lightTxt, run: pupilRun },
+        snellen: c => ({ html: snellenTxt(c), run: ctx => ctx.sh.say('Leo toda la línea 20/20', 'yes') }),
+        touch: 'Palpación del globo ocular a través del párpado cerrado: tensión igual a la del ojo derecho; sin dolor.'
       } },
-    { id: 'maxL', label: 'Seno maxilar izquierdo', short: 'S. maxilar', cx: 328, cy: 350, r: 15, anchor: 'start', lx: 348, ly: 380,
+    { id: 'maxR', label: 'Seno maxilar derecho', short: 'S. maxilar', cx: 212, cy: 350, r: 15, lx: 212, ly: 378,
       tools: {
-        tap: 'Percusión sobre la fosa canina: indolora y simétrica.',
+        look: 'Mejillas simétricas, sin tumefacción ni eritema.',
+        touch: TH('presión con los pulgares sobre los pómulos, bajo el reborde orbitario inferior.', '<b>indolora</b>, sin edema ni eritema.'),
+        tap: TH('percusión suave con el dedo sobre la fosa canina.', 'indolora y simétrica; sin molestia dentaria.')
+      } },
+    { id: 'maxL', label: 'Seno maxilar izquierdo', short: 'S. maxilar', cx: 328, cy: 350, r: 15, lx: 328, ly: 378,
+      tools: {
+        look: 'Mejillas simétricas, sin tumefacción.',
         touch: 'Presión sobre el pómulo izquierdo: indolora.',
-        look: 'Mejillas simétricas, sin tumefacción.'
+        tap: 'Percusión sobre la fosa canina izquierda: indolora y simétrica.'
       } },
-    { id: 'atmR', label: 'Articulación temporomandibular derecha', short: 'ATM', cx: 158, cy: 322, r: 12, anchor: 'end', lx: 140, ly: 340,
+    { id: 'atmR', label: 'Articulación temporomandibular derecha', short: 'ATM', cx: 158, cy: 322, r: 12, anchor: 'start', lx: 172, ly: 348,
       tools: {
-        touch: { html: 'Con los dedos por delante del trago mientras el paciente abre y cierra la boca: movimiento simétrico y suave, <b>sin chasquidos, crepitación ni dolor</b>. Apertura bucal máxima <b>40-50 mm</b> (≈ 3 traveses de dedo entre los incisivos); lateralidad 8-10 mm; la mandíbula se mantiene en la línea media.', run: ctx => openMouth(ctx.svg) },
-        look: { html: 'Al abrir la boca la mandíbula desciende sin desviarse de la línea media; simetría de ambos cóndilos; sin tumefacción preauricular.', run: ctx => openMouth(ctx.svg) }
+        touch: { html: TH('yemas de los índices por delante del trago mientras el paciente abre y cierra la boca.', 'movimiento simétrico y suave, <b>sin chasquidos, crepitación ni dolor</b>; apertura bucal de <b>40-50 mm</b> (≈ 3 traveses de dedo) sin desviación de la mandíbula.'), run: ctx => openMouth(ctx.svg) },
+        look: { html: 'Al abrir la boca la mandíbula desciende sin desviarse de la línea media; sin tumefacción preauricular.', run: ctx => openMouth(ctx.svg) }
       } },
-    { id: 'atmL', label: 'Articulación temporomandibular izquierda', short: 'ATM', cx: 382, cy: 322, r: 12, anchor: 'start', lx: 400, ly: 340,
+    { id: 'atmL', label: 'Articulación temporomandibular izquierda', short: 'ATM', cx: 382, cy: 322, r: 12, anchor: 'end', lx: 368, ly: 348,
       tools: {
-        touch: { html: 'Movimiento simétrico con el lado derecho, sin ruidos ni dolor. Apertura de 40-50 mm sin desviación de la mandíbula.', run: ctx => openMouth(ctx.svg) },
-        look: { html: 'Apertura simétrica, mandíbula en línea media.', run: ctx => openMouth(ctx.svg) }
+        touch: { html: 'Movimiento simétrico con el lado derecho, sin ruidos ni dolor; apertura de 40-50 mm en la línea media.', run: ctx => openMouth(ctx.svg) },
+        look: { html: 'Apertura simétrica, mandíbula en la línea media.', run: ctx => openMouth(ctx.svg) }
       } },
-    { id: 'parR', label: 'Parótida derecha', short: 'Parótida', cx: 160, cy: 392, r: 19, anchor: 'end', lx: 138, ly: 420,
+    { id: 'parR', label: 'Parótida derecha', short: 'Parótida', cx: 160, cy: 392, r: 19, anchor: 'start', lx: 182, ly: 402,
       tools: {
-        look: 'Región parotídea sin aumento de volumen: se ve el ángulo mandibular y el lóbulo de la oreja no está desplazado.',
-        touch: 'La glándula parótida <b>no es palpable</b> (blanda, no se distingue del masetero). Sin masas ni dolor. El conducto de Stenon desemboca en la mucosa yugal frente al 2.º molar superior.'
+        look: 'Región parotídea sin aumento de volumen: el ángulo de la mandíbula se ve bien y el lóbulo de la oreja no está desplazado.',
+        touch: TH('palpación con las yemas por delante y debajo del pabellón; con un dedo en la mucosa yugal se examina el conducto de Stenon (frente al 2.º molar superior).', 'glándula <b>no palpable</b> (blanda, no se distingue del masetero); sin masas ni dolor; conducto no engrosado.')
       } },
-    { id: 'parL', label: 'Parótida izquierda', short: 'Parótida', cx: 380, cy: 392, r: 19, anchor: 'start', lx: 402, ly: 420,
+    { id: 'parL', label: 'Parótida izquierda', short: 'Parótida', cx: 380, cy: 392, r: 19, anchor: 'end', lx: 358, ly: 402,
       tools: {
         look: 'Región parotídea simétrica, sin tumefacción.',
-        touch: 'Parótida no palpable, sin masas ni dolor; simétrica con el lado derecho.'
+        touch: 'Parótida no palpable, sin masas ni dolor; simétrica con la derecha.'
       } },
-    { id: 'subR', label: 'Glándula submandibular derecha', short: 'Submaxilar', cx: 214, cy: 474, r: 16, anchor: 'end', lx: 192, ly: 496,
+    { id: 'subR', label: 'Glándula submaxilar (submandibular) derecha', short: 'Submaxilar', cx: 214, cy: 474, r: 16, anchor: 'end', lx: 192, ly: 496,
       tools: {
-        look: 'Región submandibular sin abultamientos.',
-        touch: 'Palpación bimanual (un dedo enguantado en el suelo de la boca y otro por debajo de la mandíbula): la glándula submandibular <b>no se palpa</b> o se nota como una pequeña masa blanda, móvil e indolora. No confundir con ganglios submandibulares (normales < 1 cm, blandos y móviles).'
+        look: 'Región submaxilar sin abultamientos.',
+        touch: TH('palpación bimanual: un dedo enguantado en el piso de la boca y los dedos de la otra mano por debajo del cuerpo de la mandíbula.', 'glándula <b>no palpable</b> o blanda, lisa, móvil e indolora; no confundir con ganglios submaxilares (si se palpan, &lt; 1 cm, blandos y móviles).')
       } },
-    { id: 'subL', label: 'Glándula submandibular izquierda', short: 'Submaxilar', cx: 326, cy: 474, r: 16, anchor: 'start', lx: 348, ly: 496,
+    { id: 'subL', label: 'Glándula submaxilar (submandibular) izquierda', short: 'Submaxilar', cx: 326, cy: 474, r: 16, anchor: 'start', lx: 348, ly: 496,
       tools: {
-        look: 'Región submandibular simétrica, sin abultamientos.',
-        touch: 'Glándula no palpable o blanda y móvil; indolora. Simétrica con la contralateral.'
+        look: 'Región submaxilar simétrica, sin abultamientos.',
+        touch: 'Glándula no palpable o blanda, lisa y móvil; indolora; simétrica con la derecha.'
       } },
     /* ---- ojo ampliado ---- */
     { id: 'lids', label: 'Párpados y pestañas', short: 'Párpados', x: 560, y: 108, w: 200, h: 34, rx: 10,
       tools: {
-        look: 'Párpado superior que cubre 1-2 mm del limbo y párpado inferior que roza el borde inferior del iris; parpadeo espontáneo simétrico (12-20 veces/min); borde palpebral liso y sin costras, pestañas dirigidas hacia fuera, sin edema, ptosis ni lagoftalmos.',
-        touch: 'Párpados blandos, sin nódulos ni dolor; no se palpan masas en el reborde orbitario.'
+        look: TH('inspección con el paciente mirando al frente y luego hacia arriba y abajo.', 'el párpado superior cubre 1-2 mm del limbo y el inferior roza el borde del iris; parpadeo simétrico, borde palpebral liso, pestañas hacia afuera; sin edema, ptosis, ectropión ni entropión.'),
+        touch: 'Párpados blandos, sin nódulos ni dolor; reborde orbitario sin masas.'
       } },
-    { id: 'cornea', label: 'Córnea e iris', short: 'Córnea / iris', cx: 660, cy: 215, r: 50, lx: 660, ly: 150,
+    { id: 'cornea', label: 'Córnea e iris', short: 'Córnea / iris', cx: 660, cy: 215, r: 50, lx: 660, ly: 318,
       tools: {
-        look: c => `Córnea <b>transparente</b> y brillante, con reflejo luminoso nítido y simétrico en ambos ojos (reflejos corneales centrados al mirar la linterna a 40 cm); iris de color y relieve uniformes.${ageOld(c) ? ' Se aprecia un arco senil periférico, normal en el adulto mayor.' : ''}`,
+        look: c => TH('luz oblicua sobre la córnea y reflejos corneales con la linterna a ≈ 40 cm.', `córnea <b>transparente</b> y brillante, con reflejo luminoso nítido y centrado en ambos ojos; iris de color y relieve uniformes.${ageOld(c) ? ' Arco senil periférico, normal en el adulto mayor.' : ''}`),
         light: { html: lightTxt, run: pupilRun }
       } },
     { id: 'pupila', label: 'Pupila', short: '', cx: 660, cy: 215, r: 17,
       tools: {
-        look: 'Pupila negra, redonda, central y de bordes regulares; diámetro de <b>3-4 mm</b> con luz ambiental (rango 2-5 mm); isocoria (diferencia &lt; 1 mm entre ambas).',
+        look: TH('inspección con luz ambiental difusa, comparando ambas pupilas.', 'pupila negra, redonda, central y de bordes regulares; diámetro de <b>2-4 mm</b> (hasta 5 mm en jóvenes o en penumbra); isocoria (diferencia &lt; 1 mm).'),
         light: { html: lightTxt, run: pupilRun }
       } },
-    { id: 'scl', label: 'Esclera', short: 'Esclera', cx: 590, cy: 215, r: 16, lx: 590, ly: 192,
-      tools: { look: 'Esclera <b>blanca</b>, sin tinte amarillo (ictericia) ni enrojecimiento; algún pequeño vaso conjuntival visible es normal.' } },
+    { id: 'scl', label: 'Esclera', short: 'Esclera', cx: 590, cy: 215, r: 16, anchor: 'end', lx: 568, ly: 219,
+      tools: { look: 'Esclera <b>blanca</b>, sin tinte amarillo (ictericia) ni enrojecimiento; algún vaso conjuntival fino es normal.' } },
     { id: 'conj', label: 'Conjuntiva palpebral', short: 'Conjuntiva', x: 575, y: 258, w: 170, h: 24, rx: 10,
       tools: {
-        look: 'Al descender el párpado inferior: conjuntiva palpebral <b>rosada</b>, húmeda, lisa y brillante, sin palidez, folículos ni secreción. La conjuntiva bulbar es transparente.',
-        touch: 'Tracción suave del párpado inferior: indolora; lagrimeo escaso, sin secreción.'
+        look: TH('se desciende el párpado inferior con el pulgar mientras el paciente mira hacia arriba.', 'conjuntiva palpebral <b>rosada</b>, húmeda, lisa y brillante, sin palidez, folículos ni secreción; conjuntiva bulbar transparente.'),
+        touch: 'Tracción suave del párpado inferior: indolora; sin secreción.'
       } }
   ];
-
   /* ============================================================ 2. FONDO DE OJO */
   let fSide = 'OD', fTimer = null;
   const fx = x => (fSide === 'OD' ? x : 676 - x);
@@ -287,14 +300,13 @@
     const arts = FUND_ARC.map(d => `<path d="${d}" transform="translate(0 -6)" fill="none" stroke="#cf3220" stroke-width="4.4" stroke-linecap="round"/>` +
       `<path d="${d}" transform="translate(0 -6)" fill="none" stroke="#ffb59a" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`).join('');
     const twigs = FUND_TWIG.map(d => `<path d="${d}" fill="none" stroke="#a82a1c" stroke-width="2.4" stroke-linecap="round"/>`).join('');
-    const drusen = old ? [[170, 330], [180, 350], [250, 410], [400, 360], [300, 90]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="2.3" fill="#f2d78a" opacity=".8"/>`).join('') : '';
     const ttl = fSide === 'OD' ? 'Ojo derecho (OD)' : 'Ojo izquierdo (OI)';
     const panel = learn ? `
       <text x="598" y="64" class="svg-title">${ttl}</text>
       <text x="598" y="92" class="svg-small">• Retina rojo-anaranjada,</text>
       <text x="598" y="108" class="svg-small">  uniforme</text>
       <text x="598" y="130" class="svg-small">• Disco: borde nítido, rosado</text>
-      <text x="598" y="152" class="svg-small">• Copa/disco ≈ 0,3</text>
+      <text x="598" y="152" class="svg-small">• Excavación/disco ≈ 0,3</text>
       <text x="598" y="174" class="svg-small">• Arteria : vena = 2 : 3</text>
       <text x="598" y="196" class="svg-small">• Mácula avascular con</text>
       <text x="598" y="212" class="svg-small">  reflejo foveal</text>
@@ -318,7 +330,7 @@
         <ellipse cx="225" cy="268" rx="22" ry="20" fill="#9a2b17" opacity=".55"/>
         <circle cx="225" cy="268" r="15" fill="none" stroke="#f2a65a" stroke-width="1.6" opacity=".45"/>
         <circle cx="225" cy="268" r="3.6" fill="#f7cf86"/>
-        ${twigs}${veins}${arts}${drusen}
+        ${twigs}${veins}${arts}
         <ellipse cx="450" cy="248" rx="36" ry="41" fill="url(#hnDisc)" stroke="#dc8a5c" stroke-width="2"/>
         <ellipse cx="445" cy="250" rx="11" ry="12.5" fill="#fff3d6"/>
         <path d="M446 244 C441 236 440 230 442 224" fill="none" stroke="#c9301f" stroke-width="4" stroke-linecap="round"/>
@@ -330,25 +342,23 @@
   }
   function fundusRegions() {
     const X = fx, T = t => ({ oft: t, foto: t });
-    const old = c => ageOld(c);
     return [
-      { id: 'retina', label: 'Retina periférica', short: 'Retina', cx: X(215), cy: 400, r: 36, lx: X(215), ly: 452,
-        tools: T(c => `Retina de color <b>rojo-anaranjado</b>, uniforme, brillante y transparente, sin hemorragias, exudados ni manchas pigmentadas.${old(c) ? ' En mayores de 60 años puede ser algo más pálida y haber alguna drusa dura pequeña aislada (cambio involutivo sin significado patológico).' : ''} El color depende de la pigmentación individual.`) },
+      { id: 'retina', label: 'Retina periférica', short: 'Retina', cx: X(215), cy: 400, r: 36, lx: X(215), ly: 456,
+        tools: T('Retina de color <b>rojo-anaranjado</b> uniforme (varía con la pigmentación de la persona), brillante, sin hemorragias, exudados ni manchas pigmentadas.') },
       { id: 'macula', label: 'Mácula', short: 'Mácula', cx: X(225), cy: 268, r: 46,
-        tools: T('<b>Mácula</b>: área oval ligeramente más oscura, a ≈ 2 diámetros papilares (≈ 3 mm) en el lado temporal del disco y a su misma altura; <b>avascular</b> y sin exudados ni hemorragias. Se explora al final, pidiendo al paciente que mire directamente la luz (es la zona más molesta).') },
+        tools: T('<b>Mácula</b>: zona oval algo más oscura y <b>avascular</b>, a ≈ 2 diámetros papilares del lado temporal del disco; sin exudados ni hemorragias. Se examina al final (es la zona que más deslumbra) pidiendo al paciente que mire la luz.') },
       { id: 'fovea', label: 'Fóvea (reflejo foveal)', short: 'Fóvea', cx: X(225), cy: 268, r: 8, lx: X(225), ly: 336,
-        tools: T('<b>Reflejo foveal</b>: punto luminoso brillante, puntiforme, en el centro de la mácula (depresión foveolar); su presencia indica una mácula sana. Visión central de máxima agudeza.') },
+        tools: T('<b>Reflejo foveal</b>: punto luminoso puntiforme en el centro de la mácula; indica una fóvea sana (zona de máxima agudeza visual).') },
       { id: 'disco', label: 'Disco óptico (papila)', short: 'Disco óptico', cx: X(450), cy: 248, r: 44,
-        tools: T('<b>Disco óptico</b>: redondo u ligeramente oval, de color <b>rosado-anaranjado</b>, con <b>bordes nítidos</b> (algo más borrosos en el borde nasal, normal), diámetro ≈ 1,5 mm. El anillo neurorretiniano es rosado, de ancho uniforme y sigue la regla ISNT (mayor en el borde inferior y menor en el temporal). Sin edema, palidez ni elevación. Los vasos emergen por su centro.') },
-      { id: 'copa', label: 'Excavación fisiológica', short: 'Copa', cx: X(445), cy: 250, r: 11, lx: X(505), ly: 312,
-        tools: T('<b>Excavación fisiológica (copa)</b>: depresión central pálida, más blanca que el anillo, algo desplazada hacia el lado temporal; <b>relación copa/disco ≈ 0,3</b> (normal 0,1-0,5; &gt; 0,6 o asimetría &gt; 0,2 entre ambos ojos es sospechosa). Se ve la lámina cribosa y los vasos que se doblan al borde.') },
+        tools: T('<b>Disco óptico (papila)</b>: redondo u oval, de color <b>rosado-anaranjado</b>, con <b>bordes nítidos</b> (algo menos definidos del lado nasal), de ≈ 1,5 mm; anillo neurorretiniano rosado y uniforme; sin edema, palidez ni elevación. De su centro emergen los vasos.') },
+      { id: 'copa', label: 'Excavación fisiológica', short: 'Excavación', cx: X(445), cy: 250, r: 11, lx: X(505), ly: 312,
+        tools: T('<b>Excavación fisiológica</b>: depresión central más pálida; <b>relación excavación/disco ≈ 0,3</b> (normal 0,1-0,5); &gt; 0,6 o una asimetría &gt; 0,2 entre ambos ojos es sospechosa.') },
       { id: 'art', label: 'Arteriola retiniana', short: 'Arteria', cx: X(376), cy: 156, r: 6, lx: X(376), ly: 128,
-        tools: T('<b>Arteria</b>: más fina, de color rojo vivo y con <b>reflejo luminoso central</b> brillante (1/4 del calibre). Calibre <b>arteria : vena = 2 : 3</b>. Se ramifican en arcadas temporales superior e inferior y en ramas nasales. Cruces arteriovenosos sin indentación ni desviación de la vena.') },
+        tools: T('<b>Arteriolas</b>: más finas y de rojo más claro que las venas, con <b>reflejo luminoso central</b> brillante; calibre <b>arteria : vena = 2 : 3</b>; cruces arteriovenosos sin muescas ni desviación de la vena.') },
       { id: 'vena', label: 'Vena retiniana', short: 'Vena', cx: X(311), cy: 152, r: 6, lx: X(311), ly: 178,
-        tools: T('<b>Vena</b>: más gruesa y oscura (rojo vino) que la arteria, sin reflejo luminoso central y con calibre uniforme. <b>Pulso venoso espontáneo</b> en la papila (presente en ≈ 80 % de las personas sanas; su presencia indica presión intracraneal normal).') }
+        tools: T('<b>Vénulas</b>: más gruesas y oscuras (rojo vinoso), de calibre uniforme y sin reflejo central; <b>pulso venoso espontáneo</b> en la papila en ≈ 80 % de las personas sanas (indica presión intracraneal normal).') }
     ];
   }
-
   /* ============================================================ 3. OÍDO */
   let earSide = 'D';
   const aX = x => (earSide === 'D' ? x : 340 - x);
@@ -401,7 +411,6 @@
   const forkRun = (f) => ctx => { try { Sound.beep(f || 512, 1.1, 0.16); } catch (e) { /* noop */ } };
   function earRegions() {
     const right = earSide === 'D';
-    const tm = ctx => 0;
     const O = t => ({ oto: t });
     const tmPoly = pts => poly(pts, tX);
     const tmEll = tmPoly(ellPts(590, 300, 130, 145, 28));
@@ -409,53 +418,52 @@
     const handle = tmPoly([[597, 316], [654, 216], [640, 204], [583, 308]]);
     return [
       { id: 'vertex', label: 'Vértex / frente (línea media)', short: 'Vértex', cx: aX(170), cy: 76, r: 17,
-        tools: { fork: { html: '<b>Prueba de Weber</b> (diapasón de 512 Hz en el vértex): el sonido se percibe <b>en la línea media o por igual en ambos oídos</b> — Weber central, <b>no lateraliza</b>.', run: forkRun(512) } } },
+        tools: { fork: { html: TH('<b>Weber</b>: diapasón (256-512 Hz) vibrando, apoyado por su pie en el vértex o la frente, en la línea media.', 'el sonido se oye <b>en el centro o por igual en ambos oídos</b>: el Weber no lateraliza.'), run: forkRun(512) } } },
       { id: 'mast', label: 'Apófisis mastoides', short: 'Mastoides', cx: aX(55), cy: 410, r: 21,
         tools: {
-          look: 'Región retroauricular y mastoidea sin eritema, edema ni deformidad; pliegue retroauricular conservado.',
-          pull: 'Presión sobre la mastoides: indolora.',
-          fork: { html: '<b>Rinne, conducción ósea</b>: el diapasón de 512 Hz sobre la mastoides se oye hasta que el paciente deja de percibirlo; entonces se coloca frente al meato (conducción aérea): <b>lo vuelve a oír</b>. Rinne positivo (CA &gt; CO, tiempo aéreo ≈ el doble del óseo).', run: forkRun(512) }
+          look: 'Región mastoidea sin eritema, edema ni deformidad; pliegue retroauricular conservado.',
+          pull: TH('presión firme sobre la mastoides.', 'indolora.'),
+          fork: { html: TH('<b>Rinne</b>, conducción ósea: pie del diapasón sobre la mastoides hasta que el paciente deja de oírlo; entonces se acercan las ramas al meato (conducción aérea).', 'vuelve a oírlo por vía aérea: <b>Rinne positivo (CA &gt; CO)</b>; la conducción aérea dura ≈ el doble que la ósea.'), run: forkRun(512) }
         } },
       { id: 'helix', label: 'Pabellón auricular (hélix)', short: 'Pabellón', cx: aX(112), cy: 295, r: 15,
         tools: {
-          look: c => `Pabellones de <b>implantación normal</b> (el borde superior del hélix alcanza la línea del canto externo del ojo; eje con inclinación &lt; 20° respecto a la vertical), simétricos, de ≈ 5,5-7 cm de alto, sin deformidades, nódulos, cicatrices ni lesiones. Piel íntegra.${ageOld(c) ? ' Lóbulos algo alargados, con pliegue diagonal: variantes de la edad.' : ''}`,
-          pull: { html: '<b>Tracción del pabellón</b> hacia atrás y arriba (en adultos) y presión del trago: <b>indoloras</b>. Esta tracción endereza el conducto para introducir el otoscopio.', run: ctx => { const a = ctx.svg.querySelector('#hnAur'); if (a) tween(700, u => a.setAttribute('transform', `translate(${(-8 * Math.sin(Math.PI * u)).toFixed(1)} ${(55 - 10 * Math.sin(Math.PI * u)).toFixed(1)})`), () => a.setAttribute('transform', 'translate(0 55)')); } }
+          look: c => TH('inspección de ambos pabellones: implantación, tamaño, forma y piel.', `implantación normal (el borde superior del hélix a la altura del canto externo del ojo), simétricos, sin deformidades, nódulos ni lesiones.${ageOld(c) ? ' Lóbulos algo alargados por la edad.' : ''}`),
+          pull: { html: TH('tracción del pabellón hacia atrás y arriba (en el adulto) y presión sobre el trago.', '<b>indoloras</b>; la tracción endereza el conducto para la otoscopia.'), run: ctx => { const a = ctx.svg.querySelector('#hnAur'); if (a) tween(700, u => a.setAttribute('transform', `translate(${(-8 * Math.sin(Math.PI * u)).toFixed(1)} ${(55 - 10 * Math.sin(Math.PI * u)).toFixed(1)})`), () => a.setAttribute('transform', 'translate(0 55)')); } }
         } },
-      { id: 'anti', label: 'Antihélix y concha', short: 'Antihélix', cx: aX(160), cy: 350, r: 13, lx: aX(110), ly: 380,
-        tools: { look: 'Relieves de hélix, antihélix, fosa triangular y concha bien definidos y simétricos; piel rosada, sin lesiones.' } },
+      { id: 'anti', label: 'Antihélix y concha', short: 'Antihélix', cx: aX(160), cy: 350, r: 13, lx: aX(160), ly: 376,
+        tools: { look: 'Relieves del hélix, antihélix, fosa triangular y concha bien definidos y simétricos; piel sin lesiones.' } },
       { id: 'tragus', label: 'Trago', short: 'Trago', cx: aX(246), cy: 332, r: 9, lx: aX(284), ly: 318,
-        tools: { look: 'Trago íntegro, sin lesiones.', pull: 'Presión sobre el trago: <b>indolora</b> (es una de las maniobras que descartan inflamación del conducto).' } },
+        tools: { look: 'Trago íntegro, sin lesiones.', pull: TH('presión sobre el trago.', '<b>indolora</b> (descarta inflamación del conducto).') } },
       { id: 'meato', label: 'Conducto auditivo externo (meato)', short: 'Meato', cx: aX(214), cy: 342, r: 12, lx: aX(214), ly: 400,
         tools: {
-          look: 'Meato permeable, piel rosada y lisa, sin secreción, edema ni eritema; puede haber un poco de cerumen ámbar (normal) y vellos finos.',
-          pull: 'Tracción del pabellón y presión del trago sin dolor.',
-          whisper: { html: 'Prueba de la voz susurrada a 60 cm (ocluyendo y enmascarando el oído contrario): repite correctamente palabras o números susurrados. Audición normal (&lt; 25 dB).', run: ctx => ctx.sh.say('Sí, le escucho: "tres, nueve, cuatro"', 'yes') },
-          fork: { html: '<b>Rinne, conducción aérea</b>: diapasón vibrando a 2-3 cm del meato, con las ramas orientadas hacia el conducto: se oye más tiempo y más fuerte que sobre la mastoides. <b>CA &gt; CO (Rinne positivo)</b>.', run: forkRun(512) }
+          look: 'Meato permeable, piel rosada y lisa, sin secreción, edema ni eritema; algo de cerumen y vellos finos es normal.',
+          pull: 'Tracción del pabellón y presión del trago: indoloras.',
+          whisper: { html: TH('voz cuchicheada a ≈ 60 cm, fuera del campo visual del paciente, ocluyendo y frotando el trago del oído contrario.', 'repite correctamente las palabras o números: audición conversacional normal.'), run: ctx => ctx.sh.say('Sí, le escucho: "tres, nueve, cuatro"', 'yes') },
+          fork: { html: TH('<b>Rinne</b>, conducción aérea: ramas del diapasón vibrando a 2-3 cm del meato.', 'se oye más tiempo y más fuerte que sobre la mastoides: <b>CA &gt; CO (Rinne positivo)</b>.'), run: forkRun(512) }
         } },
       { id: 'lobulo', label: 'Lóbulo', short: 'Lóbulo', cx: aX(198), cy: 497, r: 16,
-        tools: { look: 'Lóbulo libre o adherido, simétrico, sin lesiones ni nódulos.', pull: 'Tracción del lóbulo indolora.' } },
+        tools: { look: 'Lóbulo simétrico, sin lesiones ni nódulos.', pull: 'Tracción del lóbulo: indolora.' } },
       /* ---- otoscopia ---- */
       { id: 'canal', label: 'Pared del conducto', short: 'Conducto', cx: tX(590), cy: 300, r: 170, lx: tX(590), ly: 124,
-        tools: O('<b>Conducto auditivo externo</b>: ≈ 2,5 cm de largo, con forma de S (un tercio externo cartilaginoso con pelos y glándulas ceruminosas y dos tercios internos óseos). Paredes de piel <b>rosada y lisa</b>, sin eritema, edema, exudado ni lesiones; cerumen escaso, ámbar-amarillento y blando (normal).') },
+        tools: O('<b>Conducto auditivo externo</b>: ≈ 2,5 cm, con forma de S (tercio externo cartilaginoso, con pelos y glándulas ceruminosas; dos tercios internos óseos); piel <b>rosada y lisa</b>, sin eritema, edema ni secreción; cerumen escaso y blando.') },
       { id: 'tm', label: 'Pars tensa de la membrana timpánica', short: 'Pars tensa', d: tmEll, lx: tX(550), ly: 380,
-        tools: Object.assign(O('<b>Membrana timpánica</b>: íntegra, de color <b>gris-perla (nacarada)</b>, brillante y <b>translúcida</b>, ligeramente cóncava, de ≈ 9-10 mm de diámetro, con 4 cuadrantes (anterosuperior, anteroinferior, posterosuperior, posteroinferior). Sin perforación, retracción, abombamiento, líquido, burbujas ni placas calcáreas. Por transparencia se intuyen la rama larga del yunque y la cuerda del tímpano.'), {
-          pneu: { html: '<b>Neumootoscopia</b>: con presión positiva leve la membrana se desplaza <b>hacia adentro</b> y con la negativa hacia afuera, de forma <b>ágil y simétrica</b> (movilidad normal, oído medio ventilado).', run: ctx => { const g = ctx.svg.querySelector('#hnTM'); if (g) tween(1400, u => { const s = 1 - 0.035 * Math.sin(2 * Math.PI * u) * (1 - u); g.setAttribute('transform', `translate(590 300) scale(${s.toFixed(4)}) translate(-590 -300)`); }, () => g.removeAttribute('transform')); } }
+        tools: Object.assign(O('<b>Membrana timpánica</b>: íntegra, de color <b>gris perla (nacarada)</b>, brillante y translúcida, ligeramente cóncava, de ≈ 9-10 mm; se describe por cuadrantes (anterosuperior, anteroinferior, posterosuperior, posteroinferior). Sin perforación, retracción, abombamiento ni nivel líquido.'), {
+          pneu: { html: TH('<b>otoscopia neumática</b>: otoscopio con pera, espéculo que selle el conducto y presión positiva y negativa suaves.', 'la membrana se desplaza hacia adentro y hacia afuera con agilidad: oído medio aireado.'), run: ctx => { const g = ctx.svg.querySelector('#hnTM'); if (g) tween(1400, u => { const s = 1 - 0.035 * Math.sin(2 * Math.PI * u) * (1 - u); g.setAttribute('transform', `translate(590 300) scale(${s.toFixed(4)}) translate(-590 -300)`); }, () => g.removeAttribute('transform')); } }
         }) },
       { id: 'flac', label: 'Pars flaccida (membrana de Shrapnell)', short: 'Pars flácida', cx: tX(615), cy: 175, r: 16, lx: tX(600), ly: 150,
-        tools: O('<b>Pars flaccida</b> (de Shrapnell): pequeña zona superior, más delgada, rosada y laxa, situada por encima de los pliegues maleolares; sin retracción, costras ni secreción.') },
+        tools: O('<b>Pars flaccida</b> (membrana de Shrapnell): pequeña zona superior, más delgada y laxa, por encima de los pliegues maleolares; sin retracción ni costras.') },
       { id: 'inc', label: 'Rama larga del yunque', short: 'Yunque', cx: tX(556), cy: 252, r: 11, lx: tX(520), ly: 232,
-        tools: O('<b>Rama larga del yunque</b>: línea blanquecina tenue vista por transparencia en el cuadrante posterosuperior, paralela y por detrás del mango del martillo.') },
+        tools: O('<b>Rama larga del yunque</b>: línea blanquecina tenue, vista por transparencia en el cuadrante posterosuperior, por detrás del mango del martillo.') },
       { id: 'mango', label: 'Mango del martillo', short: 'Mango', d: handle, lx: tX(676), ly: 262,
-        tools: O(`<b>Mango del martillo</b>: franja blanco-amarillenta, incluida en la capa fibrosa, orientada hacia arriba y adelante (≈ a las ${right ? '1' : '11'} h en el oído ${right ? 'derecho' : 'izquierdo'}), con vasos finos a su lado.`) },
+        tools: O(`<b>Mango del martillo</b>: franja blanco-amarillenta incluida en la membrana, que desde el umbo se dirige hacia arriba y adelante (≈ a las ${right ? '1' : '11'} h en el oído ${right ? 'derecho' : 'izquierdo'}).`) },
       { id: 'corta', label: 'Apófisis corta del martillo', short: 'Ap. corta', cx: tX(649), cy: 207, r: 10, lx: tX(690), ly: 196,
-        tools: O('<b>Apófisis corta</b>: prominencia blanquecina puntiforme en el extremo superior del mango; delimita las pars tensa y flaccida. Los pliegues maleolares anterior y posterior parten de ella.') },
+        tools: O('<b>Apófisis corta del martillo</b>: prominencia blanquecina puntiforme en el extremo superior del mango; de ella parten los pliegues maleolares que separan la pars tensa de la pars flaccida.') },
       { id: 'umbo', label: 'Ombligo (umbo)', short: 'Umbo', cx: tX(590), cy: 313, r: 8, lx: tX(560), ly: 340,
-        tools: O('<b>Umbo</b>: extremo inferior del mango, punto más deprimido de la membrana (centro de la pars tensa); de aquí parte el cono luminoso.') },
+        tools: O('<b>Umbo (ombligo)</b>: extremo inferior del mango, punto más deprimido de la membrana; desde él parte el cono luminoso.') },
       { id: 'cono', label: 'Cono luminoso', short: 'Cono luminoso', d: cone, lx: tX(650), ly: 436,
-        tools: O(`<b>Cono luminoso</b> (reflejo de la luz del otoscopio): triángulo brillante en el cuadrante anteroinferior, a las <b>${right ? '5' : '7'} h en el oído ${right ? 'derecho' : 'izquierdo'}</b>, con su vértice en el umbo. Indica una membrana tensa, de forma y posición normales.`) }
+        tools: O(`<b>Cono o triángulo luminoso</b>: reflejo brillante en el cuadrante anteroinferior, a las <b>${right ? '5' : '7'} h en el oído ${right ? 'derecho' : 'izquierdo'}</b>, con el vértice en el umbo; indica una membrana de tensión y posición normales.`) }
     ];
   }
-
   /* ============================================================ 4. NARIZ */
   let occl = null;
   function noseSvg(learn, c) {
@@ -508,47 +516,46 @@
   const noseRegions = [
     { id: 'dorso', label: 'Raíz y dorso nasal', short: 'Dorso nasal', cx: 180, cy: 190, r: 28,
       tools: {
-        look: 'Pirámide nasal <b>en la línea media</b>, dorso recto, sin deformidades, edema, eritema ni cicatrices; piel sin lesiones. Simetría con el resto de la cara.',
-        palp: 'Huesos propios y cartílagos lisos, firmes y estables, <b>sin dolor, crepitación ni desviación</b>.'
+        look: TH('inspección de frente y de perfil.', 'pirámide nasal <b>en la línea media</b>, dorso recto, sin deformidades, edema ni eritema; piel sin lesiones.'),
+        palp: TH('palpación de los huesos propios y los cartílagos entre el pulgar y el índice.', 'lisos, firmes y estables, <b>sin dolor, crepitación ni desviación</b>.')
       } },
     { id: 'punta', label: 'Punta nasal', short: 'Punta', cx: 180, cy: 322, r: 20, lx: 180, ly: 296,
       tools: {
         look: 'Punta bien definida, simétrica y centrada.',
-        palp: 'Cartílago alar elástico y móvil; sin dolor. El tabique cartilaginoso anterior se palpa en la línea media.'
+        palp: 'Cartílagos alares elásticos y móviles; tabique anterior en la línea media; sin dolor.'
       } },
     { id: 'alaR', label: 'Ala nasal derecha', short: 'Ala D', cx: 126, cy: 342, r: 16, anchor: 'end', lx: 100, ly: 336,
       tools: {
-        look: 'Alas nasales simétricas, sin colapso al inspirar; piel íntegra.',
-        occl: { html: 'Se ocluye la fosa <b>derecha</b> con un dedo en el ala nasal y se pide al paciente respirar por la izquierda: el aire pasa sin dificultad (la condensación en el espejo de Glatzel es <b>simétrica</b> en ambas fosas). Permeabilidad nasal normal.', run: fogRun('R') }
+        look: 'Alas nasales simétricas, sin aleteo ni colapso al inspirar; piel íntegra.',
+        occl: { html: TH('se ocluye la fosa derecha con un dedo sobre el ala y el paciente inspira y espira por la izquierda; el espejo de Glatzel bajo las narinas muestra el empañamiento.', 'el aire pasa sin dificultad y la condensación es <b>simétrica</b> en ambas fosas: permeabilidad nasal normal.'), run: fogRun('R') }
       } },
     { id: 'alaL', label: 'Ala nasal izquierda', short: 'Ala I', cx: 234, cy: 342, r: 16, anchor: 'start', lx: 260, ly: 336,
       tools: {
         look: 'Alas nasales simétricas, sin colapso al inspirar.',
-        occl: { html: 'Se ocluye la fosa <b>izquierda</b>: respira sin dificultad por la derecha; el empañamiento del espejo es de tamaño similar al del otro lado. Permeabilidad normal.', run: fogRun('L') }
+        occl: { html: 'Ocluida la fosa <b>izquierda</b>, respira sin dificultad por la derecha; el empañamiento del espejo es similar al del otro lado: permeabilidad normal.', run: fogRun('L') }
       } },
     { id: 'colu', label: 'Columela y vestíbulo nasal', short: 'Vestíbulo', cx: 180, cy: 372, r: 10, lx: 180, ly: 396,
       tools: {
-        look: 'Columela centrada. Vestíbulo nasal con <b>vibrisas</b> (pelos) y piel sin lesiones, sin costras ni secreción.',
-        spec: 'El espéculo nasal se introduce solo 1 cm, sin apoyar en el tabique: vestíbulo sin lesiones.'
+        look: 'Columela centrada; vestíbulo nasal con vibrisas (pelos) y piel sin lesiones, costras ni secreción.',
+        spec: TH('el espéculo se introduce ≈ 1 cm en el vestíbulo y se abre en sentido vertical, sin apoyar en el tabique.', 'vestíbulo sin lesiones.')
       } },
     /* Rinoscopia */
-    { id: 'sepR', label: 'Tabique nasal (fosa derecha)', short: 'Tabique', cx: 558, cy: 270, r: 26, lx: 558, ly: 214,
-      tools: { spec: 'Tabique nasal <b>en la línea media</b>, de mucosa rosada, lisa y húmeda, sin perforaciones, úlceras, hematomas ni costras. Los pequeños vasos del área de Kiesselbach (porción anteroinferior) pueden ser visibles. Una desviación leve es frecuente y no es patológica si no obstruye.' } },
+    { id: 'sepR', label: 'Tabique nasal (fosa derecha)', short: 'Tabique', cx: 558, cy: 270, r: 26, anchor: 'end', lx: 556, ly: 214,
+      tools: { spec: '<b>Tabique nasal</b> en la línea media, con mucosa rosada, lisa y húmeda, sin perforaciones, úlceras ni costras; en la porción anteroinferior (área de Kiesselbach) pueden verse pequeños vasos. Una desviación leve que no obstruye es frecuente.' } },
     { id: 'infR', label: 'Cornete inferior derecho', short: 'C. inferior', cx: 434, cy: 310, r: 22, lx: 434, ly: 350,
-      tools: { spec: 'Cornete inferior de color <b>rosado</b>, húmedo y de superficie lisa; ocupa menos de la mitad del espacio de la fosa y deja ver el meato inferior y el suelo. Contrae con el vasoconstrictor. Secreción mucosa escasa y clara.' } },
-    { id: 'midR', label: 'Cornete medio derecho', short: 'C. medio', cx: 430, cy: 234, r: 15, lx: 400, ly: 220,
-      tools: { spec: 'Cornete medio rosado y de superficie lisa, visible en la parte alta de la fosa; <b>sin pólipos</b> (masas pálidas, translúcidas y húmedas) ni secreción purulenta en el meato medio.' } },
-    { id: 'sepL', label: 'Tabique nasal (fosa izquierda)', short: 'Tabique', cx: 612, cy: 270, r: 26, lx: 612, ly: 214,
+      tools: { spec: '<b>Cornete inferior</b> rosado, húmedo y de superficie lisa; ocupa menos de la mitad de la fosa y deja ver el meato inferior y el piso; secreción mucosa escasa y clara.' } },
+    { id: 'midR', label: 'Cornete medio derecho', short: 'C. medio', cx: 430, cy: 234, r: 15, anchor: 'end', lx: 412, ly: 222,
+      tools: { spec: '<b>Cornete medio</b> rosado y liso, en la parte alta de la fosa; meato medio <b>sin pólipos</b> (masas pálidas y translúcidas) ni secreción purulenta.' } },
+    { id: 'sepL', label: 'Tabique nasal (fosa izquierda)', short: 'Tabique', cx: 612, cy: 270, r: 26, anchor: 'start', lx: 614, ly: 214,
       tools: { spec: 'Tabique rosado y liso, en la línea media, sin perforación ni hematoma; simétrico con el lado derecho.' } },
     { id: 'infL', label: 'Cornete inferior izquierdo', short: 'C. inferior', cx: 736, cy: 310, r: 22, lx: 736, ly: 350,
-      tools: { spec: 'Cornete inferior rosado, húmedo y liso; fosa permeable, con meato inferior visible; simétrico con el contralateral.' } },
-    { id: 'midL', label: 'Cornete medio izquierdo', short: 'C. medio', cx: 740, cy: 234, r: 15, lx: 770, ly: 220,
+      tools: { spec: 'Cornete inferior rosado, húmedo y liso; fosa permeable, con el meato inferior visible; simétrico con el contralateral.' } },
+    { id: 'midL', label: 'Cornete medio izquierdo', short: 'C. medio', cx: 740, cy: 234, r: 15, anchor: 'start', lx: 758, ly: 222,
       tools: { spec: 'Cornete medio rosado y liso, sin pólipos ni secreción purulenta.' } }
   ];
-
   /* ============================================================ 5. BOCA Y OROFARINGE */
   let tongueUp = false, mallTimer = null;
-  const TW = [27, 20, 23, 21, 20, 30, 30, 27], TH = [50, 44, 50, 40, 38, 34, 34, 32], KW = 1.55;
+  const TW = [27, 20, 23, 21, 20, 30, 30, 27], TTH = [50, 44, 50, 40, 38, 34, 34, 32], KW = 1.55;
   const TEETH = (function () {
     const a = 170, b = 215, N = 800, arr = [[0, 0]];
     let L = 0, px = 0, pz = 0;
@@ -561,7 +568,7 @@
       const w = TW[k] * KW, mid = cum + w / 2; cum += w;
       let j = 0; while (j < arr.length - 1 && arr[j][1] < mid) j++;
       const phi = arr[j][0];
-      out.push({ k, phi, x: a * Math.sin(phi), z: b * (1 - Math.cos(phi)), w: TW[k] * KW * Math.cos(phi) + 15 * Math.sin(phi), h: TH[k] });
+      out.push({ k, phi, x: a * Math.sin(phi), z: b * (1 - Math.cos(phi)), w: TW[k] * KW * Math.cos(phi) + 15 * Math.sin(phi), h: TTH[k] });
     }
     return out;
   })();
@@ -644,27 +651,27 @@
   function mouthRegions() {
     const R = [];
     const pharyn = (extra) => Object.assign({
-      look: 'Mucosa orofaríngea rosada, húmeda y brillante, sin placas, exudado, úlceras ni petequias.'
+      look: 'Mucosa de las fauces rosada, húmeda y brillante, sin placas, exudado, úlceras ni petequias.'
     }, extra);
     const sayAh = ctx => {
       const g = ctx.svg.querySelector('#hnPal'); if (!g) return;
       tween(2000, u => { const k = Math.sin(Math.PI * Math.min(1, u * 1.15)); g.setAttribute('transform', `translate(0 ${(-16 * k).toFixed(1)})`); }, () => g.removeAttribute('transform'));
       ctx.sh.say('Aaaaah…', 'yes', 2000);
     };
-    const AH = { html: 'Al decir <b>"ah"</b> el paladar blando y la úvula <b>se elevan de forma simétrica</b> y la úvula se mantiene en la <b>línea media</b>; los pilares se tensan por igual (indemnidad de los pares craneales IX y X).', run: sayAh };
-    const depress = { html: 'Con el depresor sobre los 2/3 anteriores de la lengua (sin tocar la base, para evitar náuseas) se aprecia toda la orofaringe: pilares, amígdalas, úvula y pared posterior sin lesiones.', run: ctx => {
+    const AH = { html: TH('se pide al paciente que diga <b>"ah"</b> con la boca abierta.', 'el velo del paladar se eleva de forma simétrica y la úvula se mantiene en la <b>línea media</b> (pares craneales IX y X indemnes).'), run: sayAh };
+    const depress = { html: TH('depresor sobre los dos tercios anteriores de la lengua (sin tocar la base, para no provocar náuseas) y luz frontal o linterna.', 'se ven pilares, amígdalas, úvula y pared posterior de la faringe sin lesiones.'), run: ctx => {
       const d = ctx.svg.querySelector('#hnDep'), t = ctx.svg.querySelector('#hnTg'); if (!d || !t) return;
       d.style.display = '';
       tween(1600, u => { const k = Math.sin(Math.PI * u); t.setAttribute('transform', `translate(0 ${(8 * k).toFixed(1)})`); }, () => { d.style.display = 'none'; t.removeAttribute('transform'); });
     } };
-    const mall = c => ({ html: `<b>Mallampati clase ${c.age < 40 ? 'I' : 'II'}</b> (paciente sentado, boca abierta al máximo y lengua fuera, sin fonar): ${c.age < 40 ? 'se ven el paladar blando, las fauces, la úvula y los pilares amigdalinos' : 'se ven el paladar blando, las fauces y una parte de la úvula (su base queda oculta por la lengua)'}. Las clases I-II son normales y predicen una vía aérea de fácil acceso.`, run: ctx => ctx.sh.say(`Mallampati ${c.age < 40 ? 'I' : 'II'}`, 'yes', 2400) });
-    R.push({ id: 'orof', label: 'Orofaringe', short: 'Orofaringe', x: 296, y: 252, w: 228, h: 100, rx: 22, lx: 410, ly: 246,
-      tools: { look: 'Orofaringe de mucosa rosada y húmeda, sin exudados ni lesiones; se ven paladar blando, úvula, pilares, amígdalas y pared posterior.', depress, mall, say: AH } });
+    const mall = { html: TH('<b>Mallampati</b>: paciente sentado, boca abierta al máximo y lengua afuera, sin fonar.', '<b>clase I</b>: se ven paladar blando, fauces, úvula y pilares. Las clases I y II son normales y predicen una vía aérea de acceso fácil.'), run: ctx => ctx.sh.say('Mallampati I', 'yes', 2400) };
+    R.push({ id: 'orof', label: 'Orofaringe (fauces)', short: 'Fauces', x: 296, y: 252, w: 228, h: 100, rx: 22, lx: 430, ly: 240, anchor: 'start',
+      tools: { look: '<b>Fauces</b>: paladar blando, úvula, pilares, amígdalas y pared posterior con mucosa rosada y húmeda, sin exudados ni lesiones.', depress, mall, say: AH } });
     R.push({ id: 'labS', label: 'Labio superior', short: 'Labios', cx: 410, cy: 80, r: 26, lx: 410, ly: 46,
       tools: {
-        look: 'Labios de color rosado-rojizo, húmedos, simétricos, de bordes bien definidos, sin fisuras, úlceras, costras ni nódulos; comisuras sin lesiones. Surco nasolabial y filtrum simétricos.',
-        palp: 'Labios blandos, sin induraciones ni nódulos a la palpación bimanual.',
-        smell: { html: '<b>Aliento</b> sin olor característico: no hay halitosis, ni olor a acetona (cetosis), a amoníaco (uremia) ni "fetor hepático".', run: ctx => ctx.sh.say('(sin olor particular)', 'yes', 1800) }
+        look: 'Labios rosados, húmedos, simétricos y de bordes definidos, sin fisuras, úlceras, costras ni nódulos; comisuras íntegras; filtrum simétrico.',
+        palp: 'Labios blandos, sin induraciones ni nódulos (palpación bimanual).',
+        smell: { html: TH('se percibe el aliento mientras el paciente espira por la boca.', 'sin olor patológico: no hay halitosis ni olor a acetona (cetosis), amoniacal (uremia) o <i>fetor hepático</i>.'), run: ctx => ctx.sh.say('(sin olor particular)', 'yes', 1800) }
       } });
     R.push({ id: 'labI', label: 'Labio inferior', short: '', cx: 410, cy: 520, r: 26,
       tools: {
@@ -672,71 +679,71 @@
         palp: 'Blando y sin nódulos.',
         smell: { html: 'Aliento sin olor patológico.', run: ctx => ctx.sh.say('(sin olor particular)', 'yes', 1800) }
       } });
-    R.push({ id: 'dS', label: 'Dientes superiores', short: 'Dientes (32)', x: 208, y: 138, w: 404, h: 90, rx: 18, lx: 270, ly: 132,
+    R.push({ id: 'dS', label: 'Dientes superiores', short: 'Dientes (32)', x: 208, y: 138, w: 404, h: 90, rx: 18, lx: 212, ly: 130, anchor: 'start',
       tools: {
-        look: c => ({ html: `<b>Dentición permanente completa: 32 piezas</b> (16 por arcada: 8 incisivos, 4 caninos, 8 premolares y 12 molares, incluyendo los terceros molares). Dientes bien alineados, de color marfil, sin caries visibles, fracturas ni movilidad.${ageOld(c) ? ' En el adulto mayor son frecuentes las ausencias dentarias, el desgaste y las prótesis; aquí se muestra la dentición completa de referencia.' : ''}`, run: ctx => countTeeth(ctx.svg, ctx.sh) }),
-        palp: 'Dientes firmes, sin movilidad ni dolor a la presión o a la percusión.',
+        look: c => ({ html: `<b>Dentición permanente completa: 32 piezas</b> (16 por arcada; en total 8 incisivos, 4 caninos, 8 premolares y 12 molares, incluidos los terceros molares), bien alineadas, de color marfil, sin caries visibles, fracturas ni movilidad.${ageOld(c) ? ' En el adulto mayor son frecuentes las ausencias, el desgaste y las prótesis; se muestra la dentición completa de referencia.' : ''}`, run: ctx => countTeeth(ctx.svg, ctx.sh) }),
+        palp: 'Piezas firmes, sin movilidad ni dolor a la presión.',
         say: AH
       } });
     R.push({ id: 'dI', label: 'Dientes inferiores', short: '', x: 208, y: 398, w: 404, h: 88, rx: 18,
       tools: {
-        look: { html: 'Arcada inferior con 16 piezas bien alineadas; la oclusión es correcta (los incisivos superiores cubren 1-2 mm de los inferiores).', run: ctx => countTeeth(ctx.svg, ctx.sh) },
+        look: { html: 'Arcada inferior con 16 piezas alineadas; oclusión normal (los incisivos superiores cubren 1-2 mm a los inferiores).', run: ctx => countTeeth(ctx.svg, ctx.sh) },
         palp: 'Piezas firmes, sin movilidad ni dolor.'
       } });
     R.push({ id: 'eS', label: 'Encía superior', short: 'Encías', cx: 410, cy: 148, r: 12, lx: 410, ly: 126,
       tools: {
-        look: 'Encías de color <b>rosado coral</b> (pigmentadas en algunas personas), festoneadas y adheridas a los cuellos dentarios, sin eritema, edema, retracción ni sangrado.',
-        palp: 'Encía firme y puntillada (como cáscara de naranja), no sangra ni duele al tacto.'
+        look: 'Encías de color <b>rosado coral</b> (pueden estar pigmentadas), firmes, festoneadas y adheridas al cuello de los dientes; sin eritema, edema, retracción ni sangrado.',
+        palp: 'Encía firme y puntillada, que no sangra ni duele al tacto.'
       } });
     R.push({ id: 'eI', label: 'Encía inferior', short: '', cx: 410, cy: 470, r: 12,
       tools: {
         look: 'Encía rosada, firme, de borde festoneado, sin sangrado ni lesiones.',
-        palp: 'Firme, sin dolor, sin sangrado.'
+        palp: 'Firme, sin dolor ni sangrado.'
       } });
-    R.push({ id: 'lengua', label: 'Lengua (dorso)', short: 'Lengua', x: 326, y: 346, w: 168, h: 54, rx: 26, lx: 410, ly: 424,
+    R.push({ id: 'lengua', label: 'Lengua (dorso)', short: 'Lengua', x: 326, y: 346, w: 168, h: 54, rx: 26, lx: 560, ly: 392, anchor: 'start',
       tools: {
-        look: 'Lengua <b>rosada, húmeda y de bordes simétricos</b>, con superficie rugosa por las papilas filiformes y los pequeños puntos rojos de las fungiformes; surco medio visible; puede haber una fina capa blanquecina (saburra) normal. Tamaño normal, sin atrofia papilar, fisuras profundas ni úlceras.',
+        look: 'Lengua <b>rosada, húmeda y simétrica</b>, de tamaño normal, con papilas filiformes y fungiformes (puntos rojos) y surco medio; una capa blanquecina fina (saburra) es normal. Sin atrofia papilar, fisuras profundas ni úlceras.',
         depress,
-        palp: 'Lengua blanda y móvil, sin induraciones ni nódulos; el borde lateral (zona de riesgo) palpado con gasa sin lesiones.'
+        palp: TH('con guante y una gasa se sujeta la punta y se palpan el dorso y los bordes.', 'blanda y móvil, sin induraciones ni nódulos; bordes laterales sin lesiones.')
       } });
-    R.push({ id: 'cal', label: 'Papilas caliciformes (V lingual)', short: 'V lingual', cx: 410, cy: 358, r: 11, lx: 410, ly: 336,
-      tools: { look: 'Entre 8 y 12 papilas caliciformes dispuestas en "V" abierta hacia delante en el límite del tercio posterior (no se deben confundir con lesiones); inervadas por el IX par.' } });
-    R.push({ id: 'pd', label: 'Paladar duro', short: 'Paladar duro', cx: 410, cy: 236, r: 14, lx: 410, ly: 210,
+    R.push({ id: 'cal', label: 'Papilas caliciformes (V lingual)', short: 'V lingual', cx: 410, cy: 358, r: 11, lx: 430, ly: 362, anchor: 'start',
+      tools: { look: 'Papilas caliciformes (8-12) dispuestas en V abierta hacia adelante, en el límite del tercio posterior; no confundirlas con lesiones.' } });
+    R.push({ id: 'pd', label: 'Paladar duro', short: 'Paladar duro', cx: 410, cy: 236, r: 14, lx: 390, ly: 240, anchor: 'end',
       tools: {
-        look: 'Paladar duro rosado pálido, con rugosidades transversales y rafe medio; sin úlceras, petequias ni torus llamativos.',
-        palp: 'Consistencia ósea, lisa, sin masas ni dolor.'
+        look: 'Paladar duro rosado pálido, con rugosidades transversales y rafe medio; sin úlceras, petequias ni masas (el torus palatino es una variante normal).',
+        palp: 'Consistencia ósea, liso, sin masas ni dolor.'
       } });
-    R.push({ id: 'pb', label: 'Paladar blando', short: 'Paladar blando', cx: 345, cy: 275, r: 13, lx: 345, ly: 252,
+    R.push({ id: 'pb', label: 'Paladar blando', short: 'Paladar blando', cx: 345, cy: 275, r: 13, lx: 326, ly: 280, anchor: 'end',
       tools: pharyn({ say: AH, depress }) });
-    R.push({ id: 'uvula', label: 'Úvula', short: 'Úvula', cx: 410, cy: 306, r: 11, lx: 410, ly: 346,
+    R.push({ id: 'uvula', label: 'Úvula', short: 'Úvula', cx: 410, cy: 306, r: 11, lx: 396, ly: 310, anchor: 'end',
       tools: pharyn({ look: 'Úvula de ≈ 1 cm, <b>en la línea media</b>, rosada, sin edema ni desviación.', say: AH, depress }) });
-    R.push({ id: 'pilR', label: 'Pilares amigdalinos derechos', short: 'Pilares', cx: 292, cy: 338, r: 11, lx: 270, ly: 400,
-      tools: pharyn({ look: 'Pilar anterior (palatogloso) y posterior (palatofaríngeo) simétricos, rosados, sin eritema ni asimetría ni desplazamiento.', say: AH, depress }) });
+    R.push({ id: 'pilR', label: 'Pilares amigdalinos derechos', short: 'Pilares', cx: 292, cy: 338, r: 11, lx: 268, ly: 372,
+      tools: pharyn({ look: 'Pilares anterior (palatogloso) y posterior (palatofaríngeo) simétricos y rosados, sin eritema ni desplazamiento.', say: AH, depress }) });
     R.push({ id: 'pilL', label: 'Pilares amigdalinos izquierdos', short: '', cx: 528, cy: 338, r: 11,
       tools: pharyn({ look: 'Pilares simétricos con los del lado derecho, rosados y sin lesiones.', say: AH, depress }) });
-    R.push({ id: 'amiR', label: 'Amígdala derecha', short: 'Amígdalas', cx: 322, cy: 333, r: 15, lx: 322, ly: 300,
-      tools: pharyn({ look: '<b>Amígdala grado 0-1</b> (escala de Brodsky: 0 = dentro de la fosa; 1 = ocupa &lt; 25 % de la orofaringe): rosada, simétrica, con criptas visibles, <b>sin exudado, eritema ni detritus</b>; sin asimetría.', say: AH, depress }) });
-    R.push({ id: 'amiL', label: 'Amígdala izquierda', short: '', cx: 498, cy: 333, r: 15,
-      tools: pharyn({ look: 'Amígdala grado 0-1, simétrica con la derecha, rosada y sin exudado.', say: AH, depress }) });
-    R.push({ id: 'pared', label: 'Pared posterior de la faringe', short: 'Pared posterior', cx: 458, cy: 322, r: 13, lx: 458, ly: 300,
-      tools: pharyn({ look: 'Pared faríngea posterior rosada y húmeda, con algunos folículos linfoides pequeños (normales); sin secreción postnasal, enrojecimiento ni cobblestoning.', say: AH, depress }) });
+    R.push({ id: 'amiR', label: 'Amígdala palatina derecha', short: 'Amígdalas', cx: 322, cy: 333, r: 15, lx: 322, ly: 300,
+      tools: pharyn({ look: '<b>Amígdalas</b> dentro de la fosa amigdalina o que apenas sobresalen (grado 0-1 de Brodsky), rosadas, simétricas, con criptas visibles; <b>sin exudado, eritema ni detritus</b>.', say: AH, depress }) });
+    R.push({ id: 'amiL', label: 'Amígdala palatina izquierda', short: '', cx: 498, cy: 333, r: 15,
+      tools: pharyn({ look: 'Amígdala izquierda de igual tamaño que la derecha, rosada y sin exudado.', say: AH, depress }) });
+    R.push({ id: 'pared', label: 'Pared posterior de la faringe', short: 'Pared posterior', cx: 458, cy: 322, r: 13, lx: 476, ly: 300, anchor: 'start',
+      tools: pharyn({ look: 'Pared posterior de la faringe rosada y húmeda, con algunos folículos linfoides pequeños (normal); sin secreción retronasal ni enrojecimiento.', say: AH, depress }) });
     return R;
   }
   function mouthRegionsUp() {
     const base = mouthRegions().filter(r => ['labS', 'labI', 'dS', 'dI', 'eS', 'eI'].includes(r.id));
     return base.concat([
-      { id: 'lenguaV', label: 'Cara ventral de la lengua', short: 'Cara ventral', cx: 410, cy: 270, r: 36, lx: 410, ly: 214,
-        tools: { look: 'Cara ventral lisa, rosada y brillante, sin lesiones. La punta toca el paladar sin dificultad: <b>movilidad lingual normal</b>.', palp: 'Blanda, sin nódulos ni induraciones; borde lateral libre de lesiones.' } },
-      { id: 'ranR', label: 'Vena ranina derecha', short: 'Vena ranina', cx: 376, cy: 320, r: 10, lx: 340, ly: 308,
-        tools: { look: 'Venas raninas <b>azuladas</b>, finas y simétricas a ambos lados del frenillo; son normales (más prominentes en el adulto mayor).' } },
+      { id: 'lenguaV', label: 'Cara ventral de la lengua', short: 'Cara ventral', cx: 410, cy: 270, r: 36, lx: 452, ly: 262, anchor: 'start',
+        tools: { look: 'Cara ventral lisa, rosada y brillante, sin lesiones; la punta alcanza el paladar: <b>movilidad lingual normal</b>.', palp: 'Blanda, sin nódulos ni induraciones; bordes laterales sin lesiones.' } },
+      { id: 'ranR', label: 'Vena ranina derecha', short: 'Vena ranina', cx: 376, cy: 320, r: 10, lx: 362, ly: 308, anchor: 'end',
+        tools: { look: 'Venas raninas <b>azuladas</b>, finas y simétricas a ambos lados del frenillo (más prominentes en el adulto mayor): normales.' } },
       { id: 'ranL', label: 'Vena ranina izquierda', short: '', cx: 444, cy: 320, r: 10,
         tools: { look: 'Vena ranina izquierda simétrica con la derecha.' } },
       { id: 'fren', label: 'Frenillo lingual', short: 'Frenillo', x: 399, y: 352, w: 22, h: 40, rx: 6, lx: 410, ly: 346,
-        tools: { look: '<b>Frenillo lingual</b>: pliegue mucoso delgado en la línea media, de longitud suficiente para que la lengua se eleve hasta el paladar y se proyecte fuera de la boca sin retraerse ni formar un "corazón" en la punta.', palp: 'Pliegue fino y elástico; sin dolor.' } },
-      { id: 'carun', label: 'Carúnculas sublinguales (conductos de Wharton)', short: 'Carúnculas', cx: 410, cy: 398, r: 11, lx: 410, ly: 424,
-        tools: { look: 'Orificios de los conductos de <b>Wharton</b> (submaxilares) a cada lado de la base del frenillo; al presionar la glándula sale saliva clara y fluida; mucosa sin enrojecimiento ni cálculos.', palp: 'Palpación bimanual del suelo de la boca: tejido blando, sin masas ni cálculos; la glándula submaxilar se nota como un pequeño abultamiento móvil.' } },
-      { id: 'suelo', label: 'Suelo de la boca', short: 'Suelo de boca', x: 270, y: 380, w: 280, h: 14, rx: 6, lx: 540, ly: 372,
-        tools: { look: 'Mucosa del suelo de la boca rosada, lisa y húmeda; sin lesiones blancas ni rojas ni úlceras.', palp: 'Blando, sin induraciones, masas ni dolor (palpación bimanual).' } }
+        tools: { look: '<b>Frenillo lingual</b>: pliegue mucoso fino en la línea media, que permite elevar la lengua hasta el paladar y protruirla sin que se retraiga.', palp: 'Fino y elástico; sin dolor.' } },
+      { id: 'carun', label: 'Carúnculas sublinguales (conductos de Wharton)', short: 'Carúnculas', cx: 410, cy: 398, r: 11, lx: 450, ly: 404, anchor: 'start',
+        tools: { look: 'Carúnculas sublinguales a cada lado de la base del frenillo (desembocadura de los conductos de <b>Wharton</b>); al comprimir la glándula sale saliva clara; sin enrojecimiento ni cálculos.', palp: TH('palpación bimanual del piso de la boca.', 'tejido blando, sin masas ni cálculos; la glándula submaxilar se nota como un abultamiento blando y móvil.') } },
+      { id: 'suelo', label: 'Piso de la boca', short: 'Piso de boca', x: 270, y: 380, w: 280, h: 14, rx: 6, lx: 540, ly: 372,
+        tools: { look: 'Mucosa del piso de la boca rosada, lisa y húmeda; sin placas blancas o rojas ni úlceras.', palp: 'Blando, sin induraciones, masas ni dolor (palpación bimanual).' } }
     ]);
   }
   function countTeeth(svg, sh) {
@@ -772,40 +779,40 @@
   const neckRegions = [
     { id: 'laring', label: 'Cartílago tiroides y laringe', short: 'Laringe', cx: 410, cy: 186, r: 13,
       tools: {
-        look: c => `Cuello cilíndrico y simétrico, de contorno liso y piel sin lesiones, cicatrices, tumefacciones ni fístulas; el cartílago tiroides (nuez${c.sex === 'F' ? ', menos prominente en la mujer' : ', más prominente en el varón'}) está en la línea media y asciende al deglutir.`,
-        palp: 'Laringe móvil lateralmente 1-2 cm y sin crepitación dolorosa (crepitación laríngea normal al desplazarla sobre la columna).'
+        look: c => TH('inspección de frente y de perfil, con el cuello en leve extensión.', `cuello cilíndrico y simétrico, de piel sin lesiones, cicatrices ni tumefacciones; el cartílago tiroides (${c.sex === 'F' ? 'poco prominente en la mujer' : 'prominente en el varón: "nuez de Adán"'}) está en la línea media y asciende al deglutir.`),
+        palp: TH('se toma la laringe entre el pulgar y el índice y se desplaza hacia los lados.', 'móvil 1-2 cm hacia ambos lados, con crepitación laríngea normal al rozar la columna; sin dolor.')
       } },
     { id: 'tiroR', label: 'Región tiroidea', short: 'Región tiroidea', cx: 410, cy: 252, r: 15, lx: 410, ly: 232,
       tools: {
-        look: 'Región infrahioidea y pretraqueal plana, sin tumefacción visible ni asimetría, con el cuello en leve extensión y con luz tangencial; al deglutir no aparece abultamiento. (Detalle de la palpación en la escena "Tiroides").',
-        palp: 'Sin masas visibles; para describir tamaño, consistencia y nódulos, ve a la escena "Tiroides".'
+        look: TH('inspección con luz tangencial, cuello en posición normal y en leve extensión, en reposo y al deglutir.', 'región pretraqueal plana, sin tumefacción visible ni al deglutir: <b>bocio grado 0 (OMS)</b>. Detalle en la escena "Tiroides".'),
+        palp: 'Sin masas; el tamaño, la consistencia y los nódulos se describen en la escena "Tiroides".'
       } },
-    { id: 'trq', label: 'Tráquea', short: 'Tráquea', cx: 410, cy: 292, r: 14, lx: 410, ly: 275,
+    { id: 'trq', label: 'Tráquea', short: 'Tráquea', cx: 410, cy: 292, r: 14, lx: 430, ly: 296, anchor: 'start',
       tools: {
         look: 'Sin desviación visible de la línea media.',
-        palp: '<b>Tráquea central y móvil</b>: con el dedo índice en la escotadura supraesternal se palpa en la línea media; los espacios entre la tráquea y el ECM de cada lado son simétricos (el dedo cae por igual a ambos lados). Sin tracción traqueal con la inspiración.'
+        palp: TH('índice en la escotadura supraesternal; se compara el espacio entre la tráquea y el esternocleidomastoideo de cada lado.', '<b>tráquea central y móvil</b>: espacios simétricos; sin tirón traqueal con la inspiración.')
       } },
     { id: 'esc', label: 'Escotadura supraesternal', short: 'Escotadura', cx: 410, cy: 338, r: 11, lx: 410, ly: 370,
       tools: {
-        look: 'Escotadura supraesternal sin retracción durante la inspiración tranquila (sin tiraje).',
-        palp: 'Tráquea palpable en la línea media, justo por encima del manubrio; sin masas ni latidos anormales.'
+        look: 'Sin retracción con la inspiración tranquila (sin tiraje).',
+        palp: 'Tráquea en la línea media, justo sobre el manubrio; sin masas ni latidos anormales.'
       } },
     { id: 'carR', label: 'Arteria carótida derecha', short: 'Carótida', cx: 380, cy: 205, r: 13, anchor: 'end', lx: 366, ly: 188,
       tools: {
-        look: 'Sin pulsaciones visibles de la carótida con el paciente sentado o a 45°.',
-        palp: c => `<b>Pulso carotídeo</b> palpado con el pulgar o con índice y medio, medial al esternocleidomastoideo y a la altura del cartílago tiroides, de <b>un lado a la vez</b> (nunca ambos simultáneamente): ascenso rápido, onda suave, de amplitud normal (similar a la del pulso radial), regular, ≈ ${c.v.hr}/min, sin frémito.`,
-        ausc: 'Con la campana sobre la carótida y el paciente en apnea breve: <b>sin soplos</b>.'
+        look: 'Latido carotídeo no visible con el paciente sentado o a 45°.',
+        palp: c => TH('índice y medio por dentro del borde anterior del esternocleidomastoideo, a la altura del cartílago tiroides, con suavidad y <b>un lado a la vez</b> (nunca ambas carótidas juntas ni masajear el seno carotídeo).', `pulso regular, ≈ ${c.v.hr}/min, de ascenso rápido y amplitud normal, igual al contralateral; sin frémito.`),
+        ausc: TH('campana sobre la carótida, con el paciente en apnea breve.', '<b>sin soplos</b>.')
       } },
     { id: 'carL', label: 'Arteria carótida izquierda', short: 'Carótida', cx: 440, cy: 205, r: 13, anchor: 'start', lx: 454, ly: 188,
       tools: {
-        look: 'Sin pulsaciones visibles.',
-        palp: 'Pulso carotídeo izquierdo, de amplitud y ritmo iguales al derecho (palpar siempre por separado, con suavidad, para no estimular el seno carotídeo: puede provocar bradicardia o hipotensión).',
+        look: 'Sin latido visible.',
+        palp: 'Pulso carotídeo izquierdo de amplitud y ritmo iguales al derecho (siempre por separado y con suavidad: el estímulo del seno carotídeo puede provocar bradicardia o hipotensión).',
         ausc: 'Sin soplos a la auscultación.'
       } },
     { id: 'yugR', label: 'Vena yugular externa derecha', short: 'V. yugular ext.', cx: 351, cy: 255, r: 11, anchor: 'end', lx: 330, ly: 240,
       tools: {
-        look: '<b>Yugular externa colapsada</b> (no visible) con el paciente sentado a 45°-90°. Solo se ve ingurgitada en decúbito (por gravedad); el límite superior de la columna yugular interna no sube más de 3 cm por encima del ángulo esternal (PVY ≤ 8 cm H₂O) a 45°. Usa el control del panel inferior para cambiar la inclinación del paciente.',
-        palp: 'No se palpa pulso; la vena se colapsa con la presión del dedo en el extremo inferior.'
+        look: TH('paciente a 45° con luz tangencial; se observan la yugular externa y el nivel superior de la columna de la yugular interna respecto del ángulo esternal.', 'yugular externa <b>colapsada</b> (no visible) a 45°-90° y llena solo en decúbito; la columna de la yugular interna no sube más de 3-4 cm sobre el ángulo esternal (presión venosa normal). Usa el control inferior para cambiar la inclinación.'),
+        palp: 'Sin latido palpable; la vena se colapsa al comprimirla en su extremo inferior.'
       } },
     { id: 'yugL', label: 'Vena yugular externa izquierda', short: 'V. yugular ext.', cx: 469, cy: 255, r: 11, anchor: 'start', lx: 490, ly: 240,
       tools: {
@@ -814,21 +821,21 @@
       } },
     { id: 'ecmR', label: 'Esternocleidomastoideo derecho', short: 'ECM', cx: 352, cy: 140, r: 14, anchor: 'end', lx: 334, ly: 120,
       tools: {
-        look: 'Músculo visible y simétrico, de borde anterior bien definido al rotar la cabeza; sin hipertrofia, atrofia ni retracción.',
-        palp: 'Músculo blando, sin masas ni dolor; <b>fuerza 5/5</b> al rotar la cabeza contra la resistencia de la mano del examinador (XI par).',
-        move: 'Rotación contra resistencia: el ECM contralateral se contrae y se hace visible; fuerza simétrica.'
+        look: 'Músculo visible y simétrico, de borde anterior nítido al rotar la cabeza; sin hipertrofia ni atrofia.',
+        palp: 'Blando, sin masas ni dolor.',
+        move: TH('rotación de la cabeza contra la mano del examinador (XI par).', 'el esternocleidomastoideo contralateral se contrae y es visible; <b>fuerza 5/5</b>, simétrica.')
       } },
     { id: 'ecmL', label: 'Esternocleidomastoideo izquierdo', short: 'ECM', cx: 468, cy: 140, r: 14, anchor: 'start', lx: 486, ly: 120,
       tools: {
         look: 'Esternocleidomastoideo simétrico con el derecho.',
-        palp: 'Sin masas ni dolor; fuerza 5/5 simétrica.',
-        move: 'Rotación contra resistencia con contracción visible del ECM; fuerza simétrica 5/5.'
+        palp: 'Sin masas ni dolor.',
+        move: 'Rotación contra resistencia con contracción visible del músculo; fuerza 5/5 simétrica.'
       } },
     { id: 'trapR', label: 'Trapecio derecho', short: 'Trapecio', cx: 215, cy: 322, r: 18, lx: 215, ly: 296,
       tools: {
-        look: 'Contorno del trapecio y de la línea del hombro simétricos, sin atrofia, fasciculaciones ni asimetría de altura de los hombros.',
-        palp: 'Músculo de tono y volumen normales, sin puntos dolorosos.',
-        move: '<b>Elevación de los hombros contra resistencia</b>: fuerza 5/5 simétrica; el paciente vence la presión del examinador (XI par).'
+        look: 'Contorno del trapecio y altura de los hombros simétricos, sin atrofia ni fasciculaciones.',
+        palp: 'Tono y volumen normales, sin puntos dolorosos.',
+        move: TH('<b>elevación de los hombros contra resistencia</b> (XI par).', 'fuerza 5/5, simétrica.')
       } },
     { id: 'trapL', label: 'Trapecio izquierdo', short: 'Trapecio', cx: 605, cy: 322, r: 18, lx: 605, ly: 296,
       tools: {
@@ -921,7 +928,7 @@
       rd.innerHTML = `<b>Inclinación ${a}°</b>: ` + (a <= 15
         ? 'la yugular externa <b>se llena</b> y es visible (normal en decúbito: la vena queda por debajo de la aurícula derecha).'
         : a < 45 ? 'la yugular externa se ve parcialmente, con llenado decreciente al incorporar al paciente.'
-          : 'yugular externa <b>colapsada</b> (no visible), como es normal a 45°-90°. La yugular interna normal no sube más de 3 cm sobre el ángulo esternal (PVY normal).');
+          : 'yugular externa <b>colapsada</b> (no visible), como es normal a 45°-90°. La columna de la yugular interna no sube más de 3-4 cm sobre el ángulo esternal (presión venosa normal).');
     };
     sl.addEventListener('input', upd);
     upd();
@@ -959,57 +966,57 @@
     tween(1500, u => { const k = u < .35 ? u / .35 : u < .55 ? 1 : 1 - (u - .55) / .45; g.setAttribute('transform', `translate(0 ${(-20 * k).toFixed(1)})`); }, () => g.removeAttribute('transform'));
     ctx.sh.say('(traga un sorbo de agua)', 'yes', 1700);
   };
+  const OMS = 'grados OMS: 0 = no palpable ni visible; I = palpable pero no visible con el cuello en posición normal; II = visible con el cuello en posición normal';
   const thyRegions = [
     { id: 'cart', label: 'Cartílago tiroides', short: 'C. tiroides', cx: 410, cy: 144, r: 26, lx: 410, ly: 108,
       tools: {
-        look: 'Prominencia laríngea ("nuez") en la línea media; asciende y desciende con la deglución.',
-        ant: 'Se palpa como un escudo duro en la línea media, a la altura de C4-C5; punto de referencia superior para ubicar la glándula.',
-        post: 'Desde atrás se localiza el cartílago tiroides y por debajo el cricoides como puntos de referencia.',
-        swallow: { html: 'El cartílago tiroides <b>asciende 1-3 cm</b> con la deglución y regresa a su posición.', run: swallow }
+        look: 'Prominencia laríngea ("nuez") en la línea media; asciende con la deglución.',
+        ant: 'Escudo duro en la línea media (C4-C5): referencia superior para ubicar la glándula.',
+        post: 'Desde atrás se identifican el cartílago tiroides y, por debajo, el cricoides.',
+        swallow: { html: 'El cartílago tiroides <b>asciende 1-3 cm</b> con la deglución y vuelve a su posición.', run: swallow }
       } },
     { id: 'crico', label: 'Cartílago cricoides', short: 'Cricoides', cx: 410, cy: 205, r: 12,
       tools: {
-        ant: 'Anillo duro por debajo del cartílago tiroides (C6): el <b>istmo</b> se busca por debajo de él, sobre los anillos traqueales 2.º-4.º.',
-        post: 'Se identifica como anillo completo bajo el tiroides: referencia para situar el istmo debajo.',
+        ant: 'Anillo duro bajo el cartílago tiroides (C6); el <b>istmo</b> se busca justo por debajo, sobre los anillos traqueales 2.º a 4.º.',
+        post: 'Referencia para colocar los dedos: el istmo queda debajo del cricoides.',
         look: 'No visible.'
       } },
     { id: 'lobR', label: 'Lóbulo derecho', short: 'Lóbulo D', x: 332, y: 206, w: 56, h: 140, rx: 26, lx: 330, ly: 200, anchor: 'end',
       tools: {
-        look: 'Sin aumento de volumen ni asimetría visible en reposo ni con la cabeza en leve extensión.',
-        ant: { html: '<b>Palpación anterior</b> (examinador frente al paciente): se desplaza la tráquea hacia el lado explorado con un dedo de una mano y con el pulgar/dedos de la otra, por detrás del ECM, se palpa el lóbulo. <b>Lóbulo derecho no palpable o apenas palpable</b> (algo mayor que el izquierdo); si se palpa: blando-elástico, liso, indoloro, de ≈ 4-6 cm de longitud y 1-2 cm de ancho. <b>Sin nódulos</b>.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
-        post: { html: '<b>Palpación posterior</b> (examinador detrás del paciente, con el cuello ligeramente flexionado): con los dedos índice y medio sobre ambos lados de la tráquea, bajo el cricoides, el paciente traga un sorbo de agua y el lóbulo desliza bajo los dedos. Lóbulo <b>no palpable o ligeramente</b>, blando, liso, sin nódulos; el peso normal de la glándula es de <b>15-25 g</b>.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
-        swallow: { html: 'El lóbulo <b>asciende con la deglución</b> (la glándula está unida a la tráquea y la laringe por la fascia pretraqueal) y se desliza bajo los dedos.', run: swallow },
-        ausc: 'Con la campana sobre el lóbulo (paciente en apnea): <b>sin soplos ni frémito</b>.'
+        look: TH('inspección tangencial con el cuello en posición normal y en leve extensión, en reposo y al deglutir.', `sin aumento de volumen ni asimetría: <b>bocio grado 0</b> (${OMS}).`),
+        ant: { html: TH('<b>palpación anterior</b>: examinador frente al paciente, cuello relajado; con el pulgar de una mano desplaza el cartílago tiroides hacia el lado que explora y con el pulgar e índice de la otra palpa el lóbulo por dentro del esternocleidomastoideo mientras el paciente traga.', '<b>lóbulo no palpable o apenas palpable</b>; si se palpa, blando-elástico, liso, indoloro, de ≈ 4-5 cm de alto y 2 cm de ancho, <b>sin nódulos</b>.'), run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
+        post: { html: TH('<b>palpación posterior</b>: examinador detrás del paciente sentado, cuello en leve flexión; índices y medios de ambas manos a los lados de la tráquea, bajo el cricoides; el paciente traga un sorbo de agua.', 'el lóbulo se desliza bajo los dedos: no palpable o apenas palpable, blando, liso, sin nódulos; glándula de ≈ 15-25 g.'), run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
+        swallow: { html: 'El lóbulo <b>asciende con la deglución</b> (la glándula está fijada a la laringe y la tráquea por la fascia pretraqueal) y se desliza bajo los dedos.', run: swallow },
+        ausc: TH('campana sobre cada lóbulo, con el paciente en apnea breve.', '<b>sin soplos ni frémito</b>.')
       } },
     { id: 'lobL', label: 'Lóbulo izquierdo', short: 'Lóbulo I', x: 432, y: 206, w: 56, h: 140, rx: 26, lx: 490, ly: 200, anchor: 'start',
       tools: {
-        look: 'Sin aumento de volumen; simétrico con el derecho.',
-        ant: { html: 'Lóbulo izquierdo <b>no palpable o apenas</b>; blando, elástico, liso e indoloro; sin nódulos ni adenopatías vecinas. Consistencia semejante a la del derecho.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
-        post: { html: 'Lóbulo izquierdo no palpable o ligeramente palpable, de consistencia elástica y superficie lisa; sin nódulos, dolor ni soplos; asciende al deglutir.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
+        look: 'Sin aumento de volumen; simétrico con el derecho (bocio grado 0).',
+        ant: { html: 'Lóbulo izquierdo <b>no palpable o apenas palpable</b>; blando-elástico, liso e indoloro; sin nódulos; consistencia igual a la del derecho.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
+        post: { html: 'Desde atrás, con la deglución, el lóbulo izquierdo se desliza bajo los dedos: no palpable o apenas, blando, liso y sin nódulos.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
         swallow: { html: 'Asciende con la deglución, de forma simétrica con el derecho.', run: swallow },
         ausc: 'Sin soplos.'
       } },
     { id: 'istmo', label: 'Istmo tiroideo', short: 'Istmo', x: 388, y: 228, w: 44, h: 28, rx: 8, lx: 410, ly: 270,
       tools: {
-        look: 'Con luz tangencial: sin abultamiento pretraqueal visible; al deglutir se ve un ligero ascenso.',
-        ant: { html: '<b>Istmo</b>: puente de tejido, a nivel de los anillos traqueales 2.º-4.º, de ≈ 1-2 cm de ancho y 2-6 mm de grosor; <b>palpable de forma ocasional</b> como una banda blanda, lisa e indolora que cruza la línea media.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
-        post: { html: 'Istmo palpable de forma ocasional: banda blanda y lisa sobre la tráquea que se desliza <b>hacia arriba al deglutir</b>; sin nódulos.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
-        swallow: { html: 'Con la deglución el istmo asciende junto con la laringe (≈ 1-2 cm) y cruza bajo los dedos como una banda blanda y lisa: sin nódulos. <b>Consistencia elástica</b>.', run: swallow },
+        look: 'Con luz tangencial no hay abultamiento pretraqueal; al deglutir se ve un ligero ascenso.',
+        ant: { html: TH('pulgar sobre la línea media, bajo el cricoides, mientras el paciente traga.', '<b>istmo</b> (≈ 1-2 cm de ancho) palpable solo de forma ocasional, como una banda blanda y lisa que asciende al deglutir; sin nódulos.'), run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 2) },
+        post: { html: 'Desde atrás, con los índices bajo el cricoides: istmo no palpable o banda blanda y lisa que sube al deglutir; sin nódulos.', run: ctx => fingers(ctx.svg, ctx.point.x, ctx.point.y, 1500, 3) },
+        swallow: { html: 'Con la deglución el istmo asciende junto con la laringe (≈ 1-2 cm) y pasa bajo los dedos como una banda blanda y lisa.', run: swallow },
         ausc: 'Sin soplos.'
       } },
     { id: 'trq2', label: 'Tráquea', short: 'Tráquea', cx: 410, cy: 395, r: 20, lx: 410, ly: 366,
       tools: {
-        look: 'Línea media, sin desviación.',
-        ant: '<b>Tráquea central</b>: espacios laterales a la tráquea simétricos; anillos cartilaginosos palpables.',
+        look: 'En la línea media, sin desviación.',
+        ant: '<b>Tráquea central</b>: espacios laterales simétricos; anillos cartilaginosos palpables.',
         post: 'Tráquea en la línea media entre ambos lóbulos, sin desviación.'
       } },
     { id: 'esc2', label: 'Escotadura supraesternal', short: 'Escotadura', cx: 410, cy: 520, r: 14, lx: 410, ly: 560,
       tools: {
-        look: 'Sin retracción ni masa.',
-        ant: 'Tráquea palpable en la línea media; el dedo queda equidistante de ambos ECM.'
+        look: 'Sin retracción ni masas.',
+        ant: 'Tráquea palpable en la línea media; el dedo queda equidistante de ambos esternocleidomastoideos.'
       } }
   ];
-
   /* ============================================================ 8. GANGLIOS */
   let seen = new Set();
   const NODE_N = 9;
@@ -1019,12 +1026,13 @@
       const lbl = ctx.svg.parentNode.querySelector('#hnNodeCnt');
       if (lbl) lbl.textContent = `Cadenas exploradas: ${seen.size}/${NODE_N}`;
       fingers(ctx.svg, ctx.point.x, ctx.point.y, 1300, 3);
-      if (seen.size === NODE_N) ctx.sh.log('<b>Exploración completa de las 9 cadenas.</b> Todas normales: no palpables, o &lt; 1 cm, blandas, móviles e indoloras.', 'find');
+      if (seen.size === NODE_N) ctx.sh.log('<b>Exploración completa de las 9 cadenas.</b> Sin adenopatías: ganglios no palpables o &lt; 1 cm, blandos, móviles e indoloros.', 'find');
     };
   }
-  const NODE_LOOK = 'Sin adenopatías visibles; piel suprayacente normal.';
+  const NODE_LOOK = 'Sin adenopatías visibles ni asimetrías; piel suprayacente normal.';
   function nodeTxt(zone, drain) {
-    return `<b>${zone}</b>: ganglios <b>no palpables</b> o, si se palpan, de <b>menos de 1 cm</b>, blandos, de bordes lisos, móviles sobre los planos profundos e <b>indoloros</b>; la piel suprayacente es normal. Drena: ${drain}.`;
+    return TH(`palpación de la cadena <b>${zone}</b> con las yemas de 2-3 dedos, en círculos suaves, comparando ambos lados.`,
+      `ganglios <b>no palpables</b> o, si se palpan, de <b>menos de 1 cm</b>, de consistencia blanda, lisos, <b>móviles</b> (no adheridos a la piel ni a planos profundos) e <b>indoloros</b>; piel suprayacente normal. Drenan: ${drain}.`);
   }
   function nodesSvg(learn, c) {
     const hair = ageOld(c) ? '#c8ccd2' : (c.sex === 'F' ? '#4a2f20' : '#3a2a1e');
@@ -1051,57 +1059,71 @@
     tools: { look: NODE_LOOK, palp: { html: palp, run: nodeRun(id) } }
   });
   const nodeRegions = [
-    nodeReg('pre', 'Cadena preauricular', 'Preauricular', 360, 190, '', nodeTxt('Preauricular', 'piel de la sien y región frontal lateral, párpados y conjuntiva laterales, pabellón anterior'), 332, 214, 'end'),
-    nodeReg('ret', 'Cadena retroauricular (auricular posterior)', 'Retroauricular', 436, 218, '', nodeTxt('Retroauricular (mastoidea)', 'cuero cabelludo temporoparietal posterior y la cara posterior del pabellón'), 470, 214, 'start'),
-    nodeReg('occ', 'Cadena occipital', 'Occipital', 482, 244, '', nodeTxt('Occipital', 'cuero cabelludo de la región occipital y la parte alta del cuello posterior'), 520, 244, 'start'),
-    nodeReg('ami', 'Cadena amigdalina (yugulodigástrica)', 'Amigdalino', 354, 288, '', nodeTxt('Amigdalino (yugulodigástrico, bajo el ángulo mandibular)', 'amígdalas, base de la lengua y faringe posterior'), 322, 270, 'end'),
-    nodeReg('sbm', 'Cadena submandibular', 'Submandibular', 278, 322, '', nodeTxt('Submandibular (sobre el borde inferior de la mandíbula)', 'mejilla, labios laterales, encías, lengua anterior y dientes; en personas sanas pueden palparse algunos de hasta 1 cm'), 232, 372, 'middle'),
-    nodeReg('sbt', 'Cadena submentoniana', 'Submentoniano', 232, 342, '', nodeTxt('Submentoniano (bajo la barbilla)', 'centro del labio inferior, piso de la boca, punta de la lengua e incisivos inferiores'), 150, 360, 'middle'),
-    nodeReg('cva', 'Cadena cervical anterior (yugular)', 'Cervical anterior', 352, 392, '', nodeTxt('Cervical anterior (a lo largo del borde anterior del ECM, cadena yugular)', 'faringe, laringe, tiroides y, por último, toda la cabeza y el cuello'), 320, 410, 'end'),
-    nodeReg('cvp', 'Cadena cervical posterior', 'Cervical posterior', 492, 392, '', nodeTxt('Cervical posterior (borde anterior del trapecio, triángulo posterior)', 'cuero cabelludo posterior, cuello y piel de la parte alta del tórax'), 540, 412, 'start'),
-    nodeReg('sup', 'Cadena supraclavicular', 'Supraclavicular', 430, 466, '', nodeTxt('Supraclavicular (fosa sobre la clavícula, entre el ECM y el trapecio)', 'a la derecha el mediastino, pulmón y esófago; a la izquierda (ganglio de Virchow) las vísceras abdominales; en condiciones normales no es palpable'), 470, 440, 'start')
+    nodeReg('pre', 'Cadena preauricular', 'Preauricular', 360, 190, '', nodeTxt('preauricular', 'piel de la sien y la frente lateral, párpados y conjuntiva laterales, cara anterior del pabellón'), 332, 214, 'end'),
+    nodeReg('ret', 'Cadena retroauricular (mastoidea)', 'Retroauricular', 436, 218, '', nodeTxt('retroauricular (mastoidea)', 'cuero cabelludo temporoparietal posterior y cara posterior del pabellón'), 470, 214, 'start'),
+    nodeReg('occ', 'Cadena occipital', 'Occipital', 482, 244, '', nodeTxt('occipital', 'cuero cabelludo occipital y parte alta de la nuca'), 520, 244, 'start'),
+    nodeReg('ami', 'Cadena amigdalina (yugulodigástrica)', 'Amigdalino', 354, 288, '', nodeTxt('amigdalina (yugulodigástrica, bajo el ángulo de la mandíbula)', 'amígdalas, base de la lengua y faringe'), 322, 270, 'end'),
+    nodeReg('sbm', 'Cadena submaxilar (submandibular)', 'Submaxilar', 278, 322, '', nodeTxt('submaxilar (sobre el borde inferior de la mandíbula)', 'mejilla, labios, encías, lengua anterior y dientes; en personas sanas pueden palparse algunos de hasta 1 cm'), 296, 340, 'start'),
+    nodeReg('sbt', 'Cadena submentoniana', 'Submentoniano', 232, 342, '', nodeTxt('submentoniana (bajo el mentón)', 'centro del labio inferior, piso de la boca, punta de la lengua e incisivos inferiores'), 150, 360, 'middle'),
+    nodeReg('cva', 'Cadena cervical anterior (yugular)', 'Cervical ant.', 352, 392, '', nodeTxt('cervical anterior (cadena yugular, a lo largo del borde anterior del esternocleidomastoideo)', 'faringe, laringe, tiroides y, en última instancia, toda la cabeza y el cuello'), 320, 410, 'end'),
+    nodeReg('cvp', 'Cadena cervical posterior (espinal)', 'Cervical post.', 492, 392, '', nodeTxt('cervical posterior (espinal, en el triángulo posterior, por delante del trapecio)', 'cuero cabelludo posterior, nuca y piel de la parte alta del tórax'), 540, 412, 'start'),
+    nodeReg('sup', 'Cadena supraclavicular', 'Supraclavicular', 430, 466, '', nodeTxt('supraclavicular (fosa sobre la clavícula, entre el esternocleidomastoideo y el trapecio)', 'a la derecha, mediastino, pulmón y esófago; a la izquierda (ganglio de Virchow), también las vísceras abdominales. En condiciones normales no se palpa'), 470, 440, 'start')
   ];
-
   /* ============================================================ definición del módulo */
-  const QUIZ = [
-    { q: 'Cono luminoso normal del oído derecho', options: ['A las 1 h', 'A las 3 h', 'A las 5 h', 'A las 7 h', 'A las 11 h'], a: 2,
-      why: 'En el oído derecho se ve a las 5 h (cuadrante anteroinferior); en el izquierdo a las 7 h.' },
-    { q: 'Rinne normal', options: ['Conducción ósea > aérea', 'Conducción aérea > ósea', 'Ambas iguales', 'Se oye solo en la mastoides', 'No se oye en el meato'], a: 1,
-      why: 'Rinne positivo: la conducción aérea dura aproximadamente el doble que la ósea (CA > CO).' },
-    { q: 'En el Weber normal, el diapasón en el vértex se oye', options: ['Más en el oído derecho', 'Más en el oído izquierdo', 'En ninguno', 'Solo en el oído con cerumen', 'En la línea media / por igual en ambos oídos'], a: 4,
-      why: 'El Weber no lateraliza: se oye en el centro de la cabeza o por igual en ambos oídos.' },
-    { q: 'Relación copa/disco normal en el fondo de ojo', options: ['≈ 0,3', '≈ 0,6', '≈ 0,9', '1,0', '≈ 0,1 como máximo'], a: 0,
-      why: 'La excavación fisiológica ocupa alrededor de 0,3 del disco; más de 0,6 o asimetrías > 0,2 entre ambos ojos son sospechosas.' },
-    { q: 'Calibre arteria : vena de la retina normal', options: ['1 : 1', '1 : 2', '3 : 2', '2 : 3', '4 : 1'], a: 3,
-      why: 'Las arterias son más finas que las venas: relación normal 2:3.' },
-    { q: 'Clasificación de Mallampati normal', options: ['III', 'IV', 'Solo clase 0', 'I-II', 'Solo clase IV'], a: 3,
-      why: 'Las clases I y II (se ven úvula y pilares, al menos parcialmente) indican vía aérea de fácil acceso.' },
-    { q: 'Con la deglución, el tiroides normal', options: ['Se mantiene inmóvil', 'Desciende hacia el tórax', 'Se desvía hacia un lado', 'Asciende junto con la laringe', 'Produce un soplo'], a: 3,
-      why: 'La fascia pretraqueal une el tiroides a la laringe y la tráquea: asciende al deglutir y vuelve a su sitio.' },
-    { q: 'Un ganglio cervical normal, si se palpa, es', options: ['Duro y fijo de 2 cm', '< 1 cm, blando, móvil e indoloro', 'Doloroso y caliente', 'Adherido a planos profundos', 'Solo en la región supraclavicular'], a: 1,
-      why: 'Los ganglios normales no se palpan o son pequeños (< 1 cm), blandos, móviles e indoloros.' }
-  ];
+  const quizFor = c => {
+    const hr = c.v.hr;
+    const ocular = ageOld(c)
+      ? { q: `En esta persona de ${c.age} años, un anillo blanco-grisáceo en la periferia de la córnea corresponde a…`, options: ['Queratitis', 'Ictericia', 'Arco senil (variante normal de la edad)', 'Pterigion'], a: 2,
+        why: 'El arco senil (gerontoxon) es un depósito lipídico periférico de la córnea, frecuente y sin significado patológico en el adulto mayor.' }
+      : c.age >= 45
+        ? { q: `A los ${c.age} años, con visión lejana 20/20, necesitar alejar el texto para leer de cerca corresponde a…`, options: ['Miopía', 'Presbicia fisiológica', 'Catarata', 'Glaucoma'], a: 1,
+          why: 'La presbicia es la pérdida fisiológica de la acomodación a partir de los 40-45 años; la visión lejana se conserva.' }
+        : { q: `En esta persona de ${c.age} años con agudeza 20/20, ¿cuál de estos hallazgos NO sería una variante normal?`, options: ['Pupilas de 2-4 mm, isocóricas', 'Reflejo foveal presente', 'Pulso venoso espontáneo en la papila', 'Arco corneal'], a: 3,
+          why: 'Un arco corneal antes de los 40-50 años no es un hallazgo esperable y obliga a descartar dislipidemia; los otros tres son normales.' };
+    return [
+      { q: 'Cono luminoso normal del oído derecho', options: ['A las 1 h', 'A las 3 h', 'A las 5 h', 'A las 7 h', 'A las 11 h'], a: 2,
+        why: 'En el oído derecho el cono luminoso se ve a las 5 h (cuadrante anteroinferior); en el izquierdo, a las 7 h.' },
+      { q: 'Prueba de Rinne normal', options: ['Conducción aérea > ósea (Rinne positivo)', 'Conducción ósea > aérea', 'Ambas iguales', 'Se oye solo en la mastoides', 'No se oye frente al meato'], a: 0,
+        why: 'Rinne positivo: la conducción aérea se oye más tiempo (≈ el doble) y más fuerte que la ósea.' },
+      { q: 'Clasificación de Mallampati compatible con una vía aérea de acceso fácil', options: ['III', 'IV', 'Solo clase 0', 'I-II', 'Solo clase IV'], a: 3,
+        why: 'En las clases I y II se ven la úvula (completa o en parte) y los pilares; las clases III y IV predicen vía aérea difícil.' },
+      ocular,
+      { q: 'Con la deglución, el tiroides normal', options: ['Se mantiene inmóvil', 'Desciende hacia el tórax', 'Se desvía hacia un lado', 'Asciende junto con la laringe', 'Produce un soplo'], a: 3,
+        why: 'La fascia pretraqueal fija la glándula a la laringe y la tráquea: asciende al deglutir y vuelve a su sitio; por eso se palpa haciendo tragar al paciente.' },
+      { q: 'Según la OMS, un bocio palpable pero no visible con el cuello en posición normal es de grado…', options: ['I', '0', 'II', 'III'], a: 0,
+        why: 'Grado 0: no palpable ni visible; grado I: palpable pero no visible con el cuello en posición normal; grado II: visible con el cuello en posición normal.' },
+      { q: `Pulso carotídeo esperable en esta persona (FC ${hr}/min)`, options: [`≈ ${hr - 25}/min, irregular`, `≈ ${hr + 40}/min`, `≈ ${hr}/min, regular, palpando una carótida por vez`, 'No se palpa en personas sanas'], a: 2,
+        why: 'El pulso carotídeo refleja la frecuencia cardíaca; se palpa de un lado a la vez y con suavidad para no estimular el seno carotídeo.' },
+      { q: 'Un ganglio cervical normal, si se palpa, es', options: ['Duro y fijo, de 2 cm', '< 1 cm, blando, móvil e indoloro', 'Doloroso y caliente', 'Adherido a planos profundos', 'Solo en la región supraclavicular'], a: 1,
+        why: 'Los ganglios normales no se palpan o son pequeños (&lt; 1 cm), blandos, móviles e indoloros; un ganglio supraclavicular palpable siempre es anormal.' }
+    ];
+  };
 
   injectStyle();
   NormalEngine.build({
     id: 'headneck', title: 'Cabeza y cuello (normal)', icon: '👤', group: 'Exploración normal',
-    desc: 'Exploración normal de cabeza, ojos, oído, nariz, boca y cuello, con instrumentos y animaciones.',
-    bullets: ['Cara, senos paranasales, ATM, pupilas y agudeza visual', 'Fondo de ojo y otoscopia (Rinne y Weber con diapasón)', 'Boca y orofaringe (Mallampati), tiroides y mapa de ganglios cervicales'],
+    desc: 'Exploración normal de cabeza, facies, ojos, oído, nariz, boca y fauces, cuello, tiroides y ganglios, con instrumentos y animaciones.',
+    bullets: ['Cara y facies, senos paranasales, ATM, pupilas y agudeza visual', 'Fondo de ojo y otoscopia (Rinne y Weber con diapasón)', 'Boca y fauces (Mallampati), tiroides (bocio OMS 0-II) y mapa de ganglios cervicales'],
+    refs: [
+      'Argente HA, Álvarez ME. <i>Semiología Médica</i>. Ed. Médica Panamericana — Cabeza y cuello: facies; examen del ojo y fondo de ojo; oído; nariz; boca y fauces; cuello, tiroides y ganglios linfáticos.',
+      'OMS / ICCIDD / UNICEF. Clasificación clínica del bocio por palpación: grados 0, I y II.',
+      'Mallampati SR y cols. (1985), modificada por Samsoon y Young (1987): clasificación de la vía aérea (clases I-IV).'
+    ],
     teaching: [
-      'Inspecciona antes de palpar y compara siempre ambos lados: la simetría es el primer criterio de normalidad.',
-      'Otoscopia: tracciona el pabellón hacia atrás y arriba (adulto) para enderezar el conducto y apoya la mano del otoscopio en la mejilla del paciente.',
-      'Oftalmoscopia: acércate al ojo derecho con tu ojo derecho (y viceversa), a unos 3-5 cm; sigue un vaso hacia el disco y deja la mácula para el final.',
-      'Tiroides: palpa con la deglución (sorbo de agua), por delante y por detrás; la glándula normal pesa 15-25 g y asciende con la laringe.',
-      'Ganglios: usa la yema de 2-3 dedos con movimientos circulares suaves y un orden fijo; describe tamaño, consistencia, movilidad y dolor. Carótidas: palpa de a una.'
+      'Inspecciona antes de palpar y compara siempre ambos lados: la simetría es el primer criterio de normalidad. Describe la facies (compuesta en la persona sana).',
+      'Otoscopia: tracciona el pabellón hacia atrás y arriba (adulto) para enderezar el conducto y apoya la mano que sostiene el otoscopio en la mejilla del paciente.',
+      'Oftalmoscopia: acércate al ojo derecho con tu ojo derecho (y viceversa), a 3-5 cm; sigue un vaso hacia el disco y deja la mácula para el final.',
+      'Tiroides: inspección con luz tangencial y palpación anterior y posterior mientras el paciente traga; describe tamaño (grados OMS 0-II), consistencia, superficie, nódulos, dolor y soplos.',
+      'Ganglios: yemas de 2-3 dedos en círculos suaves y con un orden fijo; describe tamaño, consistencia, movilidad (adherencia), sensibilidad y piel suprayacente. Carótidas: palpa de a una.'
     ],
     scenes: [
       { id: 'face', label: 'Cabeza y cara', viewBox: '0 0 820 600', hint: 'Inspección, palpación, percusión de senos, linterna y agudeza visual: haz clic en cada zona.',
         svg: faceSvg, regions: faceRegions, redrawOnMode: false,
         tools: [
-          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección: observa simetría, piel, cabello, ojos y fascies.' },
-          { id: 'touch', icon: '✋', label: 'Palpación / presión', hint: 'Palpación: cráneo, arteria temporal, senos (presión), ATM y glándulas.' },
+          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección: observa simetría, piel, cabello, ojos y facies.' },
+          { id: 'touch', icon: '✋', label: 'Palpación / presión', hint: 'Palpación: cráneo, arteria temporal, senos (presión), ATM y glándulas salivales.' },
           { id: 'tap', icon: '🔨', label: 'Percusión (senos)', hint: 'Percusión de los senos frontales y maxilares con el dedo.' },
-          { id: 'light', icon: '🔦', label: 'Linterna (pupilas)', hint: 'Linterna: haz clic sobre un ojo; ambas pupilas se contraen (directo y consensual).' },
+          { id: 'light', icon: '🔦', label: 'Linterna (pupilas)', hint: 'Linterna: haz clic sobre un ojo; ambas pupilas se contraen (reflejo directo y consensual).' },
           { id: 'snellen', icon: '🔤', label: 'Agudeza visual', hint: 'Cartilla de Snellen a 6 m, cada ojo por separado.' }
         ] },
       { id: 'fundus', label: 'Fondo de ojo', viewBox: '0 0 800 520', redrawOnMode: true,
@@ -1136,9 +1158,9 @@
           { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección del pabellón, la mastoides y el meato.' },
           { id: 'pull', icon: '🤏', label: 'Tracción del pabellón / trago', hint: 'Tracción del pabellón hacia atrás y arriba y presión del trago.' },
           { id: 'oto', icon: '🔦', label: 'Otoscopio', hint: 'Otoscopio: haz clic en las estructuras de la membrana timpánica (círculo de la derecha).' },
-          { id: 'pneu', icon: '💨', label: 'Neumootoscopia', hint: 'Neumootoscopia: haz clic sobre la membrana para ver su movilidad.' },
-          { id: 'fork', icon: '🎵', label: 'Diapasón 512 Hz', hint: 'Rinne: mastoides y luego meato. Weber: vértex. Se oye un tono de diapasón.' },
-          { id: 'whisper', icon: '🗣️', label: 'Voz susurrada', hint: 'Voz susurrada a 60 cm, haz clic en el meato.' }
+          { id: 'pneu', icon: '💨', label: 'Otoscopia neumática', hint: 'Otoscopia neumática: haz clic sobre la membrana para ver su movilidad.' },
+          { id: 'fork', icon: '🎵', label: 'Diapasón (256-512 Hz)', hint: 'Rinne: mastoides y luego meato. Weber: vértex. Se oye un tono de diapasón.' },
+          { id: 'whisper', icon: '🗣️', label: 'Voz cuchicheada', hint: 'Voz cuchicheada a 60 cm: haz clic en el meato.' }
         ],
         after(stage, sh, ctx) {
           seg(stage, [['D', 'Oído derecho'], ['I', 'Oído izquierdo']], earSide, v => { earSide = v; ctx.scene.enter(stage, sh); });
@@ -1152,15 +1174,15 @@
           { id: 'occl', icon: '👃', label: 'Permeabilidad (ocluir una fosa)', hint: 'Ocluye una fosa haciendo clic en el ala nasal: el aire debe pasar por la otra.' },
           { id: 'spec', icon: '🔦', label: 'Rinoscopia (espéculo + luz)', hint: 'Rinoscopia anterior: haz clic en tabique y cornetes de cada fosa.' }
         ] },
-      { id: 'mouth', label: 'Boca y orofaringe', viewBox: '0 0 820 600', redrawOnMode: false,
-        hint: 'Linterna, depresor lingual y "diga ah": explora labios, dientes, encías, lengua y orofaringe.',
+      { id: 'mouth', label: 'Boca y fauces', viewBox: '0 0 820 600', redrawOnMode: false,
+        hint: 'Linterna, depresor lingual y "diga ah": explora labios, dientes, encías, lengua y fauces.',
         svg: mouthSvg, get regions() { return tongueUp ? mouthRegionsUp() : mouthRegions(); },
         tools: [
           { id: 'look', icon: '🔦', label: 'Inspección con linterna', hint: 'Inspección con linterna: haz clic en cada estructura.' },
-          { id: 'depress', icon: '🥄', label: 'Depresor lingual', hint: 'Depresor lingual: baja la lengua para ver la orofaringe.' },
+          { id: 'depress', icon: '🥄', label: 'Depresor lingual', hint: 'Depresor lingual: baja la lengua para ver las fauces.' },
           { id: 'say', icon: '🗣️', label: 'Pedir "ah"', hint: 'Pide al paciente decir "ah": observa cómo se elevan el paladar blando y la úvula.' },
-          { id: 'mall', icon: '👅', label: 'Mallampati (lengua fuera)', hint: 'Mallampati: boca abierta, lengua fuera sin fonar; haz clic en la orofaringe.' },
-          { id: 'palp', icon: '✋', label: 'Palpación', hint: 'Palpa labios, encías, lengua y paladar.' },
+          { id: 'mall', icon: '👅', label: 'Mallampati (lengua afuera)', hint: 'Mallampati: boca abierta, lengua afuera sin fonar; haz clic en las fauces.' },
+          { id: 'palp', icon: '✋', label: 'Palpación', hint: 'Palpa labios, encías, lengua y paladar (con guantes).' },
           { id: 'smell', icon: '👃', label: 'Aliento', hint: 'Valora el olor del aliento (clic en los labios).' }
         ],
         after(stage, sh, ctx) {
@@ -1168,7 +1190,7 @@
           P.className = 'hn-panel';
           P.innerHTML = `
             <div class="hn-box"><h5>Lengua</h5>
-              <div class="hn-btns"><button id="hnUp" class="${tongueUp ? 'on' : ''}">${tongueUp ? 'Lengua elevada (ver dorso)' : 'Elevar la lengua (suelo de la boca)'}</button></div></div>
+              <div class="hn-btns"><button id="hnUp" class="${tongueUp ? 'on' : ''}">${tongueUp ? 'Lengua elevada (ver dorso)' : 'Elevar la lengua (piso de la boca)'}</button></div></div>
             <div class="hn-box"><h5>Clasificación de Mallampati (referencia)</h5>
               <div class="hn-btns" id="hnMB"><button data-k="I">I</button><button data-k="II">II</button><button data-k="III">III</button><button data-k="IV">IV</button></div>
               <div class="hn-read" id="hnMR">Haz clic en una clase para ver qué estructuras se visualizan.</div></div>`;
@@ -1196,21 +1218,21 @@
           { id: 'move', icon: '💪', label: 'Fuerza ECM / trapecio', hint: 'Rotación del cuello y elevación de los hombros contra resistencia (XI par).' }
         ] },
       { id: 'thyroid', label: 'Tiroides', viewBox: '0 0 820 600', redrawOnMode: true,
-        hint: 'Compara la palpación anterior y posterior; pide al paciente que trague para ver ascender la glándula.',
+        hint: 'Compara la palpación anterior y posterior (técnica de Argente); pide al paciente que trague para ver ascender la glándula.',
         svg: thySvg, regions: thyRegions,
         tools: [
-          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección tangencial de la región tiroidea.' },
-          { id: 'ant', icon: '🤚', label: 'Palpación anterior', hint: 'Palpación anterior: examinador frente al paciente, desplazando la tráquea.' },
+          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección tangencial de la región tiroidea, en reposo y al deglutir (bocio OMS 0-II).' },
+          { id: 'ant', icon: '🤚', label: 'Palpación anterior', hint: 'Palpación anterior: examinador frente al paciente, desplazando la laringe hacia el lado explorado.' },
           { id: 'post', icon: '🙌', label: 'Palpación posterior', hint: 'Palpación posterior: examinador detrás del paciente, con los dedos bajo el cricoides.' },
           { id: 'swallow', icon: '🥤', label: 'Pedir deglutir', hint: 'Pide al paciente tragar un sorbo de agua y observa el ascenso.' },
           { id: 'ausc', icon: '🩺', label: 'Auscultación', hint: 'Campana sobre los lóbulos: no debe haber soplo.' }
         ] },
       { id: 'nodes', label: 'Ganglios cervicales', viewBox: '0 0 820 600', redrawOnMode: false,
-        hint: 'Palpa las 9 cadenas con la yema de 2-3 dedos, en orden: preauricular, retroauricular, occipital, amigdalino, submandibular, submentoniano, cervical anterior, cervical posterior y supraclavicular.',
+        hint: 'Palpa las 9 cadenas con la yema de 2-3 dedos, en orden: preauricular, retroauricular, occipital, amigdalina, submaxilar, submentoniana, cervical anterior, cervical posterior y supraclavicular.',
         svg: nodesSvg, regions: nodeRegions,
         tools: [
           { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección: busca abultamientos o asimetrías.' },
-          { id: 'palp', icon: '🤚', label: 'Palpación (yemas, en círculos)', hint: 'Palpación suave con movimientos circulares sobre cada cadena.' }
+          { id: 'palp', icon: '🤚', label: 'Palpación (yemas, en círculos)', hint: 'Palpación suave con movimientos circulares sobre cada cadena; describe tamaño, consistencia, movilidad y sensibilidad.' }
         ],
         after(stage, sh, ctx) {
           seen = new Set();
@@ -1220,6 +1242,6 @@
           stage.appendChild(t);
         } }
     ],
-    quiz: QUIZ
+    quiz: quizFor
   });
 })();

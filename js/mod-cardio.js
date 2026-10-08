@@ -95,9 +95,9 @@
   const FOCI = {
     ao: { x: 190, y: 149, n: 'Foco aórtico', pos: '2.º espacio intercostal (EIC), borde esternal derecho' },
     pu: { x: 230, y: 149, n: 'Foco pulmonar', pos: '2.º EIC, borde esternal izquierdo' },
-    er: { x: 230, y: 181, n: 'Punto de Erb (foco aórtico accesorio)', pos: '3.er EIC, borde esternal izquierdo' },
+    er: { x: 230, y: 181, n: 'Foco mesocárdico (Erb)', pos: '3.er EIC, borde esternal izquierdo' },
     tr: { x: 230, y: 213, n: 'Foco tricuspídeo', pos: '4.º-5.º EIC, borde esternal izquierdo (cerca del apéndice xifoides)' },
-    mi: { x: 275, y: 246, n: 'Foco mitral (ápex)', pos: '5.º EIC, línea medioclavicular izquierda' }
+    mi: { x: 275, y: 246, n: 'Foco mitral (apexiano)', pos: '5.º EIC, línea medioclavicular izquierda' }
   };
 
   function torsoSvg(learn) {
@@ -129,14 +129,14 @@
   function ictusText(c) {
     const p = S.posture;
     if (p === 'lat') {
-      return `En decúbito lateral izquierdo el choque de la punta se desplaza ≈2-3 cm hacia la axila y se hace más amplio (hasta ≈3 cm) y más fácil de palpar: es normal en esta posición. Para decidir si está desplazado hay que medirlo en <b>decúbito dorsal</b>.`;
+      return `En decúbito lateral izquierdo el choque de la punta se desplaza ≈2-3 cm hacia la axila y se hace más amplio y fácil de palpar: es normal en esta posición. Para decidir si está desplazado hay que localizarlo en <b>decúbito dorsal</b>.`;
     }
     if (p === 'sen') {
-      return `Sentado el impulso apical es más tenue y a veces no se palpa; no es anormal. Si no se encuentra, repita en decúbito dorsal y luego en decúbito lateral izquierdo.`;
+      return `Sentado el choque de la punta es más tenue y a veces no se palpa: no es anormal. Si no se encuentra, repetir en decúbito dorsal y luego en decúbito lateral izquierdo.`;
     }
-    return `<b>Choque de la punta palpable</b> en el 5.º EIC, <b>en o ligeramente dentro de la línea medioclavicular izquierda</b> (≤10 cm de la línea media), ` +
-      `de <b>≈2 cm de diámetro</b> (una yema de dedo, hasta 2-3 cm), <b>breve</b> (golpe seco de baja amplitud en la primera parte de la sístole, no llega al S2), ` +
-      `sincrónico con el pulso carotídeo. Sin levantamientos sostenidos ni segundo impulso.`;
+    return `<i>Técnica:</i> palma y luego pulpejos de los dedos sobre el ápex, en decúbito dorsal. <i>Hallazgo normal:</i> <b>choque de la punta</b> en el 5.º EIC, <b>en o por dentro de la línea medioclavicular izquierda</b>, ` +
+      `de <b>≈2 cm de diámetro</b> (una yema de dedo), <b>breve</b> (golpe suave de la primera parte de la sístole, no alcanza el R2), ` +
+      `sincrónico con el pulso carotídeo. Sin levantamientos sostenidos ni frémito.`;
   }
 
   const precordio = {
@@ -144,7 +144,7 @@
     hint: 'Inspecciona y palpa el precordio con el paciente en decúbito dorsal; cambia la posición para ver su efecto sobre el choque de la punta.',
     svg: learn => torsoSvg(learn),
     tools: [
-      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Mira de frente y tangencialmente: abombamientos, cicatrices, pulsaciones visibles (ictus).' },
+      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Mira de frente y tangencialmente: abombamientos, cicatrices, latidos visibles (choque de la punta).' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Palma/yemas: choque de la punta en el 5.º EIC, levantamientos paraesternales y frémitos en la base.' },
       { id: 'loc', icon: '📍', label: 'Localizar foco', hint: 'Haz clic en un foco para ver su localización anatómica; cuenta los EIC desde el ángulo esternal.' }
     ],
@@ -169,24 +169,24 @@
         id: 'ao', label: 'Foco aórtico', short: 'Aórtico', cx: 190, cy: 149, r: 13, lx: 176, ly: 153, anchor: 'end',
         tools: {
           insp: 'Sin abombamiento ni latidos visibles. Tórax simétrico, sin cicatrices ni deformidades (sin pectus ni cifoescoliosis marcada).',
-          palp: 'Sin frémito (thrill) ni latidos palpables. No se palpa el componente aórtico del S2.',
-          loc: `${FOCI.ao.n}: ${FOCI.ao.pos}. Aquí se oye mejor el cierre de la válvula aórtica (A2) y el flujo eyectivo hacia la aorta ascendente.`
+          palp: 'Sin <b>frémito</b> ni latidos palpables; no se palpa el cierre aórtico del R2.',
+          loc: `${FOCI.ao.n}: ${FOCI.ao.pos}. Aquí se oye mejor el componente aórtico del R2 (A2) y los soplos eyectivos aórticos.`
         }
       },
       {
         id: 'pu', label: 'Foco pulmonar', short: 'Pulmonar', cx: 230, cy: 149, r: 13, lx: 244, ly: 153, anchor: 'start',
         tools: {
           insp: 'Sin abombamiento ni pulsaciones visibles.',
-          palp: 'Sin frémito. No se palpa un P2 (en jóvenes delgados puede percibirse levemente sin significado patológico).',
-          loc: `${FOCI.pu.n}: ${FOCI.pu.pos}. Se oye mejor el cierre pulmonar (P2) y el flujo del tracto de salida del ventrículo derecho.`
+          palp: 'Sin frémito. No se palpa el componente pulmonar del R2 (en jóvenes delgados puede percibirse levemente sin significado patológico).',
+          loc: `${FOCI.pu.n}: ${FOCI.pu.pos}. Se oye mejor el componente pulmonar del R2 (P2) y su desdoblamiento fisiológico en inspiración.`
         }
       },
       {
-        id: 'er', label: 'Punto de Erb', short: 'Erb', cx: 230, cy: 181, r: 13, lx: 244, ly: 185, anchor: 'start',
+        id: 'er', label: 'Foco mesocárdico (Erb)', short: 'Mesocárdico', cx: 230, cy: 181, r: 13, lx: 246, ly: 185, anchor: 'start',
         tools: {
-          insp: 'Sin pulsaciones ni abombamientos visibles.',
+          insp: 'Sin latidos ni abombamientos visibles.',
           palp: 'Sin frémito ni latidos palpables.',
-          loc: `${FOCI.er.n}: ${FOCI.er.pos}. Foco accesorio donde se perciben bien los fenómenos de las válvulas aórtica y pulmonar.`
+          loc: `${FOCI.er.n}: ${FOCI.er.pos}. Foco donde se perciben bien los fenómenos de las válvulas aórtica y pulmonar (p. ej. el soplo regurgitativo aórtico).`
         }
       },
       {
@@ -198,23 +198,23 @@
         }
       },
       {
-        id: 'mi', label: 'Foco mitral · choque de la punta', short: 'Mitral / ictus', cx: 275, cy: 246, r: 14, lx: 275, ly: 272, anchor: 'middle',
+        id: 'mi', label: 'Foco mitral · choque de la punta', short: 'Mitral / punta', cx: 275, cy: 246, r: 14, lx: 275, ly: 272, anchor: 'middle',
         tools: {
           insp: (c, ctx) => {
             const vis = bmi(c) < 25.2 && !elder(c) && S.posture !== 'sen';
             if (vis) {
               return {
-                html: 'En decúbito dorsal se aprecia una <b>pequeña pulsación en el 5.º EIC, en o dentro de la LMC</b>, de ≈2 cm, sincrónica con el pulso (el ictus es visible solo en una parte de las personas sanas, sobre todo si son delgadas). Sin abombamientos precordiales ni retracciones sistólicas.',
+                html: 'En decúbito dorsal se ve un <b>pequeño latido en el 5.º EIC, en o por dentro de la LMC</b>, de ≈2 cm, sincrónico con el pulso (el choque de la punta solo es visible en una parte de las personas sanas, sobre todo delgadas). Sin abombamientos precordiales ni retracciones sistólicas.',
                 run: x => pulseFx(x.svg, x.point, c.v.hr, 4, { col: '#e0a030', r0: 4, dr: 9 })
               };
             }
-            return 'No se visualiza el ictus: es normal (en adultos con tórax grueso, mayores o en posición sentada con frecuencia no se ve). Sin abombamientos, sin retracciones sistólicas, tórax simétrico.';
+            return 'No se ve el choque de la punta: es normal (en adultos con tórax grueso, mayores o sentados con frecuencia no se ve). Sin abombamientos ni retracciones sistólicas; tórax simétrico.';
           },
           palp: (c, ctx) => ({
             html: ictusText(c) + ` <span style="color:var(--muted)">(Posición: ${POSTURES[S.posture]}.)</span>`,
             run: x => { if (S.posture !== 'sen') pulseFx(x.svg, x.point, c.v.hr, 6, { col: '#d9534f', r0: S.posture === 'lat' ? 9 : 6, dr: 14 }); }
           }),
-          loc: `${FOCI.mi.n}: ${FOCI.mi.pos}. Corresponde al ápex del ventrículo izquierdo; aquí se palpa el choque de la punta y se ausculta mejor la válvula mitral (S1).`
+          loc: `${FOCI.mi.n}: ${FOCI.mi.pos}. Corresponde a la punta del ventrículo izquierdo; aquí se palpa el choque de la punta y se auscultan mejor el R1 y los fenómenos mitrales.`
         }
       },
       {
@@ -237,8 +237,8 @@
       bindSeg(bar, 'post', v => {
         S.posture = v;
         bar.querySelector('#cvPostTxt').textContent = v === 'lat'
-          ? 'El ictus se acerca a la pared y se palpa mejor (se desplaza ≈2-3 cm).'
-          : v === 'sen' ? 'Sentado el ictus se palpa peor.' : 'Recomendada: decúbito dorsal con la cabecera a ≈30°.';
+          ? 'El choque de la punta se acerca a la pared y se palpa mejor (se desplaza ≈2-3 cm).'
+          : v === 'sen' ? 'Sentado el choque de la punta se palpa peor.' : 'Recomendada: decúbito dorsal con la cabecera a ≈30°.';
       });
     },
     onLeave: leaveAll
@@ -246,37 +246,37 @@
 
   /* ============================================================ ESCENA 2: AUSCULTACIÓN */
   const FOC = {
-    ao: { s1: 0.75, s2: 1.25, base: true, desc: 'S1 suave y <b>S2 intenso</b> (cierre aórtico, A2).' },
-    pu: { s1: 0.75, s2: 1.2, base: true, desc: 'S1 suave y <b>S2 intenso</b> (A2 con P2).' },
-    er: { s1: 0.9, s2: 1.1, base: true, desc: 'S1 y S2 de intensidad similar.' },
-    tr: { s1: 1.1, s2: 0.85, base: false, desc: 'S1 (componente tricuspídeo) algo mayor que S2.' },
-    mi: { s1: 1.3, s2: 0.7, base: false, desc: '<b>S1 intenso</b> (cierre mitral) y S2 más débil.' }
+    ao: { s1: 0.75, s2: 1.25, base: true, desc: 'R1 suave y <b>R2 intenso</b> (cierre aórtico, A2).' },
+    pu: { s1: 0.75, s2: 1.2, base: true, desc: 'R1 suave y <b>R2 intenso</b> (A2 con P2).' },
+    er: { s1: 0.9, s2: 1.1, base: true, desc: 'R1 y R2 de intensidad similar.' },
+    tr: { s1: 1.1, s2: 0.85, base: false, desc: 'R1 (componente tricuspídeo) algo mayor que R2.' },
+    mi: { s1: 1.3, s2: 0.7, base: false, desc: '<b>R1 intenso</b> (cierre mitral) y R2 más débil.' }
   };
 
   function auscHtml(id, c, tool) {
     const f = FOC[id], hr = c.v.hr;
     let t = `FC ${hr} lpm, rítmica. ${f.desc} `;
     if (tool === 'bell') {
-      t = `Campana (presión leve; filtra los agudos, S1 y S2 se atenúan): FC ${hr} lpm, rítmica. Sonidos graves: <b>sin S4</b>, sin retumbo diastólico ni ruidos añadidos. `;
+      t = `Campana (presión leve; filtra los agudos, R1 y R2 se atenúan): FC ${hr} lpm, rítmica. Ruidos graves: <b>sin R4</b>, sin rolido diastólico ni ruidos añadidos. `;
       if (c.age < 35 && S.posture === 'lat' && id === 'mi') {
-        t += '<b>S3 fisiológico</b>: ruido suave, grave y protodiastólico (≈0,12-0,18 s tras S2), normal en jóvenes (<35-40 años) y desaparece al sentarse. ';
+        t += '<b>R3 fisiológico</b>: ruido suave, grave y protodiastólico (≈0,12-0,18 s tras el R2), normal en jóvenes (<35-40 años); desaparece al sentarse. ';
       } else {
-        t += '<b>S3 ausente</b> (el S3 fisiológico puede oírse en jóvenes en decúbito lateral izquierdo, en el ápex y con la campana). ';
+        t += '<b>R3 ausente</b> (el R3 fisiológico puede oírse en jóvenes en decúbito lateral izquierdo, en la punta y con la campana). ';
       }
     } else {
-      t += 'Silencios sistólico y diastólico limpios: <b>sin soplos</b>, sin clics, sin chasquidos ni roce pericárdico; S3 y S4 ausentes. ';
+      t += 'Silencios sistólico y diastólico limpios: <b>sin soplos</b>, sin clics, chasquidos ni frote pericárdico; R3 y R4 ausentes. ';
     }
     if (S.posture === 'lat') {
-      t += id === 'mi' ? 'En decúbito lateral izquierdo el ápex se acerca a la pared: ruidos más nítidos; es la mejor posición para S3/S4 y el retumbo mitral (ausentes aquí). ' : 'Esta posición no mejora este foco. ';
+      t += id === 'mi' ? 'En decúbito lateral izquierdo la punta se acerca a la pared: ruidos más nítidos; es la mejor posición para R3, R4 y el rolido mitral (ausentes aquí). ' : 'Esta posición no mejora este foco. ';
     } else if (S.posture === 'fwd') {
-      t += (id === 'ao' || id === 'er') ? 'Sentado, inclinado hacia delante y en espiración sostenida la raíz aórtica se acerca a la pared: mejor posición para un soplo diastólico aórtico o un roce pericárdico (ausentes). ' : 'Esta posición no mejora este foco. ';
+      t += (id === 'ao' || id === 'er') ? 'Sentado, inclinado hacia delante y en apnea espiratoria la raíz aórtica se acerca a la pared: mejor posición para un soplo regurgitativo aórtico o un frote pericárdico (ausentes). ' : 'Esta posición no mejora este foco. ';
     }
     if (S.breath === 'insp') {
-      if (id === 'pu') t += '<b>Inspiración:</b> desdoblamiento fisiológico de S2 (A2 seguido de P2, separados ≈0,03-0,04 s) que desaparece en espiración. ';
+      if (id === 'pu') t += '<b>Inspiración: desdoblamiento fisiológico del R2</b> (A2 seguido de P2, separados ≈0,03-0,04 s), que desaparece en espiración. ';
       else if (id === 'tr') t += 'Inspiración: los fenómenos derechos aumentan ligeramente; sin soplos. ';
-      else if (id === 'ao') t += 'Inspiración: S2 se mantiene único en el foco aórtico (solo se oye A2). ';
+      else if (id === 'ao') t += 'Inspiración: el R2 se mantiene único en el foco aórtico (solo se oye A2). ';
     } else if (S.breath === 'esp') {
-      t += id === 'pu' ? 'Espiración: S2 único (A2 y P2 casi superpuestos). ' : 'Espiración: los fenómenos izquierdos se oyen algo mejor. ';
+      t += id === 'pu' ? 'Espiración: R2 único (A2 y P2 casi superpuestos). ' : 'Espiración: los fenómenos izquierdos se oyen algo mejor. ';
     }
     return t;
   }
@@ -286,6 +286,8 @@
     const heart = { rate: c.v.hr, s1: f.s1, s2: f.s2 };
     if (tool === 'bell') { heart.s1 = f.s1 * 0.8; heart.s2 = f.s2 * 0.8; }
     if (tool === 'bell' && c.age < 35 && S.posture === 'lat' && id === 'mi') heart.s3 = 1;
+    /* desdoblamiento fisiológico del R2 en inspiración (foco pulmonar): el motor acepta s2split en ms; si no lo conoce, lo ignora */
+    if (id === 'pu' && S.breath === 'insp') heart.s2split = 40;
     return { heart, heartGain: 1, mode: tool === 'bell' ? 'bell' : 'diaphragm' };
   }
 
@@ -295,7 +297,7 @@
     const sh = k.sh, c = sh.case, tool = sh.tool === 'bell' ? 'bell' : 'steth';
     Sound.listen(specFor(id, c, tool));
     S.active = id; S.peaks = null;
-    S.split = id === 'pu' && S.breath === 'insp' && tool !== 'bell';
+    S.split = id === 'pu' && S.breath === 'insp';
     const a = k.svg.querySelector('#cvAct'), pt = FOCI[id];
     a.style.display = ''; a.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
     k.stage.querySelector('#cvTitle').textContent = pt.n;
@@ -327,13 +329,13 @@
     const t = Sound.timing(cur.spec.rate);
     if (sh.mode === 'learn') {
       g.fillStyle = ink; g.font = '11px system-ui';
-      g.fillText('S1', t.tS1 / t.T * W - 4, 11); g.fillText('S2', t.tS2 / t.T * W - 4, 11);
+      g.fillText('R1', t.tS1 / t.T * W - 4, 11); g.fillText('R2', t.tS2 / t.T * W - 4, 11);
       g.fillText('sístole', (t.tS1 + 0.1) / t.T * W, H - 5); g.fillText('diástole', (t.tS2 + 0.15) / t.T * W, H - 5);
     }
     if (S.split) {
       const x2 = (t.tS2 + 0.04) / t.T * W;
       g.strokeStyle = '#e0a030'; g.lineWidth = 3; g.beginPath(); g.moveTo(x2, H / 2 - 14); g.lineTo(x2, H / 2 + 14); g.stroke();
-      g.fillStyle = '#e0a030'; g.font = '11px system-ui'; g.fillText('P2 (desdoblamiento)', x2 + 5, H / 2 - 16);
+      g.fillStyle = '#e0a030'; g.font = '11px system-ui'; g.fillText('P2 (R2 desdoblado)', x2 + 5, H / 2 - 16);
     }
     const x = cur.pos * W;
     g.strokeStyle = '#d9534f'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke();
@@ -352,11 +354,11 @@
     hint: 'Ausculta los 5 focos con diafragma y campana. Cambia la posición y la fase respiratoria y observa el fonocardiograma.',
     svg: learn => torsoSvg(learn),
     tools: [
-      { id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma', hint: 'Diafragma, presión firme: sonidos agudos (S1, S2, soplos).' },
-      { id: 'bell', icon: '🔔', label: 'Fonendoscopio · campana', hint: 'Campana, presión leve: sonidos graves (S3, S4, retumbo mitral).' }
+      { id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma', hint: 'Diafragma, presión firme: ruidos agudos (R1, R2, soplos).' },
+      { id: 'bell', icon: '🔔', label: 'Fonendoscopio · campana', hint: 'Campana, presión leve: ruidos graves (R3, R4, rolido mitral).' }
     ],
     regions: [
-      focReg('ao', 'Aórtico', 176, 153, 'end'), focReg('pu', 'Pulmonar', 244, 153, 'start'), focReg('er', 'Erb', 244, 185, 'start'),
+      focReg('ao', 'Aórtico', 176, 153, 'end'), focReg('pu', 'Pulmonar', 244, 153, 'start'), focReg('er', 'Mesocárdico', 246, 185, 'start'),
       focReg('tr', 'Tricúspide', 244, 217, 'start'), focReg('mi', 'Mitral', 275, 272, 'middle')
     ],
     after: (stage, sh, ctx) => {
@@ -376,7 +378,7 @@
         </div>
         <div class="cv-bar">${segHtml('post', 'Posición:', [['sup', 'Decúbito dorsal'], ['lat', 'Lateral izq.'], ['fwd', 'Sentado inclinado']], 'sup')}
           ${segHtml('resp', 'Respiración:', [['norm', 'Normal'], ['insp', 'Inspiración'], ['esp', 'Espiración']], 'norm')}</div>
-        <div class="cv-note"><b>Qué esperar:</b> S1 (cierre mitral/tricuspídeo) más intenso en el ápex; S2 (cierre aórtico/pulmonar) más intenso en la base; ritmo regular; sin soplos; S3/S4 ausentes (el S3 puede ser fisiológico en jóvenes). En inspiración el S2 se desdobla de forma fisiológica en el foco pulmonar.</div>`);
+        <div class="cv-note"><b>Qué esperar:</b> R1 (S1; cierre mitral y tricuspídeo) más intenso en la punta; R2 (S2; cierre aórtico y pulmonar) más intenso en la base; ritmo regular; sin soplos; R3 y R4 ausentes (el R3 puede ser fisiológico en jóvenes). En inspiración el R2 se desdobla de forma fisiológica en el foco pulmonar.</div>`);
       stage.querySelector('#cvStop').addEventListener('click', () => {
         Sound.stop(); S.active = null; ctx.svg.querySelector('#cvAct').style.display = 'none';
         stage.querySelector('#cvTitle').textContent = 'Sin escucha';
@@ -386,13 +388,13 @@
       bindSeg(bars, 'post', v => {
         S.posture = v;
         if (S.active) listenAt(S.active, true);
-        else sh.log(v === 'lat' ? 'Decúbito lateral izquierdo: acerca el ápex a la pared (mejor para S3, S4 y retumbo mitral, con campana).'
-          : v === 'fwd' ? 'Sentado e inclinado hacia delante, en espiración: mejor para los soplos de la base (diastólico aórtico, roce).' : 'Decúbito dorsal: posición estándar.', '');
+        else sh.log(v === 'lat' ? 'Decúbito lateral izquierdo: acerca la punta a la pared (mejor para R3, R4 y rolido mitral, con campana).'
+          : v === 'fwd' ? 'Sentado e inclinado hacia delante, en apnea espiratoria: mejor para los soplos de la base (regurgitativo aórtico, frote).' : 'Decúbito dorsal: posición estándar.', '');
       });
       bindSeg(bars, 'resp', v => {
         S.breath = v;
         if (S.active) listenAt(S.active, true);
-        else sh.log(v === 'insp' ? 'Inspiración: ausculta el foco pulmonar para oír el desdoblamiento fisiológico de S2.' : v === 'esp' ? 'Espiración: S2 único; los fenómenos izquierdos se oyen algo mejor.' : 'Respiración normal.', '');
+        else sh.log(v === 'insp' ? 'Inspiración: ausculta el foco pulmonar para oír el desdoblamiento fisiológico del R2.' : v === 'esp' ? 'Espiración: R2 único; los fenómenos izquierdos se oyen algo mejor.' : 'Respiración normal.', '');
       });
       const sc = ctx.scene;
       if (!sc._cvWrap) {
@@ -447,8 +449,13 @@
       <path d="M41.2,9.2 L41.2,6.4" stroke="#a97d58" stroke-width="2" vector-effect="non-scaling-stroke"/>
       <circle cx="36" cy="10" r=".7" fill="#d9534f"/>
     </g>`;
-    /* referencias de medida (solo Aprendizaje) */
+    /* referencias de medida (solo Aprendizaje; con el tronco casi horizontal no se mide y la regla se omite) */
     const zero = Sa.y;
+    if (th < 25) {
+      m += `<text class="svg-small" x="60" y="34">Paciente semisentado: inclinación del tronco ${th}°</text>
+      <text class="svg-small" x="60" y="52">Con el tronco casi horizontal las yugulares se llenan: eleva a ≈45° para medir</text>`;
+      return { html: m, Sa, Rx };
+    }
     m += `<g class="hintring">
       <path d="M${Sa.x},${zero} L${Rx},${zero}" stroke="#237a4b" stroke-width="1.6" stroke-dasharray="5 4"/>
       <rect x="${Rx - 9}" y="${zero - 4 * K}" width="18" height="${4 * K}" fill="#237a4b" opacity=".22"/>
@@ -458,9 +465,9 @@
       if (i % 2 === 0) m += `<text class="svg-small" x="${Rx + 11}" y="${zero - i * K + 4}">${i}</text>`;
     }
     m += `<text class="svg-small" x="${Rx - 4}" y="${zero - 10 * K - 8}" text-anchor="middle">cm sobre el ángulo</text>
-      <text class="svg-hint" x="${Sa.x - 8}" y="${zero + 18}" text-anchor="end">Ángulo esternal</text>
       <circle cx="${Rx}" cy="${zero + 5 * K}" r="4" fill="#d9534f"/>
-      <text class="svg-small" x="${Rx + 9}" y="${zero + 5 * K + 4}">Aurícula derecha (≈5 cm bajo el ángulo)</text>
+      <text class="svg-small" x="${Rx}" y="${zero + 5 * K + 16}" text-anchor="middle">Aurícula derecha</text>
+      <text class="svg-small" x="${Rx}" y="${zero + 5 * K + 30}" text-anchor="middle">(≈5 cm bajo el ángulo)</text>
       <path id="nkLvl" d="M0,0 L0,0" stroke="#0e6a78" stroke-width="2" stroke-dasharray="3 3"/>
       <text class="svg-hint" id="nkRead" x="${Sa.x - 8}" y="${zero - 80}" text-anchor="end"></text>
     </g>`;
@@ -471,8 +478,8 @@
 
   function carotidText(c) {
     const side = S.side === 'D' ? 'derecha' : 'izquierda';
-    return `Carótida ${side}: pulso <b>2+</b> (normal), un solo pico por latido, ascenso rápido y descenso más lento, contorno suave, amplitud normal, rítmico a ${c.v.hr} lpm. ` +
-      `Se palpa con el pulgar o índice-medio en el borde anterior del esternocleidomastoideo, a la altura del cartílago cricoides, <b>un lado cada vez</b> y sin masajear (riesgo de reflejo del seno carotídeo: bradicardia, hipotensión o síncope). Sin frémito.`;
+    return `<i>Técnica:</i> pulpejos de los dedos en el borde anterior del esternocleidomastoideo, a la altura del cartílago cricoides, <b>un lado cada vez</b> y sin masajear (riesgo de reflejo del seno carotídeo). ` +
+      `<i>Hallazgo normal:</i> carótida ${side} con pulso <b>2+</b>, rítmico a ${c.v.hr} lpm, amplitud normal, ascenso rápido y descenso más lento, un solo pico por latido, simétrico con el otro lado; sin frémito.`;
   }
 
   const cuello = {
@@ -483,7 +490,7 @@
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Tangencial, con luz lateral: busca el pulso venoso yugular y el menisco.' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Compara el pulso carotídeo (palpable) con el pulso venoso (no palpable).' },
       { id: 'aus', icon: '🩺', label: 'Auscultar carótida', hint: 'Diafragma sobre la carótida con el paciente conteniendo la respiración un momento.' },
-      { id: 'rhy', icon: '✋', label: 'Reflujo hepatoyugular', hint: 'Presión firme sobre el hipocondrio derecho durante ≈10 s, con respiración tranquila (sin Valsalva).' }
+      { id: 'rhy', icon: '✋', label: 'Reflujo hepatoyugular', hint: 'Presión firme sobre el hipocondrio derecho durante 10–30 s, con respiración tranquila (sin Valsalva), observando la columna yugular.' }
     ],
     regions: [
       {
@@ -491,15 +498,15 @@
         tools: {
           insp: (c) => {
             const th = S.angle, J = jvpOf(c), xt = veinTop(th, J);
-            if (xt >= 50.5) return `A ${th}° (poco incorporado) la columna venosa llega hasta el ángulo mandibular: es lo esperado con el tronco casi horizontal y no indica ingurgitación. Aumente la elevación hasta ≈45° para medir.`;
-            if (xt < 42) return `A ${th}° el menisco queda por debajo de la clavícula: <b>no se ven las yugulares</b>, lo normal con el tronco erguido. Reclina al paciente hacia 45° (30-60°) hasta ver la pulsación venosa.`;
-            return `A ${th}° se ve una <b>pulsación venosa ondulante, bifásica</b> (dos picos y dos descensos por latido) en la base del cuello. <b>Nivel de la columna ≈${fmt(J)} cm sobre el ángulo esternal</b> (normal ≤3-4 cm), sin ingurgitación yugular. Ondas a, c, v y descensos x e y; el nivel desciende en inspiración y la columna se colapsa al pasar a sentado.`;
+            if (xt >= 50.5) return `A ${th}° (poco incorporado) la columna venosa llega hasta el ángulo mandibular: es lo esperado con el tronco casi horizontal y no indica ingurgitación. Eleva el tronco hasta ≈45° para medir.`;
+            if (xt < 42) return `A ${th}° el menisco queda por debajo de la clavícula: <b>no se ven las yugulares</b>, lo normal con el tronco erguido. Reclina a la persona hacia 45° (30-60°) hasta ver el pulso venoso.`;
+            return `<i>Técnica:</i> tronco a ${th}°, cabeza algo girada al lado opuesto, luz tangencial. <i>Hallazgo normal:</i> <b>pulso venoso ondulante, bifásico</b> (ondas a y v, descensos x e y) en la base del cuello; <b>columna ≈${fmt(J)} cm sobre el ángulo esternal</b> (normal ≤3-4 cm): <b>sin ingurgitación yugular</b>. El nivel baja en inspiración y la columna se colapsa al sentarse.`;
           },
-          palp: 'El pulso venoso <b>no es palpable</b> (o apenas); desaparece al ocluir suavemente la vena con un dedo en la base del cuello y el nivel cae en inspiración. El pulso carotídeo, en cambio, sí se palpa y no se modifica con la presión suave.'
+          palp: 'El pulso venoso <b>no es palpable</b>; desaparece al comprimir suavemente la vena en la base del cuello y su nivel cae en inspiración. El pulso carotídeo, en cambio, se palpa y no se modifica con la presión suave.'
         }
       },
       {
-        id: 'car', label: 'Arteria carótida (un lado cada vez)', short: 'Carótida', cx: nkPosX('car'), cy: nkPosY('car'), r: 15, lx: nkPosX('car') + 24, ly: nkPosY('car') - 12, anchor: 'start',
+        id: 'car', label: 'Arteria carótida (un lado cada vez)', short: 'Carótida', cx: nkPosX('car'), cy: nkPosY('car'), r: 15, lx: nkPosX('car') - 22, ly: nkPosY('car') + 4, anchor: 'end',
         tools: {
           insp: 'Latido carotídeo apenas visible: un solo impulso por latido, de dentro hacia fuera, que no cambia con la respiración ni con la posición del paciente.',
           palp: (c, ctx) => ({
@@ -510,17 +517,17 @@
         }
       },
       {
-        id: 'ang', label: 'Ángulo esternal (de Louis)', short: 'Ángulo esternal', cx: nkPosX('ang'), cy: nkPosY('ang'), r: 14, lx: nkPosX('ang') + 10, ly: nkPosY('ang') + 30, anchor: 'start',
+        id: 'ang', label: 'Ángulo esternal (de Louis)', short: 'Ángulo esternal', cx: nkPosX('ang'), cy: nkPosY('ang'), r: 14, lx: nkPosX('ang') - 14, ly: nkPosY('ang') + 24, anchor: 'end',
         tools: {
-          insp: 'Referencia ósea para medir la presión venosa yugular (PVY): se mide la distancia vertical entre el ángulo esternal y el punto más alto de la pulsación venosa. La aurícula derecha está ≈5 cm por debajo del ángulo.',
-          palp: 'Reborde transversal palpable (unión manubrio-esternón, 2.ª costilla). Se traza una línea horizontal desde el menisco venoso hasta una regla vertical apoyada en este punto.'
+          insp: 'Referencia ósea para medir la presión venosa: distancia vertical entre el ángulo esternal y el punto más alto del pulso venoso (normal ≤3-4 cm a 45°, que equivale a una presión venosa central ≈8-9 cmH₂O como máximo, pues la aurícula derecha está ≈5 cm por debajo del ángulo).',
+          palp: 'Reborde transversal palpable (unión manubrio-cuerpo del esternón, 2.ª costilla). Se traza una horizontal desde el menisco venoso hasta una regla vertical apoyada en este punto.'
         }
       },
       {
-        id: 'hig', label: 'Hipocondrio derecho (hígado)', short: 'Hipocondrio dcho.', cx: nkPosX('hig'), cy: nkPosY('hig'), r: 30, lx: nkPosX('hig'), ly: nkPosY('hig') - 36, anchor: 'middle',
+        id: 'hig', label: 'Hipocondrio derecho (hígado)', short: 'Hipocondrio dcho.', cx: nkPosX('hig'), cy: nkPosY('hig'), r: 30, lx: nkPosX('hig'), ly: nkPosY('hig') + 48, anchor: 'middle',
         tools: {
           rhy: (c) => ({
-            html: '<b>Reflujo hepatoyugular negativo:</b> con presión firme y mantenida sobre el hipocondrio derecho (≈10 s, respirando con normalidad, sin Valsalva) el nivel yugular se eleva solo de forma <b>transitoria (<3 cm)</b> y regresa a su nivel basal en pocos latidos aun manteniendo la compresión. Positivo sería una elevación ≥3-4 cm sostenida durante todo el tiempo de compresión.',
+            html: '<i>Técnica:</i> presión firme y mantenida sobre el hipocondrio derecho (10–30 s según la fuente), respirando con normalidad, sin Valsalva. <i>Hallazgo normal:</i> <b>reflujo hepatoyugular negativo</b>: la columna yugular sube solo de forma transitoria (<3 cm) y vuelve a su nivel en pocos latidos aunque se mantenga la compresión. Sería positivo si se mantuviera elevada (≥3-4 cm) durante toda la compresión.',
             run: () => {
               if (S.bc) S.bc();
               S.bc = U.tween(1200, u => { S.boost = 1.6 * u; }, () => {
@@ -552,7 +559,7 @@
           <div class="where"><b>Pulso venoso vs. arterial</b><span>Arriba: yugular (ondas a, c, v). Abajo: carotídeo.</span></div>
           <canvas id="cvJcv" width="600" height="120"></canvas>
         </div>
-        <div class="cv-note"><b>Pulso venoso:</b> 2 ondas positivas (a, v) y 2 descensos (x, y) por latido; no palpable, se oblitera con presión suave, su nivel baja con la inspiración y con la posición erguida. <b>Pulso carotídeo:</b> 1 onda por latido, palpable, no se oblitera con presión suave, no cambia con la inspiración.</div>`);
+        <div class="cv-note"><b>Pulso venoso:</b> 2 ondas positivas (a, v) y 2 descensos (x, y) por latido; no palpable, se oblitera con presión suave, su nivel baja con la inspiración y con la posición erguida; <b>ingurgitación yugular normal ≤3-4 cm sobre el ángulo esternal a 45°</b>. <b>Pulso carotídeo:</b> 1 onda por latido, palpable, no se oblitera con presión suave ni cambia con la inspiración.</div>`);
       let refs = {}, geo = null;
       const build = () => {
         const th = S.angle, J = jvpOf(c);
@@ -562,7 +569,10 @@
         Object.keys(NA).forEach(k => {
           const b = lpt(NA[k][0], NA[k][1], TH0), n = lpt(NA[k][0], NA[k][1], th);
           const g = svg.querySelector(`[data-rid="${k}"]`);
-          if (g) g.setAttribute('transform', `translate(${(n.x - b.x).toFixed(1)} ${(n.y - b.y).toFixed(1)})`);
+          if (g) {
+            g.setAttribute('transform', `translate(${(n.x - b.x).toFixed(1)} ${(n.y - b.y).toFixed(1)})`);
+            g.querySelectorAll('text').forEach(t => { t.style.visibility = th < 25 ? 'hidden' : ''; });
+          }
         });
         stage.querySelector('#cvAngTxt').textContent = th + '°';
         const xt = veinTop(th, J);
@@ -614,7 +624,7 @@
     [t.tS1 / t.T, t.tS2 / t.T].forEach(x => { g.beginPath(); g.moveTo(x * W, 0); g.lineTo(x * W, H); g.stroke(); });
     g.setLineDash([]); g.globalAlpha = 1;
     g.fillStyle = ink; g.font = '11px system-ui';
-    g.fillText('S1', t.tS1 / t.T * W + 3, H - 3); g.fillText('S2', t.tS2 / t.T * W + 3, H - 3);
+    g.fillText('R1', t.tS1 / t.T * W + 3, H - 3); g.fillText('R2', t.tS2 / t.T * W + 3, H - 3);
     // curvas
     const curve = (fn, mid, A, col) => {
       g.strokeStyle = col; g.lineWidth = 2; g.beginPath();
@@ -643,17 +653,18 @@
     { k: 'cub', n: 'Cubital', x: 100, y: 366, ldx: 16, tech: 'Cara medial de la muñeca, profundo al tendón flexor cubital; suele ser más tenue que el radial.', aus: false },
     { k: 'fem', n: 'Femoral', x: 205, y: 346, ldx: -16, tech: 'Bajo el ligamento inguinal, en el punto medio entre la espina ilíaca anterosuperior y la sínfisis del pubis; presión firme con dos manos superpuestas.', aus: true },
     { k: 'pop', n: 'Poplíteo', x: 200, y: 506, ldx: -16, tech: 'Fosa poplítea (cara posterior de la rodilla) con la rodilla semiflexionada y el pie apoyado; presión profunda con ambas manos, pulgares en la tibia.', aus: false },
-    { k: 'tib', n: 'Tibial posterior', x: 208, y: 648, ldx: 16, tech: 'Detrás y debajo del maléolo medial (entre el maléolo y el tendón de Aquiles), con 2 dedos.', aus: false },
-    { k: 'ped', n: 'Pedio', x: 192, y: 676, ldx: -16, tech: 'Dorso del pie, lateral al tendón extensor del primer dedo, sobre el 1.º-2.º metatarsiano. Puede faltar en ≈2-10 % de personas sanas (variante) si el tibial posterior está presente.', aus: false }
+    { k: 'tib', n: 'Tibial posterior', x: 208, y: 648, ldx: -16, tech: 'Detrás y debajo del maléolo medial (entre el maléolo y el tendón de Aquiles), con 2 dedos.', aus: false },
+    { k: 'ped', n: 'Pedio', x: 192, y: 676, ldx: -16, tech: 'Dorso del pie, lateral al tendón extensor del primer dedo. Puede faltar de forma congénita en una minoría de personas sanas si el tibial posterior está presente.', aus: false }
   ];
 
   function pulseHtml(site, side, c) {
     const nm = `${site.n} ${side === 'D' ? 'derecho' : 'izquierdo'}`;
-    let t = `${nm}: <b>2+</b> (escala 0-4: 0 ausente, 1+ disminuido, 2+ normal, 3+ aumentado, 4+ saltón/aneurismático). Rítmico a ${c.v.hr} lpm, amplitud normal, ascenso rápido, sin retraso, simétrico con el contralateral. `;
-    if (site.k === 'rad') t += `Pulso = frecuencia cardíaca (sin déficit de pulso). `;
-    if (site.k === 'ped' && !elder(c)) t += 'Pared arterial blanda y elástica. ';
-    if (elder(c)) t += 'Pared arterial lisa, algo más firme por rigidez fisiológica de la edad; pulso periférico distal algo más tenue pero 2+. ';
-    return t + `<span style="color:var(--muted)">Técnica: ${site.tech}</span>`;
+    let t = `<i>Técnica:</i> ${site.tech} <i>Hallazgo normal:</i> ${nm} <b>2+</b> (escala 0 a 4+: 0 ausente, 1+ disminuido, 2+ normal, 3+ aumentado, 4+ saltón). ` +
+      `<b>Frecuencia</b> ${c.v.hr} lpm, <b>ritmo</b> regular, <b>amplitud</b> normal, <b>tensión</b> normal (se deprime con presión moderada), <b>igual</b> en todos los latidos y <b>simétrico</b> con el contralateral. `;
+    if (site.k === 'rad') t += `Coincide con la frecuencia cardíaca auscultada (sin déficit de pulso). `;
+    if (elder(c)) t += 'Pared arterial lisa, algo más firme por la rigidez propia de la edad; pulsos distales algo más tenues pero 2+. ';
+    else t += 'Pared arterial blanda y elástica. ';
+    return t;
   }
 
   function pulsReg(site, side) {
@@ -671,10 +682,10 @@
         aus: site.aus ? `Soplo ${site.n === 'Femoral' ? 'femoral' : 'carotídeo'}: <b>ausente</b> (con el diafragma sobre el trayecto del vaso no se oye ruido de flujo turbulento).` : `${site.n}: no se ausculta de rutina; sin soplos.`,
         cmp: (c) => {
           if (site.k === 'car') return 'No se palpan ambas carótidas a la vez (riesgo de reducir el flujo cerebral y de reflejo sinocarotídeo): se comparan por separado. Ambas 2+, simétricas, con la misma intensidad y contorno.';
-          let t = `${site.n} derecho vs. izquierdo: ambos <b>2+</b>, simétricos en amplitud, contorno, ritmo y sincronía; sin diferencias de temperatura entre ambos lados.`;
+          let t = `${site.n} derecho vs. izquierdo: ambos <b>2+</b>, <b>simétricos</b> en amplitud, tensión, ritmo y sincronía; sin diferencia de temperatura entre ambos lados.`;
           if (site.k === 'rad') t += ' Comparación radial-femoral: ver el botón «Radial + femoral simultáneos»; normalmente <b>sin retraso radiofemoral</b>.';
           if (site.k === 'fem') t += ' Con el radial: se palpan casi al mismo tiempo (<b>sin retraso radiofemoral</b>).';
-          if (site.k === 'bra') t += ' La presión arterial difiere <10-15 mmHg entre ambos brazos (ver «Perfusión y miembros»).';
+          if (site.k === 'bra') t += ' La presión arterial difiere <10 mmHg entre ambos brazos (ver «Perfusión y miembros»).';
           return t;
         }
       }
@@ -713,10 +724,10 @@
       const r = [];
       SITES.forEach(s => { r.push(pulsReg(s, 'D')); r.push(pulsReg(s, 'I')); });
       r.push({
-        id: 'aor', label: 'Aorta abdominal', short: 'Aorta abdominal', cx: 236, cy: 258, r: 12, lx: 250, ly: 262, anchor: 'start',
+        id: 'aor', label: 'Aorta abdominal', short: 'Aorta abdominal', cx: 236, cy: 258, r: 12, lx: 236, ly: 284, anchor: 'middle',
         tools: {
           palp: (c) => ({
-            html: `Aorta abdominal: pulsación <b>expansiva suave</b> en la línea media del epigastrio, ligeramente a la izquierda, con las dos manos a ambos lados; anchura palpable <b><3 cm</b> (en personas delgadas se palpa con facilidad; en obesos puede no palparse). Sin masa pulsátil.`,
+            html: `<i>Técnica:</i> ambas manos a los lados de la línea media del epigastrio, presionando en profundidad. <i>Hallazgo normal:</i> aorta abdominal con latido suave, <b>diámetro palpable <3 cm</b>, sin masa pulsátil expansiva (se palpa con facilidad en personas delgadas; puede no palparse en obesos).`,
             run: x => pulseFx(x.svg, x.point, c.v.hr, 5, { beep: 400, col: '#d9534f' })
           }),
           aus: 'Ausculta en la línea media por encima del ombligo y sobre las arterias renales (flancos): <b>sin soplos</b> abdominales ni femorales.',
@@ -730,7 +741,7 @@
       stage.insertAdjacentHTML('beforeend', `
         <div class="cv-bar"><button type="button" class="btn small" id="cvRF" style="width:auto;margin:0">Radial + femoral simultáneos (lado derecho)</button>
           <span class="cv-read" style="color:var(--muted)">Escala: 0 ausente · 1+ disminuido · 2+ normal · 3+ aumentado · 4+ saltón</span></div>
-        <div class="cv-note"><b>Normal:</b> todos los pulsos presentes, <b>2+</b>, simétricos, rítmicos y sincrónicos; sin soplos carotídeos ni femorales; aorta abdominal <3 cm.</div>`);
+        <div class="cv-note"><b>Normal:</b> en cada pulso se valoran <b>frecuencia, ritmo, amplitud, tensión, igualdad y simetría</b>: todos presentes, <b>2+</b>, regulares, iguales, simétricos y sincrónicos; sin soplos carotídeos ni femorales; aorta abdominal <3 cm.</div>`);
       stage.querySelector('#cvRF').addEventListener('click', () => {
         const c = sh.case, r = SITES.find(s => s.k === 'rad'), f = SITES.find(s => s.k === 'fem');
         pulseFx(ctx.svg, [{ x: r.x, y: r.y }, { x: f.x, y: f.y }], c.v.hr, 6, { beep: 500, col: '#0e6a78' });
@@ -816,7 +827,7 @@
               <rect x="540" y="${y - 6}" width="64" height="56" rx="8" fill="#5b87b3" stroke="#3d6486" stroke-width="3"/>
               <text class="svg-small" x="470" y="${y + 26}" fill="#fff">${s === 'D' ? 'D' : 'I'}</text>`;
       });
-      b += `<text class="svg-small" x="630" y="252">Diferencia entre ambos brazos normalmente &lt;10-15 mmHg</text>`;
+      b += `<text class="svg-small" x="452" y="252">Diferencia entre ambos brazos normalmente &lt;10 mmHg</text>`;
       /* pierna */
       b += `<path d="M168,330 C162,390 172,445 178,486 L244,486 C250,445 258,390 252,330 Z" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/>
             <path d="M170,486 L252,486 L266,522 C272,540 250,550 212,550 C174,550 160,540 168,522 Z" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/>
@@ -834,7 +845,7 @@
             <rect x="570" y="432" width="48" height="20" rx="9" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/>`;
       b += stand(690, 330) + stand(780, 330);
       b += `<text class="svg-small" x="530" y="500" text-anchor="middle">Acostado 5 min</text><text class="svg-small" x="690" y="518" text-anchor="middle">De pie 1 min</text><text class="svg-small" x="780" y="518" text-anchor="middle">De pie 3 min</text>`;
-      b += `<text class="svg-small" x="450" y="538">Normal: caída &lt;20 mmHg (sistólica) y &lt;10 mmHg</text><text class="svg-small" x="450" y="554">(diastólica); la FC sube ≈10-20 lpm</text>`;
+      b += `<text class="svg-small" x="450" y="538">Normal: caída &lt;20 mmHg (sistólica) y &lt;10 mmHg</text><text class="svg-small" x="450" y="554">(diastólica); la FC sube ligeramente (≈10-15 lpm)</text>`;
       return b;
     },
     tools: [
@@ -851,7 +862,7 @@
         id: 'dors', label: 'Dorso de la mano', short: 'Dorso mano', x: 58, y: 108, w: 106, h: 132, lx: 110, ly: 266, anchor: 'middle',
         tools: {
           insp: 'Color uniforme según el fototipo, sin palidez ni cianosis, sin edema (se ven los tendones extensores y las venas dorsales). Piel fina y laxa.',
-          temp: 'Dorso de la mano <b>tibio y seco</b> (≈31-33 °C), simétrico con la otra mano, sin gradiente de temperatura entre dedos y antebrazo.',
+          temp: 'Dorso de la mano <b>tibio y seco</b>, simétrico con la otra mano, sin gradiente de temperatura entre dedos y antebrazo.',
           fov: 'Sin edema: <b>signo de fóvea negativo</b> en el dorso de la mano.'
         }
       },
@@ -879,7 +890,7 @@
         }
       },
       {
-        id: 'palm', label: 'Palma y muñeca (arcos palmares)', short: 'Palma (Allen)', x: 258, y: 100, w: 106, h: 148, lx: 311, ly: 266, anchor: 'middle',
+        id: 'palm', label: 'Palma y muñeca (arcos palmares)', short: 'Palma', x: 258, y: 100, w: 106, h: 148, lx: 311, ly: 266, anchor: 'middle',
         tools: {
           insp: 'Palma rosada, sin eritema ni palidez de los pliegues; humedad normal.',
           temp: 'Palma <b>tibia</b> y ligeramente húmeda; simétrica con la otra mano.',
@@ -902,7 +913,11 @@
       {
         id: 'brD', label: 'Brazo derecho', short: 'Brazo D', x: 452, y: 56, w: 340, h: 56, lx: 700, ly: 52, anchor: 'middle',
         tools: {
-          pa: (c) => { const a = bpArms(c); return { html: `PA brazo derecho (sentado, brazo a la altura del corazón, manguito adecuado): <b>${a.R[0]}/${a.R[1]} mmHg</b>. FC ${c.v.hr} lpm.`, run: () => kor(c.v.hr, 4) }; },
+          pa: (c) => {
+            const a = bpArms(c), pp = a.R[0] - a.R[1];
+            const ppTxt = pp <= 50 ? `<b>presión de pulso ${pp} mmHg</b> (normal 30–50)` : `<b>presión de pulso ${pp} mmHg</b> (normal 30–50; algo mayor en el adulto mayor por rigidez arterial)`;
+            return { html: `<i>Técnica:</i> sentado tras 5 min de reposo, brazo apoyado a la altura del corazón, manguito adecuado; método palpatorio y luego auscultatorio (fases de Korotkoff). <i>Hallazgo normal:</i> PA brazo derecho <b>${a.R[0]}/${a.R[1]} mmHg</b>, ${ppTxt}; FC ${c.v.hr} lpm.`, run: () => kor(c.v.hr, 4) };
+          },
           pul: 'Pulso braquial y radial derechos <b>2+</b>, rítmicos y simétricos con los del lado izquierdo.',
           insp: 'Brazo de color uniforme, sin edema ni cambios tróficos, sin asimetría de diámetro.',
           temp: 'Brazo tibio, simétrico con el contralateral.'
@@ -913,7 +928,7 @@
         tools: {
           pa: (c) => {
             const a = bpArms(c);
-            return { html: `PA brazo izquierdo: <b>${a.L[0]}/${a.L[1]} mmHg</b> (diferencia con el derecho ${a.dS}/${a.dD} mmHg: <b>&lt;10-15 mmHg</b>, normal). Se registra la cifra más alta como referencia para el seguimiento.`, run: () => kor(c.v.hr, 4) };
+            return { html: `PA brazo izquierdo: <b>${a.L[0]}/${a.L[1]} mmHg</b> (diferencia con el derecho ${a.dS}/${a.dD} mmHg: <b>&lt;10 mmHg</b>, normal). En la primera consulta se mide en ambos brazos y se toma como referencia el de cifra más alta.`, run: () => kor(c.v.hr, 4) };
           },
           pul: 'Pulso braquial y radial izquierdos <b>2+</b>, simétricos con el derecho y sincrónicos.',
           insp: 'Brazo de color uniforme, sin edema ni cambios tróficos.',
@@ -934,7 +949,7 @@
             }
           }),
           insp: 'Piel lisa, de color uniforme, sin edema ni hiperpigmentación, sin úlceras ni cambios tróficos; vello distribuido de forma homogénea.',
-          temp: 'Piernas <b>tibias y simétricas</b> (≈32-33 °C), sin gradiente de temperatura de proximal a distal.',
+          temp: 'Piernas <b>tibias y simétricas</b>, sin gradiente de temperatura de proximal a distal.',
           pul: 'Pulsos distales (poplíteo, tibial posterior y pedio) <b>2+</b> y simétricos; ver escena de pulsos.'
         }
       },
@@ -950,10 +965,10 @@
         id: 'pie', label: 'Pie y dedos', short: 'Pie', x: 168, y: 490, w: 100, h: 62, lx: 290, ly: 520, anchor: 'start',
         tools: {
           insp: 'Color uniforme, sin cianosis ni rubor de declive, sin palidez a la elevación; sin úlceras ni fisuras; vello presente en el dorso.',
-          temp: 'Pies <b>tibios, simétricos</b> y algo más frescos que la pierna (≈30-32 °C), sin cambio brusco de temperatura.',
-          cap: (c) => ({ html: `Llenado capilar del dedo del pie ≈${fmt((capTime(c) + 0.4).toFixed(1))} s (normal ≈1-2 s, hasta 3 s en los pies).` }),
+          temp: 'Pies <b>tibios, simétricos</b> y algo más frescos que la pierna, sin cambio brusco de temperatura.',
+          cap: (c) => ({ html: `Llenado capilar del dedo del pie ≈${fmt((capTime(c) + 0.4).toFixed(1))} s (normal <2 s; algo más lento en los pies, según la fuente hasta 3 s).` }),
           fov: 'Sin edema en el dorso del pie: <b>fóvea negativa</b>.',
-          pul: 'Pedio y tibial posterior <b>2+</b> bilaterales (el pedio puede faltar en ≈2-10 % de personas sanas).'
+          pul: 'Pedio y tibial posterior <b>2+</b> bilaterales (el pedio puede faltar de forma congénita en una minoría de personas sanas).'
         }
       },
       {
@@ -967,7 +982,7 @@
         tools: {
           pa: (c) => {
             const o = orthoVals(c), a = o.s0, b = o.s1;
-            return { html: `PA al minuto de ponerse de pie: <b>${b[0]}/${b[1]} mmHg</b>, FC <b>${b[2]} lpm</b>. Variación ${b[0] - a[0]}/${b[1] - a[1]} mmHg y FC ${b[2] - a[2] >= 0 ? '+' : ''}${b[2] - a[2]} lpm: <b>respuesta normal</b> (caída &lt;20/10, sin mareo ni síncope).`, run: () => kor(b[2], 4) };
+            return { html: `PA al minuto de ponerse de pie: <b>${b[0]}/${b[1]} mmHg</b>, FC <b>${b[2]} lpm</b>. Variación ${b[0] - a[0]}/${b[1] - a[1]} mmHg y FC ${b[2] - a[2] >= 0 ? '+' : ''}${b[2] - a[2]} lpm: <b>respuesta normal</b> (caída &lt;20/10 mmHg, ligero aumento de la FC, sin mareo ni síncope).`, run: () => kor(b[2], 4) };
           }
         }
       },
@@ -983,43 +998,54 @@
     ],
     after: (stage, sh, ctx) => {
       leaveAll(); injectCss();
-      stage.insertAdjacentHTML('beforeend', `<div class="cv-note"><b>Normal:</b> llenado capilar &lt;2 s · prueba de Allen: color de la palma en &lt;5-6 s · extremidades tibias, de color y temperatura simétricos · sin edema (fóvea 0) ni várices · PA entre brazos con diferencia &lt;10-15 mmHg · PA ortostática: caída &lt;20/10 mmHg.</div>`);
+      stage.insertAdjacentHTML('beforeend', `<div class="cv-note"><b>Normal:</b> llenado capilar &lt;2 s · prueba de Allen: color de la palma en &lt;5-6 s · extremidades tibias, de color y temperatura simétricos · sin edema (fóvea 0) ni várices · PA en ambos brazos con diferencia &lt;10 mmHg y presión de pulso 30–50 mmHg · PA ortostática: caída &lt;20/10 mmHg.</div>`);
     },
     onLeave: leaveAll
   };
 
   /* ============================================================ CUESTIONARIO */
-  const quiz = [
-    { q: '¿Dónde se palpa el choque de la punta normal?', options: ['4.º EIC, 2 cm por fuera de la línea medioclavicular', '5.º EIC, en o dentro de la línea medioclavicular izquierda', '6.º EIC, en la línea axilar anterior', '3.er EIC, en el borde esternal izquierdo'], a: 1,
-      why: 'El ápex del ventrículo izquierdo choca contra la pared torácica en el 5.º EIC, en o ligeramente medial a la LMC (≤10 cm de la línea media).' },
-    { q: 'Características del choque de la punta normal en decúbito dorsal:', options: ['≥4 cm de diámetro y sostenido hasta el S2', 'Siempre visible en todas las personas', '≈2 cm de diámetro, breve y que no llega al S2', 'Solo palpable en inspiración profunda'], a: 2,
-      why: 'Normalmente mide ≈2 cm (hasta 2-3 cm), es un golpe breve de la sístole precoz; no se palpa en todos y no hay levantamientos paraesternales.' },
-    { q: 'Intensidad normal de los ruidos cardíacos según el foco:', options: ['S1 más intenso en la base y S2 más intenso en el ápex', 'S1 y S2 de igual intensidad en todos los focos', 'S1 más intenso en el ápex y S2 más intenso en la base', 'S2 siempre se oye solo en el foco mitral'], a: 2,
-      why: 'S1 (cierre mitral/tricuspídeo) predomina en el ápex; S2 (cierre aórtico/pulmonar) predomina en la base.' },
-    { q: 'El desdoblamiento fisiológico de S2 se oye mejor…', options: ['en espiración, en el foco mitral', 'en inspiración, en el foco pulmonar', 'en ambas fases por igual, en el foco aórtico', 'solo en decúbito lateral izquierdo, con la campana'], a: 1,
-      why: 'En inspiración aumenta el retorno venoso al corazón derecho y P2 se retrasa: A2-P2 se separan ≈0,03-0,04 s; en espiración se funden.' },
-    { q: 'Presión venosa yugular normal con el tronco a 45°:', options: ['≤3-4 cm sobre el ángulo esternal', '6-8 cm sobre el ángulo esternal', 'Las yugulares siempre llegan hasta el ángulo mandibular', 'Debe ser imposible verla'], a: 0,
-      why: 'Se mide la distancia vertical entre el ángulo esternal y el menisco de la columna venosa; normal ≤3-4 cm (≈8 cm de H₂O sobre la aurícula derecha).' },
-    { q: '¿Cuál es la técnica correcta para el pulso carotídeo?', options: ['Palpar ambas carótidas a la vez para compararlas', 'Masajear el seno carotídeo para valorar el contorno', 'Palpar un lado cada vez, sin masajear, y auscultar antes en busca de soplos', 'Palparlas solo con el paciente en bipedestación'], a: 2,
-      why: 'La compresión bilateral o el masaje pueden provocar bradicardia, hipotensión o isquemia cerebral; se palpa y ausculta cada lado por separado.' },
-    { q: 'En una persona sana, al palpar a la vez el pulso radial y el femoral…', options: ['el femoral llega claramente después que el radial', 'son sincrónicos, sin retraso radiofemoral', 'el radial siempre es más débil (1+)', 'el femoral es no palpable'], a: 1,
-      why: 'Los pulsos radial y femoral son sincrónicos y simétricos; un retraso o disminución del femoral orientaría a patología aórtica (coartación).' },
-    { q: 'Valores normales de perfusión y respuesta ortostática:', options: ['Llenado capilar <2 s; caída de PA al ponerse de pie <20/10 mmHg', 'Llenado capilar 5 s; caída de PA ≥30/15 mmHg', 'Llenado capilar <2 s; caída de PA ≥20/10 mmHg', 'Llenado capilar <10 s; aumento de PA ≥20 mmHg'], a: 0,
-      why: 'El lecho ungueal recupera el color en <2 s. La hipotensión ortostática se define como caída ≥20 mmHg sistólica o ≥10 diastólica en los 3 primeros minutos.' }
-  ];
+  /* Cuestionario: las preguntas 1 y 2 dependen de la persona examinada. */
+  const quiz = c => {
+    const pp = c.v.sbp - c.v.dbp, pam = Math.round((c.v.sbp + 2 * c.v.dbp) / 3);
+    return [
+      { q: `La PA de esta persona es ${c.v.sbp}/${c.v.dbp} mmHg. Su presión de pulso (diferencial) es…`,
+        options: [`${pam} mmHg`, `${c.v.sbp} mmHg`, `${pp} mmHg${pp <= 50 ? ' (normal 30–50)' : ' (algo por encima de 30–50, aceptable en el adulto mayor)'}`, `${c.v.dbp} mmHg`], a: 2,
+        why: 'La presión de pulso es la diferencia entre la PA sistólica y la diastólica (normal ≈30–50 mmHg); aumenta con la rigidez arterial de la edad y en la insuficiencia aórtica, y disminuye en el shock y el taponamiento.' },
+      { q: `Al palpar el pulso radial de esta persona (FC ${c.v.hr} lpm) el hallazgo normal es…`,
+        options: [`Frecuencia ${c.v.hr} lpm, regular, amplitud 2+, igual y simétrico`, `Frecuencia ${c.v.hr + 45} lpm, irregular, amplitud 4+`, `Frecuencia ${c.v.hr} lpm, desigual y asimétrico`, 'Ausente (0), con retraso radiofemoral'], a: 0,
+        why: 'En cada pulso se describen frecuencia, ritmo, amplitud, tensión, igualdad y simetría; el pulso normal coincide con la FC auscultada y es igual en ambos lados.' },
+      { q: '¿Dónde se palpa el choque de la punta normal?', options: ['4.º EIC, 2 cm por fuera de la línea medioclavicular', '5.º EIC, en o por dentro de la línea medioclavicular izquierda', '6.º EIC, en la línea axilar anterior', '3.er EIC, en el borde esternal izquierdo'], a: 1,
+        why: 'La punta del ventrículo izquierdo golpea la pared torácica en el 5.º EIC, en o ligeramente por dentro de la LMC; mide ≈2 cm y es breve.' },
+      { q: 'Intensidad normal de los ruidos cardíacos según el foco:', options: ['R1 más intenso en la base y R2 más intenso en la punta', 'R1 y R2 de igual intensidad en todos los focos', 'R1 más intenso en la punta y R2 más intenso en la base', 'R2 solo se oye en el foco mitral'], a: 2,
+        why: 'R1 (cierre mitral y tricuspídeo) predomina en la punta; R2 (cierre aórtico y pulmonar) predomina en la base (focos aórtico y pulmonar).' },
+      { q: 'El desdoblamiento fisiológico del R2 se oye mejor…', options: ['en espiración, en el foco mitral', 'en inspiración, en el foco pulmonar', 'en ambas fases por igual, en el foco aórtico', 'solo en decúbito lateral izquierdo, con la campana'], a: 1,
+        why: 'En inspiración aumenta el retorno venoso al corazón derecho y P2 se retrasa: A2 y P2 se separan ≈0,03-0,04 s; en espiración se funden.' },
+      { q: 'Presión venosa yugular normal con el tronco a 45°:', options: ['Las yugulares siempre llegan hasta el ángulo mandibular', '6-8 cm sobre el ángulo esternal', 'Debe ser imposible verla', '≤3-4 cm sobre el ángulo esternal'], a: 3,
+        why: 'Se mide la distancia vertical entre el ángulo esternal y el menisco de la columna venosa; normal ≤3-4 cm (presión venosa central ≈8-9 cmH₂O como máximo).' },
+      { q: '¿Cuál es la técnica correcta para el pulso carotídeo?', options: ['Palpar ambas carótidas a la vez para compararlas', 'Masajear el seno carotídeo para valorar el contorno', 'Palpar un lado cada vez, sin masajear, y auscultar antes en busca de soplos', 'Palparlas solo con la persona de pie'], a: 2,
+        why: 'La compresión bilateral o el masaje pueden provocar bradicardia, hipotensión o isquemia cerebral; se palpa y ausculta cada lado por separado.' },
+      { q: 'Valores normales de perfusión y respuesta ortostática:', options: ['Llenado capilar 5 s; caída de PA ≥30/15 mmHg', 'Llenado capilar <2 s; caída de PA al ponerse de pie <20/10 mmHg', 'Llenado capilar <2 s; caída de PA ≥20/10 mmHg', 'Llenado capilar <10 s; aumento de PA ≥20 mmHg'], a: 1,
+        why: 'El lecho ungueal recupera el color en <2 s. La hipotensión ortostática se define como caída ≥20 mmHg sistólica o ≥10 diastólica en los 3 primeros minutos de pie.' }
+    ];
+  };
 
   const teaching = [
-    'Cuenta los espacios intercostales desde el <b>ángulo esternal</b> (2.ª costilla). El ictus se palpa en el 5.º EIC en o dentro de la línea medioclavicular, en <b>decúbito dorsal</b>; en lateral izquierdo se desplaza 2-3 cm y se amplía.',
-    'Ausculta los 5 focos con diafragma y campana, <b>en espiración</b>, y añade la posición adecuada (lateral izquierdo para el ápex, sentado inclinado hacia delante para la base). Identifica primero S1 y S2 y analiza sístole y diástole por separado.',
-    'La <b>presión venosa yugular</b> se mide a ≈45° como la distancia vertical entre el ángulo esternal y el menisco de la columna venosa (normal ≤3-4 cm). El pulso venoso es bifásico, no palpable y varía con la respiración; el carotídeo es único y palpable.',
-    'Palpa los pulsos con la yema de 2-3 dedos, compara siempre ambos lados (carótidas por separado) y valora frecuencia, ritmo, amplitud (0-4+), contorno y simetría; la comparación radial-femoral descarta retraso.',
-    'Completa con la perfusión: llenado capilar <2 s, temperatura y color simétricos, ausencia de edema y várices, PA en ambos brazos (diferencia <10-15 mmHg) y PA ortostática (caída <20/10 mmHg).'
+    'Cuenta los espacios intercostales desde el <b>ángulo esternal</b> (2.ª costilla). El choque de la punta se palpa en el 5.º EIC, en o por dentro de la línea medioclavicular, en <b>decúbito dorsal</b>; en lateral izquierdo se desplaza 2-3 cm y se amplía. Busca frémitos en la base.',
+    'Ausculta los 5 focos (aórtico, pulmonar, mesocárdico, tricuspídeo y mitral) con diafragma y campana, y añade la posición adecuada (lateral izquierdo para la punta, sentado inclinado hacia delante para la base). Identifica primero R1 y R2 y analiza sístole y diástole por separado; en inspiración el R2 se desdobla en el foco pulmonar.',
+    'La <b>presión venosa yugular</b> se mide a ≈45° como la distancia vertical entre el ángulo esternal y el menisco de la columna venosa (normal ≤3-4 cm). El pulso venoso es bifásico, no palpable y varía con la respiración; el carotídeo es único y palpable. Completa con el reflujo hepatoyugular.',
+    'Palpa los pulsos con los pulpejos de 2-3 dedos, compara siempre ambos lados (carótidas por separado) y describe frecuencia, ritmo, amplitud (0 a 4+), tensión, igualdad y simetría; la comparación radial-femoral descarta retraso.',
+    'Completa con la perfusión y la presión arterial: llenado capilar <2 s, temperatura y color simétricos, sin edema ni várices; PA en ambos brazos (diferencia <10 mmHg), presión de pulso 30–50 mmHg y PA ortostática (caída <20/10 mmHg).'
   ];
 
   NormalEngine.build({
     id: 'cardio', title: 'Aparato cardiovascular y pulsos (normal)', icon: '❤️', group: 'Exploración normal',
     desc: 'Precordio, auscultación de los 5 focos, yugulares, pulsos periféricos, perfusión y presión arterial ortostática en personas sanas.',
-    bullets: ['Choque de la punta y focos cardíacos', 'Auscultación con fonocardiograma y desdoblamiento de S2', 'Pulso venoso yugular y 8 pulsos periféricos bilaterales'],
+    bullets: ['Choque de la punta y focos cardíacos (incluido el mesocárdico)', 'Auscultación con fonocardiograma y desdoblamiento fisiológico del R2', 'Pulso venoso yugular, reflujo hepatoyugular y 8 pulsos periféricos bilaterales'],
+    refs: [
+      'Argente HA, Álvarez ME. <i>Semiología Médica. Fisiopatología, semiotecnia y propedéutica</i>. Panamericana — Aparato cardiovascular: examen del precordio, auscultación cardíaca, pulso venoso y arterial.',
+      'Argente HA, Álvarez ME. <i>Semiología Médica</i> — Examen físico general: presión arterial (método palpatorio y auscultatorio, fases de Korotkoff) y pulsos periféricos.',
+      'Guía ESC/ESH de hipertensión arterial — medición de la PA en ambos brazos e hipotensión ortostática (caída ≥20/10 mmHg a los 3 min).'
+    ],
     teaching, quiz,
     scenes: [precordio, auscultacion, cuello, pulsos, perfusion]
   });

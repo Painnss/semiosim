@@ -6,7 +6,8 @@
   "scripts": {
     "start": "python -m http.server 8765",
     "test": "node test/smoke.js",
-    "check": "node -e \"require('fs').readdirSync('js').filter(f=>f.endsWith('.js')).forEach(f=>require('child_process').execFileSync('node',['--check','js/'+f]))\" && echo sintaxis OK"
+    "check": "node -e \"require('fs').readdirSync('js').filter(f=>f.endsWith('.js')).forEach(f=>require('child_process').execFileSync('node',['--check','js/'+f]))\" && echo sintaxis OK",
+    "bump": "node tools/bump.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"

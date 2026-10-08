@@ -34,8 +34,8 @@
       vitals: 'FC 74 · PA 122/78 · FR 15 · T 36,7 °C · SpO₂ 98 %',
       v: { hr: 74, sbp: 122, dbp: 78, rr: 15, temp: 36.7, spo2: 98, height: 1.76, weight: 77, waist: 88 } },
     { id: 'p3', age: 72, sex: 'M', diag: 'Examen normal', complaint: 'Adulto mayor sano y activo, control rutinario.',
-      vitals: 'FC 68 · PA 132/80 · FR 16 · T 36,4 °C · SpO₂ 96 %',
-      v: { hr: 68, sbp: 132, dbp: 80, rr: 16, temp: 36.4, spo2: 96, height: 1.68, weight: 72, waist: 94 } },
+      vitals: 'FC 68 · PA 130/80 · FR 16 · T 36,4 °C · SpO₂ 96 %',
+      v: { hr: 68, sbp: 130, dbp: 80, rr: 16, temp: 36.4, spo2: 96, height: 1.68, weight: 72, waist: 94 } },
     { id: 'p4', age: 60, sex: 'F', diag: 'Examen normal', complaint: 'Mujer posmenopáusica sana, control anual.',
       vitals: 'FC 72 · PA 128/78 · FR 15 · T 36,5 °C · SpO₂ 97 %',
       v: { hr: 72, sbp: 128, dbp: 78, rr: 15, temp: 36.5, spo2: 97, height: 1.60, weight: 61, waist: 82 } }

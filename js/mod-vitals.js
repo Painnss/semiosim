@@ -161,7 +161,7 @@
       for (let p = 0; p <= 300; p += 10) {
         const long = p % 20 === 0, a = pt(p, 92), b = pt(p, long ? 77 : 84);
         ticks += `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#333" stroke-width="${long ? 1.6 : 1}"/>`;
-        if (long) {
+        if (p % 40 === 0) {
           const t = pt(p, 63);
           ticks += `<text x="${t[0].toFixed(1)}" y="${t[1].toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#333">${p}</text>`;
         }
@@ -220,7 +220,7 @@
       <details class="vit-note" open><summary>Notas de técnica</summary><ul>
         <li><b>Preparación:</b> reposo de 5 min, sentado con la espalda apoyada y los pies en el suelo, sin hablar, sin café ni tabaco en los 30 min previos, vejiga vacía y el brazo desnudo.</li>
         <li><b>Brazo a nivel del corazón</b> (4.º espacio intercostal): por cada 10 cm por debajo la cifra aumenta ≈ 7 mmHg; si el brazo cuelga se sobrestima la PA.</li>
-        <li><b>Manguito:</b> la cámara debe abarcar ≈ 80 % de la circunferencia del brazo (ancho ≈ 40 %); un manguito estrecho sobrestima la PA. Borde inferior 2–3 cm por encima del pliegue del codo; fonendoscopio sobre la arteria braquial, sin presionar de más.</li>
+        <li><b>Manguito:</b> la cámara debe abarcar ≈ 80 % de la circunferencia del brazo (ancho ≈ 40 %); un manguito estrecho sobrestima la PA. Borde inferior 2–3 cm por encima del pliegue del codo; estetoscopio sobre la arteria braquial, sin presionar de más.</li>
         <li><b>Método palpatorio previo:</b> palpa la radial, infla hasta que el pulso desaparezca y anota esa cifra; para auscultar infla 20–30 mmHg por encima de ella. Así no se subestima la sistólica si hay <b>pozo o agujero auscultatorio</b> (silencio transitorio entre la fase I y la fase II; también llamado hiato auscultatorio).</li>
         <li><b>Desinflado lento</b> de 2–3 mmHg/s. <b>Fases de Korotkoff:</b> I aparición de ruidos claros (sistólica); II ruidos más suaves o soplantes; III ruidos intensos; IV apagamiento brusco; V desaparición (diastólica). Si los ruidos persisten hasta 0 (p. ej. embarazo, fiebre), se anota la fase IV como diastólica.</li>
         <li><b>Presión de pulso (diferencial)</b> = PAS − PAD, normalmente 30–50 mmHg.</li>
@@ -384,7 +384,7 @@
         <rect x="520" y="128" width="74" height="26" rx="13" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5" transform="rotate(-24 520 142)"/>
         <path d="M470 166 Q477 205 470 248" fill="none" stroke="${SKIN_D}" stroke-width="2"/>
         <path id="plArt" d="M320 170 L462 178" fill="none" stroke="#c0392b" stroke-width="5" stroke-linecap="round" opacity=".5"/>
-        <text x="390" y="156" text-anchor="middle" class="svg-hint hintring">Arteria radial (lado del pulgar)</text>
+        <text x="250" y="152" text-anchor="middle" class="svg-hint hintring">Arteria radial (lado del pulgar)</text>
         <circle id="plRing" cx="445" cy="177" r="0" fill="none" stroke="#c0392b" stroke-width="3"/>
         <g id="plFing" style="display:none" transform="translate(445 177)"><g transform="rotate(14)">
           <g id="plFing3">${[-33, 0, 33].map(x => `<rect x="${x - 15}" y="-125" width="30" height="125" rx="15" fill="#e3b58f" stroke="${SKIN_D}" stroke-width="2.5" opacity=".94"/>`).join('')}</g>
@@ -1121,24 +1121,29 @@
   function quiz(c) {
     const v = c.v, pp = v.sbp - v.dbp, b = bmiOf(c), seed = c.age;
     const q3 = pick(`${pp} mmHg`, [`${pp + 12} mmHg`, `${pp - 14} mmHg`, `${pp + 24} mmHg`], seed);
+    const male = c.sex === 'M', wCut = male ? 94 : 80;
+    const wRisk = v.waist >= wCut;
     return [
-      { q: 'La cámara inflable del manguito debe rodear aproximadamente…', ...pick('El 80 % de la circunferencia del brazo (ancho ≈ 40 %)', ['El 50 % de la circunferencia', 'El 100 % o más, solapándose', 'El 30 %, para localizar la arteria'], seed + 1),
-        why: 'Un manguito estrecho sobrestima la PA y uno demasiado ancho la subestima. Se coloca con el borde inferior 2–3 cm sobre el pliegue del codo.' },
-      { q: 'El método palpatorio previo (pulso radial) sirve para…', ...pick('Estimar la sistólica e inflar 20–30 mmHg por encima, evitando subestimarla por un hiato auscultatorio', ['Medir la diastólica sin fonendoscopio', 'Calcular la frecuencia cardíaca', 'Sustituir siempre a la auscultación'], seed + 2),
-        why: 'El hiato auscultatorio es un silencio entre la sistólica y la diastólica; si se empieza a desinflar dentro de él se subestima la sistólica.' },
+      { q: 'El método palpatorio previo (pulso radial) sirve para…', ...pick('Estimar la sistólica e inflar 20–30 mmHg por encima, para no subestimarla si hay pozo auscultatorio', ['Medir la diastólica sin estetoscopio', 'Calcular la frecuencia cardíaca', 'Sustituir siempre a la auscultación'], seed + 2),
+        why: 'El pozo (agujero) auscultatorio es un silencio transitorio entre la fase I y la fase II de Korotkoff; si se empieza a auscultar dentro de él, se toma por sistólica la reaparición de los ruidos y se la subestima.' },
       { q: `Presión de pulso (PAS − PAD) de esta persona (PA ${v.sbp}/${v.dbp}):`, ...q3,
-        why: `${v.sbp} − ${v.dbp} = ${pp} mmHg. Lo habitual es ≈ 40 mmHg (30–50); tiende a aumentar con la edad por la rigidez arterial.` },
+        why: `${v.sbp} − ${v.dbp} = ${pp} mmHg. Lo habitual es 30–50 mmHg; tiende a aumentar con la edad por la rigidez arterial.` },
       { q: 'Frecuencia cardíaca normal en reposo del adulto y forma de contarla:', ...pick('60–100 lpm; 15 s × 4 o 30 s × 2 si es regular, 1 min si es irregular', ['40–60 lpm; contar 5 s × 12', '100–140 lpm; contar siempre 1 min', '60–100 lpm; contar solo 10 s × 6 con el pulgar'], seed + 3),
-        why: 'Se palpa con la yema del índice y del medio (no con el pulgar). Menos de 60 es bradicardia y más de 100, taquicardia.' },
-      { q: '¿Por qué conviene contar la frecuencia respiratoria sin avisar a la persona?', ...pick('Porque la respiración es parcialmente voluntaria y cambia si se sabe observada', ['Porque el aparato mide mejor sin aviso', 'Porque es más rápido', 'Porque el paciente suele contener el pulso'], seed + 4),
-        why: 'Normal en el adulto: 12–20 rpm, regular, con relación FC:FR de ≈ 4–5:1 y sin uso de músculos accesorios.' },
-      { q: 'Valores normales de SpO₂ y temperatura oral en un adulto sano:', ...pick('SpO₂ ≥ 95 % y T oral 36,1–37,2 °C', ['SpO₂ ≥ 85 % y T oral 36,1–37,2 °C', 'SpO₂ ≥ 95 % y T oral 37,5–38,5 °C', 'SpO₂ 90–92 % y T oral 35,0–36,0 °C'], seed + 5),
-        why: 'La temperatura axilar normal es algo menor (35,5–36,5 °C) y la rectal algo mayor. Esmalte de uñas, frío y mala perfusión alteran la oximetría.' },
+        why: 'Se palpa con la yema del índice y del medio (no con el pulgar). Menos de 60 es bradicardia y más de 100, taquicardia. Además de la frecuencia se describen ritmo, amplitud, tensión, igualdad y simetría.' },
+      { q: 'Valores normales de SpO₂ y de temperatura axilar en un adulto sano:', ...pick('SpO₂ ≥ 95 % y T axilar 35,8–37,0 °C', ['SpO₂ ≥ 85 % y T axilar 35,8–37,0 °C', 'SpO₂ ≥ 95 % y T axilar 37,5–38,5 °C', 'SpO₂ 90–92 % y T axilar 34,5–35,5 °C'], seed + 5),
+        why: 'La oral es ≈ 0,3–0,5 °C mayor y la rectal ≈ 0,5–0,8 °C mayor que la axilar. Esmalte de uñas, frío y mala perfusión alteran la oximetría.' },
       { q: `Con peso ${v.weight} kg y talla ${fmt(v.height, 2)} m, el IMC de esta persona (${fmt(b)} kg/m²) corresponde, según la OMS, a…`,
         options: ['Bajo peso (< 18,5)', 'Normal (18,5–24,9)', 'Sobrepeso (25–29,9)', 'Obesidad (≥ 30)'], a: bmiCat(b) > 3 ? 3 : bmiCat(b),
-        why: `IMC = ${v.weight} / ${fmt(v.height, 2)}² = ${fmt(b)} kg/m². En el adulto mayor se tolera un IMC algo mayor como óptimo.` },
-      { q: 'La escala de Glasgow de una persona normal, consciente y colaboradora, es…', ...pick('15 puntos (E4 V5 M6)', ['14 puntos (E4 V4 M6)', '13 puntos (E3 V4 M6)', '12 puntos (E3 V4 M5)'], seed + 6),
-        why: 'E (ocular) 1–4, V (verbal) 1–5, M (motora) 1–6; total 3–15. ≤ 8 indica coma/gravedad.' }
+        why: `IMC = ${v.weight} / ${fmt(v.height, 2)}² = ${fmt(b)} kg/m². Según algunas fuentes, en el adulto mayor se tolera un IMC algo mayor como óptimo.` },
+      { q: `El perímetro de cintura de esta ${male ? 'persona (varón' : 'persona (mujer'}, ${v.waist} cm) está, según OMS/IDF…`,
+        ...pick(wRisk ? `En o por encima del punto de corte de riesgo aumentado (≥ ${wCut} cm)` : `Por debajo del punto de corte de riesgo (< ${wCut} cm)`,
+          wRisk ? [`Por debajo del punto de corte de riesgo (< ${wCut} cm)`, 'En el rango de riesgo sustancialmente aumentado (≥ 102 cm en ambos sexos)', 'Sin valor clínico: solo importa el IMC']
+            : [`En o por encima del punto de corte de riesgo aumentado (≥ ${wCut} cm)`, 'En el rango de riesgo sustancialmente aumentado (≥ 102 cm en ambos sexos)', 'Sin valor clínico: solo importa el IMC'], seed + 7),
+        why: `Puntos de corte OMS/IDF: riesgo aumentado ≥ 94 cm (varón) / ≥ 80 cm (mujer); sustancialmente aumentado ≥ 102 / ≥ 88 cm. Se mide en el punto medio entre la última costilla y la cresta ilíaca.` },
+      { q: 'La escala de Glasgow de una persona normal, consciente y colaboradora, es…', ...pick('15 puntos (O4 V5 M6)', ['14 puntos (O4 V4 M6)', '13 puntos (O3 V4 M6)', '12 puntos (O3 V4 M5)'], seed + 6),
+        why: 'O (apertura ocular) 1–4, V (respuesta verbal) 1–5, M (respuesta motora) 1–6; total 3–15. ≤ 8 indica coma.' },
+      { q: 'En la impresión general, el decúbito de una persona sana se describe como…', ...pick('Activo e indiferente: cambia de posición por sí misma y se acuesta cómoda en cualquiera', ['Pasivo: permanece en la posición en que se la coloca', 'Activo obligado: solo tolera una posición', 'Preferencial: ortopnea'], seed + 8),
+        why: 'El decúbito activo puede ser indiferente (normal), preferencial u obligado; el pasivo corresponde a personas que no pueden moverse (p. ej. coma).' }
     ];
   }
 
@@ -1174,16 +1179,17 @@
     rows += num('PA sistólica', S.sbp, v.sbp, 4, '', 0);
     rows += num('PA diastólica', S.dbp, v.dbp, 4, '', 0);
     rows += num('FC (lpm)', S.hr, v.hr, 5, '', 0);
-    rows += cat('Pulso: ritmo', S.pulse && S.pulse.rhythm, 'reg', S.pulse ? PULSE_TXT.rhythm[S.pulse.rhythm] : '', 'rítmico');
-    rows += cat('Pulso: amplitud', S.pulse && S.pulse.amp, 'full', S.pulse ? PULSE_TXT.amp[S.pulse.amp] : '', 'lleno');
-    rows += cat('Pulso: simetría', S.pulse && S.pulse.sym, 'sym', S.pulse ? PULSE_TXT.sym[S.pulse.sym] : '', 'simétrico');
+    const PULSE_LABEL = { rhythm: 'ritmo', amp: 'amplitud', tens: 'tensión', eq: 'igualdad', sym: 'simetría' };
+    PULSE_KEYS.forEach(k => {
+      rows += cat('Pulso: ' + PULSE_LABEL[k], S.pulse && S.pulse[k], PULSE_NORMAL[k], S.pulse ? PULSE_TXT[k][S.pulse[k]] : '', PULSE_TXT[k][PULSE_NORMAL[k]]);
+    });
     rows += num('FR (rpm)', S.rr, v.rr, 3, '', 0);
     if (S.temp) rows += num(`T° ${SITES[S.temp.site].short.toLowerCase()}`, S.temp.val, siteTemp(c, S.temp.site), 0.25, ' °C', 1);
-    else rows += num('Temperatura', null, v.temp, 0.25, ' °C', 1);
+    else rows += num('T° axilar', null, v.temp, 0.25, ' °C', 1);
     rows += num('SpO₂ (%)', S.spo2, v.spo2, 1, '', 0);
     rows += num('IMC', S.bmi, Math.round(b * 10) / 10, 0.5, '', 1);
     rows += num('Cintura (cm)', S.waist, v.waist, 2, '', 0);
-    rows += cat('Glasgow', S.gcs && S.gcs.t, 15, S.gcs ? `${S.gcs.t} (E${S.gcs.e} V${S.gcs.v} M${S.gcs.m})` : '', '15 (E4 V5 M6)');
+    rows += cat('Glasgow', S.gcs && S.gcs.t, 15, S.gcs ? gcsTxt(S.gcs) : '', '15 (O4 V5 M6)');
     const note = S.bpTech ? '<p style="font-size:12px;color:var(--muted)">Nota: mediste la PA con una variación de técnica (brazo o manguito); por eso pudo desviarse del valor real.</p>' : '';
     const qs = quiz(c);
     let qok = 0;
@@ -1193,10 +1199,11 @@
       if (good) qok++;
       return `<li>${good ? '<span class="m-ok">✔</span>' : '<span class="m-bad">✘</span>'} <b>${esc(q.options[q.a])}</b>. ${q.why || ''}</li>`;
     }).join('');
-    return `<h4>Comparación con los valores reales</h4>
+    const html = `<h4>Comparación con los valores reales</h4>
       <table class="res"><tr><th>Medida</th><th>Tuyo</th><th>Real</th><th></th></tr>${rows}</table>
       <p><b>${ok}</b> de ${tot} medidas correctas (tolerancias: PA ±4 mmHg, FC ±5, FR ±3, T° ±0,25 °C, SpO₂ ±1 %, IMC ±0,5, cintura ±2 cm).</p>${note}
       <h4>Cuestionario</h4><p><b>${qok}</b> de ${qs.length} correctas.</p><ul>${qrows}</ul>`;
+    return { html, ok: ok + qok, total: tot + qs.length };
   }
 
   /* ========================================================================= MÓDULO */
@@ -1205,16 +1212,17 @@
     sc.enter = function (stage, sh) { e0.call(this, stage, sh); mine(sh); };
   });
 
-  const CASES = NormalEngine.people.map(p => {
-    const v = p.v, b = v.weight / (v.height * v.height);
+  /* Personas: se toman de NormalEngine.people (cualquier cantidad); los hallazgos se derivan de c.v, el sexo y la edad. */
+  const buildCases = () => NormalEngine.people.map(p => {
+    const v = p.v, b = v.weight / (v.height * v.height), fem = p.sex === 'F', wCut = fem ? 80 : 94;
     return Object.assign({}, p, {
       findings: [
-        `PA ${v.sbp}/${v.dbp} mmHg (presión de pulso ${v.sbp - v.dbp} mmHg)${p.age >= 65 ? '; PAS algo más alta, esperable con la edad' : ''}.`,
-        `Pulso radial ${v.hr} lpm: rítmico, lleno, simétrico.`,
-        `FR ${v.rr} rpm, eupneico; relación FC:FR ≈ ${fmt(v.hr / v.rr)}:1.`,
-        `T oral ${fmt(v.temp)} °C (axilar ≈ ${fmt(siteTemp(p, 'axilar'))}); SpO₂ ${v.spo2} % al aire ambiente.`,
-        `IMC ${fmt(b)} kg/m² (${BMI_NAMES[bmiCat(b)].toLowerCase()}); cintura ${v.waist} cm${p.sex === 'M' && v.waist >= 94 ? ' (en el límite del punto de corte de riesgo; interpretar con el contexto)' : ''}.`,
-        'Estado general bueno, facies normal, marcha normal, normocoloreado/a, Glasgow 15 (E4 V5 M6).'
+        `PA ${v.sbp}/${v.dbp} mmHg (presión de pulso ${v.sbp - v.dbp} mmHg)${v.sbp >= 130 || v.dbp >= 85 ? '; normal-alta según ESC/ESH (por debajo del umbral de HTA de 140/90), esperable con la edad por la rigidez arterial' : ''}.`,
+        `Pulso radial ${v.hr} lpm: rítmico (regular), de amplitud y tensión normales, igual y simétrico.`,
+        `FR ${v.rr} rpm, eupnea, tipo ${fem ? 'costal superior' : 'costoabdominal'}; relación FC:FR ≈ ${fmt(v.hr / v.rr)}:1.`,
+        `T axilar ${fmt(v.temp)} °C (oral ≈ ${fmt(siteTemp(p, 'oral'))} °C); SpO₂ ${v.spo2} % al aire ambiente.`,
+        `IMC ${fmt(b)} kg/m² (${BMI_NAMES[bmiCat(b)].toLowerCase()}); cintura ${v.waist} cm${v.waist >= wCut ? ` (en o por encima del punto de corte de riesgo aumentado de ${wCut} cm para ${fem ? 'la mujer' : 'el varón'}; se interpreta junto con el IMC y el resto del examen)` : ` (por debajo del punto de corte de ${wCut} cm)`}.`,
+        `Impresión general: lúcid${fem ? 'a' : 'o'}, actitud compuesta, decúbito activo indiferente, facies compuesta, hábito normolíneo, eutrófic${fem ? 'a' : 'o'} y bien hidratad${fem ? 'a' : 'o'}, piel y mucosas normocoloreadas, marcha eubásica; Glasgow 15 (O4 V5 M6).`
       ]
     });
   });
@@ -1223,7 +1231,8 @@
     mount(root) {
       injectStyle();
       const sh = new Shell(root, {
-        cases: CASES,
+        id: 'vitals', progressTotal: PROGRESS_KEYS.length, refs: REFS,
+        cases: buildCases(),
         scenes: { bp: BP, pulse: PULSE, resp: RESP, temp: TEMP, anthro: AN, gen: GEN },
         order: ['bp', 'pulse', 'resp', 'temp', 'anthro', 'gen'],
         hideDx: true,
@@ -1231,11 +1240,11 @@
         caseLabel: (c, i) => `Persona ${i + 1} · ${c.age} años, ${c.sex}`,
         record, evaluate,
         teaching: [
-          'PA: persona sentada y en reposo, brazo a nivel del corazón, manguito adecuado (cámara ≈ 80 % del brazo), desinflado de 2–3 mmHg/s; método palpatorio previo para no subestimar la sistólica si hay hiato auscultatorio.',
-          'Pulso: palpar con índice y medio (nunca con el pulgar); contar 15 s × 4 o 30 s × 2 (1 min si es irregular) y describir frecuencia (60–100 lpm), ritmo, amplitud y simetría.',
-          'FR: contarla sin avisar durante 30–60 s (normal 12–20 rpm, eupnea, I:E ≈ 1:2); relación FC:FR ≈ 4–5:1.',
-          'Temperatura: el rango normal depende del sitio (oral 36,1–37,2 °C; axilar 35,5–36,5 °C; rectal y timpánica algo mayores) y SpO₂ normal ≥ 95 %.',
-          'Antropometría y estado general: IMC (OMS), perímetro abdominal en el punto medio costilla–cresta ilíaca, inspección ordenada y Glasgow 15 (E4 V5 M6) en la persona normal.'
+          'PA: persona sentada y en reposo, brazo a nivel del corazón, manguito adecuado (cámara ≈ 80 % del brazo), desinflado de 2–3 mmHg/s; fase I de Korotkoff = sistólica, fase V = diastólica; método palpatorio previo para no subestimar la sistólica si hay pozo auscultatorio.',
+          'Pulso: palpar con índice y medio (nunca con el pulgar); contar 15 s × 4 o 30 s × 2 (1 min si es irregular) y describir frecuencia (60–100 lpm), ritmo, amplitud, tensión, igualdad y simetría.',
+          'FR: contarla sin avisar durante 30–60 s (eupnea 12–20 rpm, I:E ≈ 1:2; tipo costal superior en la mujer y costoabdominal en el varón); relación FC:FR ≈ 4–5:1.',
+          'Temperatura: el rango normal depende del sitio (axilar 35,8–37,0 °C; oral ≈ 0,3–0,5 °C más; rectal ≈ 0,5–0,8 °C más) y SpO₂ normal ≥ 95 %.',
+          'Antropometría e impresión general: IMC (OMS) y perímetro de cintura en el punto medio costilla–cresta ilíaca; impresión general ordenada (conciencia, actitud y decúbito, facies, hábito constitucional, nutrición, hidratación, piel, marcha) y Glasgow 15 (O4 V5 M6) en la persona normal.'
         ]
       });
       sh.start();
@@ -1245,12 +1254,13 @@
 
   registerModule({
     id: 'vitals', title: 'Signos vitales y estado general', icon: '🩺', group: 'Exploración normal',
-    desc: 'Mide la presión arterial, el pulso, la respiración, la temperatura y la saturación, y valora el estado general.',
+    desc: 'Mide la presión arterial, el pulso, la respiración, la temperatura y la saturación, y valora la impresión general.',
     bullets: [
-      'Tensiómetro con ruidos de Korotkoff y método palpatorio',
-      'Pulso radial, frecuencia respiratoria, temperatura y SpO₂',
-      'IMC, perímetro abdominal, inspección general y escala de Glasgow'
+      'Tensiómetro con fases de Korotkoff, pozo auscultatorio y método palpatorio',
+      'Pulso radial (seis caracteres), frecuencia respiratoria, temperatura por sitio y SpO₂',
+      'IMC, perímetro de cintura, impresión general y escala de Glasgow (O/V/M)'
     ],
+    refs: REFS,
     mount: root => mod.mount(root)
   });
 })();

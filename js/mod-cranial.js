@@ -355,7 +355,7 @@
     { id: 'fle', label: 'Flexores de los dedos', x: 187, y: 364, r: 14, man: 'Prensión: "apriete mis dedos" y flexión de las interfalángicas distales contra resistencia (flexor profundo).', root: 'C7-T1 · nervios mediano y cubital', limb: 'b', lab: 'Flexores dedos' },
     { id: 'ili', label: 'Iliopsoas', x: 282, y: 356, r: 13, man: 'Flexión de la cadera (en decúbito o sentado) elevando el muslo contra la resistencia de la mano sobre la rodilla.', root: 'L1-L3 · plexo lumbar y nervio femoral', limb: 'c', lab: 'Iliopsoas' },
     { id: 'cua', label: 'Cuádriceps', x: 277, y: 418, r: 18, man: 'Extensión de la rodilla desde 90° de flexión (sentado) contra resistencia sobre la pierna.', root: 'L2-L4 · nervio femoral', limb: 'c', lab: 'Cuádriceps' },
-    { id: 'gas', label: 'Gastrocnemio (flexión plantar)', x: 262, y: 492, r: 12, man: 'Flexión plantar del pie contra resistencia; en la práctica, ponerse de puntillas sobre un pie (10-20 repeticiones).', root: 'S1-S2 · nervio tibial', limb: 'd', lab: 'Gastrocnemio' },
+    { id: 'gas', label: 'Gastrocnemio (flexión plantar)', x: 262, y: 492, r: 12, man: 'Flexión plantar del pie contra resistencia; en la práctica, ponerse en puntas de pie sobre un pie (10-20 repeticiones).', root: 'S1-S2 · nervio tibial', limb: 'd', lab: 'Gastrocnemio' },
     { id: 'tib', label: 'Tibial anterior', x: 275, y: 536, r: 12, man: 'Dorsiflexión del pie contra resistencia (caminar sobre los talones).', root: 'L4-L5 · nervio peroneo profundo', limb: 'd', lab: 'Tibial anterior' }
   ];
   const TONE = {
@@ -371,7 +371,7 @@
     d: '<i>Técnica:</i> inspección de la pantorrilla y del compartimento anterior de la pierna; perímetro máximo de la pantorrilla. <i>Hallazgo normal:</i> simétricas, sin atrofia ni fasciculaciones; diferencia ≤ 1-2 cm.'
   };
   function motorSvg(learn, c) {
-    const rows = [['5', 'Normal: vence la resistencia máxima'], ['4', 'Vence la gravedad y una resistencia parcial'], ['3', 'Vence la gravedad, no la resistencia'],
+    const rows = [['5', 'Normal: vence la resistencia máxima'], ['4', 'Vence gravedad y resistencia parcial'], ['3', 'Vence la gravedad, no la resistencia'],
       ['2', 'Movimiento solo sin gravedad'], ['1', 'Contracción visible, sin movimiento'], ['0', 'Sin contracción']];
     return `
     <rect width="820" height="620" fill="#e8eef4"/>
@@ -382,8 +382,9 @@
       <text x="548" y="${88 + i * 62}" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="${r[0] === '5' ? '#237a4b' : '#7b8a99'}">${r[0]}</text>
       <text x="580" y="${74 + i * 62}" font-family="system-ui,sans-serif" font-size="12" fill="#38495a">${r[1]}</text>
       <text x="580" y="${92 + i * 62}" font-family="system-ui,sans-serif" font-size="10.5" fill="#55677a">${['Valor esperado en esta persona', '4-, 4 y 4+ según la resistencia', '', '', '', ''][i]}</text></g>`).join('')}
-    <text x="670" y="440" text-anchor="middle" class="svg-small">Motilidad activa y fuerza (5/5), tono (motilidad</text>
-    <text x="670" y="458" text-anchor="middle" class="svg-small">pasiva) y trofismo: compara siempre ambos lados.</text>`;
+    <text x="670" y="440" text-anchor="middle" class="svg-small">Motilidad activa y fuerza (5/5), tono</text>
+    <text x="670" y="458" text-anchor="middle" class="svg-small">(motilidad pasiva) y trofismo:</text>
+    <text x="670" y="476" text-anchor="middle" class="svg-small">compara siempre ambos lados.</text>`;
   }
   const strengthRun = m => ctx => {
     popText(ctx.svg, ctx.point, '5/5');
@@ -517,8 +518,8 @@
     <path id="crLegO" d="" fill="none" stroke="${SKIN_D}" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
     <path id="crLegF" d="" fill="none" stroke="${SKIN}" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
     <ellipse id="crLegFt" cx="0" cy="0" rx="11" ry="22" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5"/>
-    <text x="560" y="400" class="svg-small">Decúbito dorsal: el talón sube a la rodilla</text>
-    <text x="560" y="418" class="svg-small">contraria y baja por la cresta tibial.</text>`;
+    <text x="540" y="400" class="svg-small">Decúbito dorsal: el talón sube a la</text>
+    <text x="540" y="418" class="svg-small">rodilla contraria y baja por la tibia.</text>`;
   }
   const cerebLook = '<i>Técnica:</i> observación en reposo, sentado y de pie (taxia estática: ver Romberg en «Marcha y equilibrio»). <i>Hallazgo normal:</i> sin temblor ni movimientos anormales, sin nistagmo, con postura y tono normales.';
   const cerebRegions = [
@@ -608,7 +609,7 @@
   }
   const GDEF = {
     romberg: { title: 'Romberg: pies juntos, brazos a los lados' },
-    gait: { title: 'Marcha libre' }, tandem: { title: 'Marcha en tándem (talón-punta)' }, heels: { title: 'Marcha sobre talones' }, toes: { title: 'Marcha sobre puntillas' }
+    gait: { title: 'Marcha libre' }, tandem: { title: 'Marcha en tándem (talón-punta)' }, heels: { title: 'Marcha sobre talones' }, toes: { title: 'Marcha en puntas de pie' }
   };
   function runRomberg(ctx) {
     const svg = ctx.svg, c = ctx.c, fig = $q(svg, 'crFig'), lbl = $q(svg, 'crGLbl');
@@ -699,10 +700,12 @@
     ${bodyFront(c)}
     <text x="300" y="20" text-anchor="middle" class="svg-title">Persona examinada · explora ambos lados</text>
     ${learn ? `<text x="560" y="40" class="svg-title">Sensibilidad superficial y profunda</text>
-      <text x="560" y="60" class="svg-small">Superficial: táctil, dolorosa, térmica · Profunda: palestesia,</text>
-      <text x="560" y="76" class="svg-small">batiestesia, barestesia · Cortical: estereognosia, grafestesia</text>
-      <text x="560" y="106" class="svg-title">Referencias dermatómicas</text>
-      ${[['C6', 'pulgar'], ['C7', 'dedo medio'], ['C8', 'meñique'], ['T4', 'nivel del pezón'], ['T10', 'nivel del ombligo'], ['L1', 'ingle'], ['L4', 'rodilla y maléolo medial'], ['L5', 'dorso del pie y hallux'], ['S1', 'borde lateral del pie y talón']].map((r, i) => `<text x="560" y="${134 + i * 24}" class="svg-small"><tspan font-weight="700" fill="#0e6a78">${r[0]}</tspan>  ${r[1]}</text>`).join('')}` :
+      <text x="560" y="60" class="svg-small">Superficial: táctil, dolorosa y térmica.</text>
+      <text x="560" y="76" class="svg-small">Profunda: palestesia, batiestesia y</text>
+      <text x="560" y="92" class="svg-small">barestesia. Cortical: estereognosia,</text>
+      <text x="560" y="108" class="svg-small">grafestesia y discriminación de 2 puntos.</text>
+      <text x="560" y="140" class="svg-title">Referencias dermatómicas</text>
+      ${[['C6', 'pulgar'], ['C7', 'dedo medio'], ['C8', 'meñique'], ['T4', 'nivel del pezón'], ['T10', 'nivel del ombligo'], ['L1', 'ingle'], ['L4', 'rodilla y maléolo medial'], ['L5', 'dorso del pie y hallux'], ['S1', 'borde lateral del pie y talón']].map((r, i) => `<text x="560" y="${166 + i * 24}" class="svg-small"><tspan font-weight="700" fill="#0e6a78">${r[0]}</tspan>  ${r[1]}</text>`).join('')}` :
       '<text x="560" y="60" class="svg-small">Compara siempre zonas homólogas</text><text x="560" y="78" class="svg-small">con los ojos cerrados.</text>'}`;
   }
   const sensRegions = (() => {
@@ -994,7 +997,7 @@
 
   injectStyle();
   NormalEngine.build({
-    id: 'cranial', title: 'Examen neurológico: estado mental, pares craneales, motilidad y sensibilidad (normal)', icon: '🧠', group: 'Exploración normal',
+    id: 'cranial', title: 'Examen neurológico (normal)', icon: '🧠', group: 'Exploración normal',
     desc: 'Examen neurológico normal en el orden de Argente-Álvarez: conciencia y estado mental, pares craneales I-XII, motilidad (fuerza, tono, trofismo), taxia, sensibilidad superficial y profunda, marcha y signos meníngeos. Los reflejos se exploran en «Neurología: reflejos, pies y ojos».',
     bullets: ['Conciencia, Glasgow 15/15 y Mini-Mental 30/30 interactivo', 'Pares craneales I-XII con función, técnica y hallazgo normal', 'Fuerza 0-5, tono, trofismo, taxia, Romberg y marcha animados', 'Sensibilidad superficial, profunda (palestesia, batiestesia, barestesia) y signos meníngeos'],
     refs: [

@@ -1,10 +1,15 @@
 /* Módulo: Piel, faneras y mucosas (exploración NORMAL).
-   Escenas: piel, lunares (regla ABCDE), cabello y cuero cabelludo, uñas, mucosas y conjuntivas. */
+   Escenas: piel, nevos (regla ABCDE), pelo y cuero cabelludo, uñas, mucosas y conjuntivas.
+   Nomenclatura según Argente-Álvarez (lesiones elementales primarias y secundarias; color, humedad, temperatura,
+   textura, turgor/elasticidad, espesor y movilidad). Hallazgos en el esquema «Técnica / Hallazgo normal». */
 (function () {
   'use strict';
   const NS = 'http://www.w3.org/2000/svg';
   const fmt = n => String(n).replace('.', ',');
+  /* Cambios involutivos a partir de los 65 años; cambios posmenopáusicos en la mujer ≥ 50 años. */
   const elder = c => c.age >= 65;
+  const meno = c => c.sex === 'F' && c.age >= 50;
+  const TH = (t, h) => `<i>Técnica:</i> ${t} <i>Hallazgo normal:</i> ${h}`;
 
   /* ------------------------------------------------------------ estado y utilidades */
   const K = { live: false, tok: 0, tm: [], cancel: [], dia: 4, ang: 160, fold: 1, folding: false };
@@ -56,10 +61,10 @@
     { skin: '#c99466', line: '#97663b', light: '#d8a87e', ph: 'IV', lip: '#b8695f', nev: ['#4d2d1d', '#5e3825', '#704631'], hair: ['#231915', '#2e211b', '#3a2a22'], eye: '#3b2616', name: 'moreno claro' },
     { skin: '#f3d3b9', line: '#c19a7a', light: '#f8e1cd', ph: 'II', lip: '#d0928a', nev: ['#8a5a40', '#9d6c4c', '#b07d5a'], hair: ['#c9c9c9', '#b8b8b8', '#dcdcdc'], eye: '#6b7f8c', name: 'claro' }
   ];
-  const tn = c => (c.age < 35 ? TONES[0] : c.age < 60 ? TONES[1] : TONES[2]);
+  const tn = c => (c.age < 35 ? TONES[0] : c.age < 65 ? TONES[1] : TONES[2]);
 
-  const NOLES = 'sin lesiones primarias (mácula, pápula, placa, vesícula, ampolla, pústula, nódulo, habón) ni secundarias (escama, costra, excoriación, erosión, úlcera, fisura, cicatriz, liquenificación)';
-  const LEX = '<br><small><b>Mini-guía de lesiones elementales:</b> <b>mácula</b> = cambio de color plano &lt;1 cm (mancha si ≥1 cm); <b>pápula</b> = elevación sólida &lt;1 cm; <b>placa</b> = elevación plana de superficie amplia ≥1 cm; <b>vesícula</b> = elevación con líquido claro &lt;1 cm (<b>ampolla</b> ≥1 cm); <b>pústula</b> = elevación con pus; <b>nódulo</b> = lesión sólida palpable, más profunda, ≥1 cm; <b>habón</b> = placa edematosa, pruriginosa y fugaz (&lt;24 h).</small>';
+  const NOLES = 'sin lesiones elementales primarias (mácula, pápula, placa, tubérculo, nódulo, vesícula, ampolla, pústula, habón) ni secundarias (escama, costra, erosión, úlcera, fisura, cicatriz, atrofia, liquenificación)';
+  const LEX = '<br><small>Terminología de las lesiones elementales primarias y secundarias (Argente-Álvarez): ver las tarjetas bajo la escena.</small>';
 
   /* ============================================================ ESCENA 1: PIEL */
   const FX = 0.86;
@@ -77,7 +82,7 @@
     return { id, label, short, d: 'M' + pts.map(p => P(p[0], p[1]).join(',')).join(' L') + ' Z', lx: a, ly: b, anchor, tools };
   };
 
-  const turgT = c => (c.age < 35 ? 0.5 : c.age < 60 ? 0.8 : 1.6);
+  const turgT = c => (c.age < 35 ? 0.5 : c.age < 50 ? 0.8 : c.age < 65 ? 1.1 : 1.6);
   function pinchFx(x, c) {
     const layer = x.svg.querySelector('#flash');
     clearFx();
@@ -98,75 +103,75 @@
     }));
   }
   const turgHtml = (where) => (c) => ({
-    html: `Pellizco de un pliegue de piel en ${where} (entre 2 dedos, ≈2 s) y liberación: <b>vuelve a su posición en ≈${fmt(turgT(c).toFixed(1))} s</b> (normal <b>&lt;2 s</b>). Turgor y elasticidad conservados, sin pliegue que persista.` +
-      (elder(c) ? ' En el adulto mayor la elasticidad dérmica disminuye de forma fisiológica (regresa algo más lento) y el signo del pliegue no es fiable para valorar la hidratación.' : ''),
+    html: TH(`se pellizca un pliegue de piel en ${where} entre dos dedos durante ≈ 2 s y se suelta.`, `el pliegue <b>se aplana en ≈ ${fmt(turgT(c).toFixed(1))} s</b> (normal <b>&lt; 2 s</b>): turgor y elasticidad conservados.`) +
+      (elder(c) ? ' En el adulto mayor la elasticidad dérmica disminuye de forma fisiológica (regresa algo más lento) y el signo del pliegue no es fiable para valorar la hidratación.' : meno(c) ? ' Tras la menopausia la piel pierde colágeno y elasticidad: puede regresar algo más lento sin ser patológico.' : ''),
     run: x => pinchFx(x, c)
   });
 
   function skinTools(kind) {
+    const age = c => (c.age < 35 ? 'brillo sebáceo leve en la zona T' : c.age < 50 ? 'finas líneas de expresión' : meno(c) ? 'líneas de expresión y piel algo más fina y seca (cambio fisiológico posmenopáusico)' : 'arrugas, lentigos solares y piel más fina y seca (cambios propios de la edad)');
     const T = {
       cara: {
-        insp: c => `Color <b>uniforme</b> (fototipo ${tn(c).ph}, piel ${tn(c).name}), mejillas rosadas; <b>sin palidez, cianosis ni ictericia</b> (esclera blanca) ni eritema malar. Textura lisa con poros visibles, ${c.age < 35 ? 'brillo sebáceo leve en la zona T' : c.age < 60 ? 'finas líneas de expresión' : 'arrugas y lentigos solares benignos, piel más seca y fina'}; ${NOLES}.`,
-        palp: c => 'Piel <b>tibia</b> (≈34 °C), suave, de humedad normal (ni seca ni sudorosa), sin induración, nódulos ni dolor; simétrica con el lado contrario.',
-        turg: c => ({ html: 'En la cara el turgor no se explora de rutina: pellizca el dorso de la mano, la región infraclavicular o el abdomen. La piel facial se pliega con facilidad y regresa de inmediato.' }),
-        mov: 'Piel fina (≈0,5 mm en los párpados) y muy móvil sobre los planos profundos, salvo en la nariz y el pabellón auricular, donde está más adherida al cartílago.'
+        insp: c => TH('inspección con luz natural, comparando ambos lados.', `color <b>uniforme</b> según el fototipo (${tn(c).ph}, piel ${tn(c).name}), <b>sin palidez, cianosis ni ictericia</b> (esclera blanca) ni eritema malar; textura lisa con poros visibles, ${age(c)}; ${NOLES}.`),
+        palp: TH('dorso de la mano para la temperatura; yemas para la textura y la humedad.', 'piel <b>tibia</b>, suave, de humedad normal (ni seca ni sudorosa), sin induración, nódulos ni dolor; simétrica.'),
+        turg: () => ({ html: 'En la cara el turgor no se explora de rutina: pellizca el dorso de la mano, la región infraclavicular o el abdomen. La piel facial se pliega con facilidad y regresa de inmediato.' }),
+        mov: 'Piel fina (≈ 0,5 mm en los párpados) y muy móvil sobre los planos profundos, salvo en la nariz y el pabellón auricular, donde está adherida al cartílago.'
       },
       tronco: {
-        insp: c => `Color uniforme, algo más claro que en la cara y las manos (menos fotoexpuesto); ${NOLES}. Pueden verse pocos nevus regulares${elder(c) ? ' y, como cambios benignos de la edad, algunos angiomas rubí y queratosis seborreicas' : ''}. Sin estrías, cicatrices ni telangiectasias llamativas.`,
-        palp: 'Piel <b>tibia</b> (≈34-35 °C), lisa, de humedad normal, simétrica; sin nódulos, induración ni dolor; no hay prurito ni descamación.',
+        insp: c => TH('inspección de tórax y abdomen con buena luz, por delante y por detrás.', `color uniforme, algo más claro que en la cara y las manos (menos fotoexpuesto); ${NOLES}. Pueden verse pocos nevos regulares${elder(c) ? ' y, como cambios benignos de la edad, angiomas rubí y queratosis seborreicas' : ''}; sin estrías, cicatrices ni telangiectasias.`),
+        palp: TH('dorso de la mano y yemas de los dedos sobre tórax y abdomen.', 'piel <b>tibia</b>, lisa, de humedad normal y simétrica; sin nódulos, induración ni dolor.'),
         turg: turgHtml('la región infraclavicular o el abdomen'),
-        mov: 'Piel móvil, de grosor normal (epidermis 0,05-1,5 mm y dermis 1-4 mm en conjunto), no adherida a planos profundos; el pliegue cutáneo abdominal es fino y se pellizca sin dificultad.'
+        mov: TH('se desliza la piel sobre los planos profundos y se pellizca un pliegue.', 'piel móvil, de espesor normal (epidermis 0,05-1,5 mm y dermis 1-4 mm), no adherida; el pliegue abdominal es fino y se pellizca sin dificultad.')
       },
       brazo: {
-        insp: c => `Color homogéneo, algo más oscuro en la cara extensora y el antebrazo (fotoexposición) y más claro y fino en la cara flexora; vello según sexo y edad; ${NOLES}.`,
-        palp: 'Brazos y antebrazos <b>tibios</b> (≈32-33 °C), simétricos con el lado contrario, humedad normal, sin edema, nódulos ni dolor.',
+        insp: c => TH('inspección de brazo y antebrazo, cara extensora y flexora.', `color homogéneo, algo más oscuro en la cara extensora (fotoexposición) y más claro y fino en la flexora; vello según sexo y edad; ${NOLES}.`),
+        palp: 'Brazos y antebrazos <b>tibios</b> y simétricos, de humedad normal; sin edema, nódulos ni dolor.',
         turg: turgHtml('la cara dorsal del antebrazo'),
-        mov: 'Piel móvil sobre el músculo y de grosor normal; la cara extensora es algo más gruesa que la flexora.'
+        mov: 'Piel móvil sobre el músculo y de espesor normal; la cara extensora es algo más gruesa que la flexora.'
       },
       pierna: {
-        insp: c => `Color uniforme, vello distribuido de forma homogénea (más escaso en la mujer y en el anciano); ${NOLES}. Sin edema, sin várices, sin hiperpigmentación ni cambios tróficos.`,
-        palp: 'Piernas <b>tibias</b> (≈31-33 °C) y simétricas, sin gradiente de temperatura entre ambas, humedad normal; sin edema (<b>fóvea negativa</b>), cordones ni dolor.',
+        insp: c => TH('inspección de muslo y pierna, de pie y en decúbito.', `color uniforme, vello distribuido de forma homogénea (más escaso en la mujer y en el adulto mayor); ${NOLES}. Sin edema, várices, hiperpigmentación ni cambios tróficos.`),
+        palp: TH('dorso de la mano en ambas piernas; presión con el pulgar sobre la tibia 5 s.', 'piernas <b>tibias</b> y simétricas, sin gradiente de temperatura entre ambas; sin edema (<b>signo de la fóvea o godet ausente</b>), cordones ni dolor.'),
         turg: turgHtml('la cara anterior del muslo'),
-        mov: 'Piel móvil en el muslo y algo más adherida sobre la tibia (poco tejido subcutáneo); grosor normal.'
+        mov: 'Piel móvil en el muslo y más adherida sobre la tibia (poco tejido celular subcutáneo); espesor normal.'
       },
       pliegue: {
-        insp: c => `Piel más fina y algo más oscura de forma fisiológica según el fototipo; ${NOLES}. <b>Sin maceración, eritema ni fisuras</b> (no hay intertrigo) y sin acantosis nigricans.`,
-        palp: 'Piel <b>más cálida y ligeramente húmeda</b> (sudoración normal en axilas e ingles), lisa, sin induración ni adenopatías palpables en la región.',
+        insp: c => TH('inspección de axilas e ingles separando el pliegue.', `piel más fina y algo más oscura de forma fisiológica según el fototipo; ${NOLES}. <b>Sin maceración, eritema ni fisuras</b> (sin intertrigo) y sin acantosis nigricans.`),
+        palp: 'Piel <b>algo más cálida y ligeramente húmeda</b> (sudoración normal de axilas e ingles), lisa, sin induración ni adenopatías palpables.',
         turg: turgHtml('el pliegue (se evalúa mejor en otra zona)'),
         mov: 'Piel fina, laxa y móvil, con vello normal en axilas e ingles.'
       },
       mano: {
-        insp: c => `Dorso de mano y dedos: color uniforme, piel fina y laxa, venas dorsales visibles${elder(c) ? ' (más prominentes con la edad, con lentigos solares benignos)' : ''}; ${NOLES}. Sin edema ni cianosis.`,
-        palp: 'Manos <b>tibias</b> (≈31-33 °C) y secas, simétricas, sin gradiente de temperatura hacia los dedos; sin edema ni dolor.',
+        insp: c => TH('inspección del dorso de manos y dedos.', `color uniforme, piel fina y laxa, venas dorsales visibles${elder(c) ? ' (más prominentes con la edad, con lentigos solares benignos)' : ''}; ${NOLES}. Sin edema ni cianosis.`),
+        palp: 'Manos <b>tibias</b> y secas, simétricas, sin gradiente de temperatura hacia los dedos; sin edema ni dolor.',
         turg: turgHtml('el dorso de la mano'),
-        mov: 'Piel del dorso muy fina (<1 mm) y móvil: se levanta con facilidad entre dos dedos.'
+        mov: 'Piel del dorso muy fina (&lt; 1 mm) y móvil: se levanta con facilidad entre dos dedos.'
       },
       pie: {
-        insp: c => `Dorso del pie y dedos: color uniforme, vello presente, piel lisa; <b>espacios interdigitales secos</b>, sin descamación ni maceración; ${NOLES}. Sin edema ni deformidades.`,
-        palp: 'Pies <b>tibios</b> (≈30-32 °C), simétricos, algo más frescos que las piernas; sin edema ni dolor.',
+        insp: c => TH('inspección del dorso del pie y los espacios interdigitales.', `color uniforme, vello presente, piel lisa; <b>espacios interdigitales secos</b>, sin descamación ni maceración; ${NOLES}. Sin edema ni deformidades.`),
+        palp: 'Pies <b>tibios</b>, simétricos, algo más frescos que las piernas; sin edema ni dolor.',
         turg: turgHtml('el dorso del pie'),
-        mov: 'Piel del dorso fina y móvil; la de los talones y la planta es gruesa.'
+        mov: 'Piel del dorso fina y móvil; la del talón y la planta es gruesa.'
       },
       palma: {
-        insp: c => `Palma: color rosado uniforme, <b>crestas dérmicas</b> (huellas) y pliegues palmares marcados, <b>sin pelo ni glándulas sebáceas</b>; sin eritema palmar ni palidez de los pliegues; ${NOLES}.`,
+        insp: c => TH('inspección de ambas palmas con buena luz.', `color rosado uniforme, con <b>crestas dérmicas</b> (huellas) y pliegues palmares marcados, <b>sin pelo ni glándulas sebáceas</b>; sin eritema palmar ni palidez de los pliegues; ${NOLES}.`),
         palp: 'Palma <b>tibia</b> y ligeramente húmeda (abundantes glándulas sudoríparas ecrinas), de textura gruesa y firme; simétrica con la otra mano.',
-        turg: c => ({ html: 'En la palma el pliegue no es pellizcable (piel gruesa y adherida a la aponeurosis): no se usa para el turgor.' }),
-        mov: 'Piel muy gruesa (epidermis hasta ≈1,5 mm) y poco móvil por su fijación a la fascia palmar: es normal.'
+        turg: () => ({ html: 'En la palma el pliegue no se puede pellizcar (piel gruesa, adherida a la aponeurosis): no se usa para el turgor.' }),
+        mov: 'Piel gruesa (epidermis hasta ≈ 1,5 mm) y poco móvil por su fijación a la aponeurosis palmar: es normal.'
       },
       planta: {
-        insp: c => `Planta: piel gruesa y uniforme, con ligera <b>callosidad</b> en los puntos de apoyo (talón y cabezas metatarsianas), arco plantar conservado; ${NOLES}. Sin fisuras ni maceración.`,
-        palp: 'Planta <b>tibia</b>, seca o con humedad leve, firme y gruesa; sin dolor, nódulos ni verrugas.',
-        turg: c => ({ html: 'En la planta no se explora el turgor (piel gruesa y adherida).' }),
-        mov: 'Es la piel más gruesa del cuerpo (epidermis hasta ≈1,5 mm; el estrato córneo es grueso) y apenas se desliza sobre los planos profundos.'
+        insp: c => TH('inspección de la planta, el talón y los puntos de apoyo.', `piel gruesa y uniforme, con ligera <b>callosidad</b> en los puntos de apoyo (talón y cabezas de los metatarsianos), arco plantar conservado; ${NOLES}. Sin fisuras ni maceración.`),
+        palp: 'Planta <b>tibia</b>, seca o de humedad leve, firme y gruesa; sin dolor, nódulos ni verrugas.',
+        turg: () => ({ html: 'En la planta no se explora el turgor (piel gruesa y adherida).' }),
+        mov: 'Es la piel más gruesa del cuerpo (estrato córneo grueso; epidermis hasta ≈ 1,5 mm) y apenas se desliza sobre los planos profundos.'
       }
     };
     const t = T[kind];
     return {
       insp: t.insp, palp: t.palp, turg: t.turg, mov: t.mov,
-      lex: c => `${(kind === 'palma' || kind === 'planta') ? 'Zona sin pelo y con piel gruesa' : 'En esta región'}: ${NOLES}.${LEX}`
+      lex: () => `${(kind === 'palma' || kind === 'planta') ? 'Zona sin pelo y de piel gruesa' : 'En esta región'}: ${NOLES}.${LEX}`
     };
   }
-
   function bodyFig(t) {
     const limb = (pts, w) => {
       const d = 'M' + pts.map(p => p.join(',')).join(' L');
@@ -213,21 +218,34 @@
     return s;
   }
 
+  /* Tarjetas de lesiones elementales (clasificación de Argente-Álvarez): primarias y secundarias. */
   const termCard = () => {
     const sk = '<path d="M2,27 H68" stroke="#b58459" stroke-width="2"/>';
-    const T = [
-      ['Mácula', '<1 cm, plana, solo color', '<rect x="18" y="25" width="34" height="3" fill="#a56b4a"/>'],
-      ['Pápula', 'elevación sólida <1 cm', '<path d="M25,27 Q35,10 45,27 Z" fill="#c98f7a" stroke="#a16a58"/>'],
-      ['Placa', 'elevación plana ≥1 cm', '<path d="M10,27 L14,17 H56 L60,27 Z" fill="#d49a86" stroke="#a16a58"/>'],
-      ['Vesícula', 'líquido claro <1 cm', '<path d="M26,27 Q35,12 44,27 Z" fill="#d6ecf7" stroke="#7aa6bd"/>'],
-      ['Ampolla', 'líquido claro ≥1 cm', '<path d="M17,27 Q35,0 53,27 Z" fill="#d6ecf7" stroke="#7aa6bd"/>'],
+    const PRIM = [
+      ['Mácula', 'cambio de color, plana, no palpable', '<rect x="18" y="25" width="34" height="3" fill="#a56b4a"/>'],
+      ['Pápula', 'elevación sólida, &lt; 1 cm, epidérmica o dérmica superficial', '<path d="M25,27 Q35,10 45,27 Z" fill="#c98f7a" stroke="#a16a58"/>'],
+      ['Placa', 'elevación de superficie amplia (≥ 1 cm), a menudo por confluencia de pápulas', '<path d="M10,27 L14,17 H56 L60,27 Z" fill="#d49a86" stroke="#a16a58"/>'],
+      ['Tubérculo', 'sólida, circunscrita, dérmica profunda; cura con cicatriz', '<path d="M22,27 Q35,6 48,27 Z" fill="#b97a66" stroke="#8d5244"/><path d="M26,27 Q35,20 44,27" fill="none" stroke="#8d5244" stroke-width="1.5"/>'],
+      ['Nódulo', 'sólida, profunda (dermis-hipodermis), más palpable que visible', '<circle cx="35" cy="30" r="7" fill="#c98f7a" stroke="#a16a58"/><path d="M26,27 Q35,19 44,27" fill="none" stroke="#b58459" stroke-width="2"/>'],
+      ['Vesícula', 'contenido líquido claro, &lt; 0,5 cm', '<path d="M26,27 Q35,12 44,27 Z" fill="#d6ecf7" stroke="#7aa6bd"/>'],
+      ['Ampolla', 'contenido líquido, &gt; 0,5 cm', '<path d="M17,27 Q35,0 53,27 Z" fill="#d6ecf7" stroke="#7aa6bd"/>'],
       ['Pústula', 'contenido purulento', '<path d="M26,27 Q35,12 44,27 Z" fill="#f2e08a" stroke="#c4a93d"/>'],
-      ['Nódulo', 'sólido profundo ≥1 cm', '<circle cx="35" cy="30" r="7" fill="#c98f7a" stroke="#a16a58"/><path d="M26,27 Q35,19 44,27" fill="none" stroke="#b58459" stroke-width="2"/>'],
-      ['Habón', 'placa edematosa fugaz', '<path d="M8,27 Q12,14 22,13 H48 Q58,14 62,27 Z" fill="#f3b8b0" stroke="#d98a80"/><path d="M26,24 H44" stroke="#fde3df" stroke-width="3"/>']
+      ['Habón (roncha)', 'placa edematosa, pruriginosa y fugaz (&lt; 24 h)', '<path d="M8,27 Q12,14 22,13 H48 Q58,14 62,27 Z" fill="#f3b8b0" stroke="#d98a80"/><path d="M26,24 H44" stroke="#fde3df" stroke-width="3"/>']
     ];
-    return `<div class="sk-terms">${T.map(([n, d, s]) => `<div class="sk-term"><svg viewBox="0 0 70 36" preserveAspectRatio="xMidYMid meet">${sk}${s}</svg><b>${n}</b><span>${d}</span></div>`).join('')}</div>`;
+    const SEC = [
+      ['Escama', 'láminas de estrato córneo que se desprenden', '<path d="M14,24 l8,-6 l8,6 M30,24 l8,-6 l8,6 M46,24 l6,-5 l6,5" fill="none" stroke="#9c8470" stroke-width="2"/>'],
+      ['Costra', 'exudado (suero, sangre, pus) desecado', '<path d="M18,27 Q24,16 35,18 Q46,15 52,27 Z" fill="#a9472f" stroke="#7a2e1c"/>'],
+      ['Erosión', 'pérdida superficial (epidermis); no deja cicatriz', '<path d="M20,27 Q35,33 50,27" fill="#f0a9a0" stroke="#c97b70"/>'],
+      ['Úlcera', 'pérdida de sustancia que llega a la dermis; deja cicatriz', '<path d="M18,27 Q35,44 52,27" fill="#d9776f" stroke="#9a4c45"/>'],
+      ['Fisura', 'hendidura lineal, a menudo dolorosa', '<path d="M35,20 L33,27 L35,36" fill="none" stroke="#9a4c45" stroke-width="2.5"/>'],
+      ['Cicatriz', 'tejido fibroso que repara una pérdida de sustancia', '<path d="M18,27 H52" stroke="#e3c4b4" stroke-width="5"/><path d="M22,24 v6 M30,24 v6 M38,24 v6 M46,24 v6" stroke="#b58459" stroke-width="1.2"/>'],
+      ['Atrofia', 'adelgazamiento de la piel; superficie lisa y fina', '<path d="M12,27 Q35,31 58,27" fill="none" stroke="#c9b3a3" stroke-width="2.5"/>'],
+      ['Liquenificación', 'engrosamiento con cuadrícula acentuada, por rascado', '<path d="M14,22 H56 M14,27 H56 M14,32 H56 M22,18 V34 M35,18 V34 M48,18 V34" fill="none" stroke="#9c7a62" stroke-width="1.3"/>']
+    ];
+    const card = ([n, d, s]) => `<div class="sk-term"><svg viewBox="0 0 70 36" preserveAspectRatio="xMidYMid meet">${sk}${s}</svg><b>${n}</b><span>${d}</span></div>`;
+    return `<div class="sk-note"><b>Lesiones elementales primarias</b> (aparecen sobre piel sana):</div><div class="sk-terms">${PRIM.map(card).join('')}</div>` +
+      `<div class="sk-note"><b>Lesiones elementales secundarias</b> (evolución de una primaria o de la agresión de la piel):</div><div class="sk-terms">${SEC.map(card).join('')}</div>`;
   };
-
   const piel = {
     id: 'piel', label: 'Piel: inspección y palpación', viewBox: '0 0 760 640', redrawOnMode: false,
     hint: 'Inspecciona y palpa cada región; usa el pellizco para el turgor y la elasticidad.',
@@ -236,15 +254,15 @@
       let b = `<rect x="410" y="10" width="340" height="300" rx="10" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="424" y="34">Palma de la mano</text>`;
       b += `<rect x="410" y="320" width="340" height="310" rx="10" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="424" y="344">Planta del pie</text>`;
       b += bodyFig(t) + bigHand(520, 70, t) + sole(t);
-      b += `<text class="svg-small" x="26" y="30">Fototipo ${t.ph} de Fitzpatrick (${t.name})</text>`;
+      b += `<text class="svg-small" x="26" y="630">Fototipo ${t.ph} de Fitzpatrick (${t.name})</text>`;
       return b;
     },
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Color, uniformidad, textura y lesiones; con buena luz natural.' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Dorso de la mano para la temperatura; yemas para la textura y la humedad.' },
       { id: 'turg', icon: '🤏', label: 'Turgor / elasticidad', hint: 'Pellizca un pliegue entre dos dedos, suéltalo y mide cuánto tarda en aplanarse.' },
-      { id: 'mov', icon: '↔️', label: 'Movilidad y grosor', hint: 'Desliza y pellizca la piel: movilidad sobre planos profundos y grosor.' },
-      { id: 'lex', icon: '📖', label: 'Lesiones elementales', hint: 'Busca lesiones primarias y secundarias y repasa la terminología.' }
+      { id: 'mov', icon: '↔️', label: 'Movilidad y espesor', hint: 'Desliza y pellizca la piel: movilidad sobre los planos profundos y espesor.' },
+      { id: 'lex', icon: '📖', label: 'Lesiones elementales', hint: 'Busca lesiones elementales primarias y secundarias y repasa la terminología (tarjetas bajo la escena).' }
     ],
     regions: [
       cir('cara', 'Cara', 'Cara', 230, 62, 38, 280, 28, 'start', skinTools('cara')),
@@ -267,7 +285,7 @@
     after: (stage) => {
       leaveAll(); injectCss();
       stage.insertAdjacentHTML('beforeend', termCard() +
-        `<div class="sk-note"><b>Normal:</b> color uniforme según el fototipo, sin palidez, cianosis, ictericia ni eritema; textura lisa; temperatura tibia y simétrica; humedad normal; turgor con regreso del pliegue en &lt;2 s; piel móvil, sin lesiones primarias ni secundarias.</div>`);
+        `<div class="sk-note"><b>Normal:</b> color uniforme según el fototipo, sin palidez, cianosis, ictericia ni eritema; humedad normal; temperatura tibia y simétrica; textura lisa; turgor y elasticidad con regreso del pliegue en &lt; 2 s; espesor normal y piel móvil sobre los planos profundos; sin lesiones elementales primarias ni secundarias.</div>`);
     },
     onLeave: leaveAll
   };
@@ -306,20 +324,20 @@
   }
 
   const ABCDE = [
-    ['A', 'Asimetría', 'Las dos mitades coinciden', 'Nevus <b>simétrico</b>: al dividirlo por cualquier eje las dos mitades son iguales (forma redonda u oval regular). Usa «Doblar sobre el eje» para comprobarlo.'],
+    ['A', 'Asimetría', 'Las dos mitades coinciden', 'Nevo <b>simétrico</b>: al dividirlo por cualquier eje las dos mitades son iguales (forma redonda u oval regular). Usa «Doblar sobre el eje» para comprobarlo.'],
     ['B', 'Bordes', 'Regulares y bien definidos', 'Bordes <b>regulares, lisos y bien delimitados</b> (nítidos respecto a la piel vecina), sin muescas ni zonas desdibujadas.'],
     ['C', 'Color', 'Uniforme, un solo tono', 'Color <b>uniforme</b> (un solo tono de marrón, algo más oscuro en el centro), sin zonas negras, rojas, blancas ni azuladas.'],
     ['D', 'Diámetro', '<6 mm', 'Diámetro <b>&lt;6 mm</b> (aprox. el borde de una goma de lápiz); usa el control deslizante para medir.'],
-    ['E', 'Evolución', 'Estable en el tiempo', '<b>Sin cambios</b> de tamaño, forma, color o relieve en meses o años; sin picor, dolor ni sangrado. Todos los nevus de la persona se parecen entre sí (sin «patito feo»).']
+    ['E', 'Evolución', 'Estable en el tiempo', '<b>Sin cambios</b> de tamaño, forma, color o relieve en meses o años; sin picor, dolor ni sangrado. Todos los nevos de la persona se parecen entre sí (sin «patito feo»).']
   ];
 
   const lunares = {
-    id: 'nev', label: 'Lunares (regla ABCDE)', viewBox: '0 0 760 520', redrawOnMode: false,
-    hint: 'Revisa cada criterio ABCDE, cambia el diámetro del nevus y comprueba la simetría doblando la figura.',
+    id: 'nev', label: 'Nevos (regla ABCDE)', viewBox: '0 0 760 520', redrawOnMode: false,
+    hint: 'Revisa cada criterio ABCDE, cambia el diámetro del nevo y comprueba la simetría doblando la figura.',
     svg: (learn, c) => {
       const t = tn(c);
       let b = `<rect x="20" y="20" width="430" height="480" rx="12" fill="${t.skin}" stroke="${t.line}" stroke-width="3"/>`;
-      b += `<text class="svg-title" x="34" y="48" style="fill:#3a2a1f">Nevus (vista ampliada)</text>`;
+      b += `<text class="svg-title" x="34" y="48" style="fill:#3a2a1f">Nevo (vista ampliada)</text>`;
       b += ruler();
       ABCDE.forEach((r, i) => {
         const y = 28 + i * 58;
@@ -328,7 +346,7 @@
           <text class="svg-title" x="520" y="${y + 22}">${r[1]}</text>
           <text class="svg-small hintring" x="520" y="${y + 40}">${r[2]}</text>`;
       });
-      b += `<rect x="470" y="330" width="280" height="170" rx="10" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="484" y="356">Tipos de nevus</text>`;
+      b += `<rect x="470" y="330" width="280" height="170" rx="10" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="484" y="356">Tipos de nevos</text>`;
       b += `<ellipse cx="520" cy="430" rx="22" ry="20" fill="${t.nev[2]}" stroke="${t.nev[0]}" stroke-width="1.5"/>`;
       b += `<defs><radialGradient id="skNvC"><stop offset="0" stop-color="${t.nev[1]}"/><stop offset="1" stop-color="${t.nev[2]}"/></radialGradient><radialGradient id="skNvI"><stop offset="0" stop-color="#f4d9c0"/><stop offset="1" stop-color="${t.nev[2]}"/></radialGradient></defs>`;
       b += `<ellipse cx="610" cy="432" rx="23" ry="21" fill="url(#skNvC)" stroke="${t.nev[0]}" stroke-width="1.5"/><ellipse cx="604" cy="424" rx="8" ry="6" fill="#fff" opacity=".28"/>`;
@@ -336,18 +354,18 @@
       return b;
     },
     tools: [
-      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Evalúa A, B, C, D y E en cada nevus; compara con los demás de la persona.' },
-      { id: 'dermo', icon: '🔍', label: 'Dermatoscopio', hint: 'Dermatoscopia: estructura interna del nevus.' },
+      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Evalúa A, B, C, D y E en cada nevo; compara con los demás de la persona.' },
+      { id: 'dermo', icon: '🔍', label: 'Dermatoscopio', hint: 'Dermatoscopia: estructura interna del nevo.' },
       { id: 'medir', icon: '📏', label: 'Medir diámetro', hint: 'Mide el diámetro máximo con una regla milimetrada.' },
-      { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Relieve y consistencia del nevus.' }
+      { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Relieve y consistencia del nevo.' }
     ],
     regions: [
       {
-        id: 'nv', label: 'Nevus melanocítico', short: 'Nevus', cx: 235, cy: 245, r: 105, lx: 235, ly: 124, anchor: 'middle',
+        id: 'nv', label: 'Nevo melanocítico', short: 'Nevo', cx: 235, cy: 245, r: 105, lx: 235, ly: 124, anchor: 'middle',
         tools: {
-          insp: c => `Nevus <b>redondo-oval, simétrico</b>, de bordes regulares y color marrón <b>uniforme</b>, de ≈${fmt(K.dia.toFixed(1))} mm, estable. ${elder(c) ? 'A esta edad los nevus se hacen más escasos y aparecen lentigos solares y angiomas rubí benignos. ' : 'Un adulto suele tener entre 10 y 40 nevus. '}Todos los nevus de la persona se parecen entre sí.`,
+          insp: c => `Nevo <b>redondo-oval, simétrico</b>, de bordes regulares y color marrón <b>uniforme</b>, de ≈${fmt(K.dia.toFixed(1))} mm, estable. ${elder(c) ? 'A esta edad los nevos se hacen más escasos y aparecen lentigos solares y angiomas rubí benignos. ' : 'Un adulto suele tener entre 10 y 40 nevos. '}Todos los nevos de la persona se parecen entre sí.`,
           dermo: 'Dermatoscopia: <b>patrón reticular regular</b> (red de pigmento fina y homogénea que se adelgaza hacia la periferia) o globular/homogéneo simétrico; sin velo azul-blanquecino, estrías irregulares ni puntos y glóbulos irregulares.',
-          medir: () => `Diámetro máximo ≈<b>${fmt(K.dia.toFixed(1))} mm</b> ${K.dia < 6 ? '(<b>&lt;6 mm</b>: dentro de lo normal)' : '(≥6 mm: supera el umbral de la regla ABCDE; si es simétrico, regular y estable puede ser un nevus grande normal, pero conviene vigilarlo)'}.`,
+          medir: () => `Diámetro máximo ≈<b>${fmt(K.dia.toFixed(1))} mm</b> ${K.dia < 6 ? '(<b>&lt;6 mm</b>: dentro de lo normal)' : '(≥6 mm: supera el umbral de la regla ABCDE; si es simétrico, regular y estable puede ser un nevo grande normal, pero conviene vigilarlo)'}.`,
           palp: 'Máculo-pápula <b>lisa</b>, de superficie regular, consistencia blanda, indolora, sin ulceración, descamación ni sangrado; no está adherida a planos profundos.'
         }
       },
@@ -360,25 +378,25 @@
         }
       })),
       {
-        id: 'tj', label: 'Nevus juntural', short: 'Juntural', cx: 520, cy: 430, r: 24, lx: 520, ly: 468, anchor: 'middle',
+        id: 'tj', label: 'Nevo juntural', short: 'Juntural', cx: 520, cy: 430, r: 24, lx: 520, ly: 468, anchor: 'middle',
         tools: {
-          insp: 'Nevus <b>juntural</b>: mácula marrón plana, uniforme, bien delimitada, pequeña (&lt;6 mm); típico de la infancia y la juventud (melanocitos en la unión dermoepidérmica).',
+          insp: 'Nevo <b>juntural</b>: mácula marrón plana, uniforme, bien delimitada, pequeña (&lt;6 mm); típico de la infancia y la juventud (melanocitos en la unión dermoepidérmica).',
           palp: 'No se palpa: es plano, a nivel de la piel.',
           dermo: 'Patrón reticular regular, red de pigmento fina.'
         }
       },
       {
-        id: 'tc', label: 'Nevus compuesto', short: 'Compuesto', cx: 610, cy: 432, r: 24, lx: 610, ly: 468, anchor: 'middle',
+        id: 'tc', label: 'Nevo compuesto', short: 'Compuesto', cx: 610, cy: 432, r: 24, lx: 610, ly: 468, anchor: 'middle',
         tools: {
-          insp: 'Nevus <b>compuesto</b>: pápula marrón ligeramente elevada con zona central más pigmentada, simétrica y de bordes regulares; frecuente en adultos jóvenes (melanocitos en la unión y en la dermis).',
+          insp: 'Nevo <b>compuesto</b>: pápula marrón ligeramente elevada con zona central más pigmentada, simétrica y de bordes regulares; frecuente en adultos jóvenes (melanocitos en la unión y en la dermis).',
           palp: 'Ligeramente elevado, de superficie lisa o algo rugosa, blando e indoloro.',
           dermo: 'Patrón globular o reticulo-globular simétrico, sin estructuras atípicas.'
         }
       },
       {
-        id: 'ti', label: 'Nevus intradérmico', short: 'Intradérmico', cx: 700, cy: 432, r: 26, lx: 700, ly: 468, anchor: 'middle',
+        id: 'ti', label: 'Nevo intradérmico', short: 'Intradérmico', cx: 700, cy: 432, r: 26, lx: 700, ly: 468, anchor: 'middle',
         tools: {
-          insp: 'Nevus <b>intradérmico</b>: pápula o cúpula del color de la piel a marrón claro, blanda, a veces con pelo, de bordes regulares; frecuente en adultos y personas mayores (melanocitos en la dermis).',
+          insp: 'Nevo <b>intradérmico</b>: pápula o cúpula del color de la piel a marrón claro, blanda, a veces con pelo, de bordes regulares; frecuente en adultos y personas mayores (melanocitos en la dermis).',
           palp: 'Elevado en forma de cúpula, <b>blando</b>, indoloro y móvil con la piel.',
           dermo: 'Patrón homogéneo con vasos en coma o glóbulos color piel-marrón claro, simétrico.'
         }
@@ -398,7 +416,7 @@
         <span id="skDiaMsg" class="sk-ok">&lt;6 mm: normal</span>
         <button type="button" class="btn small" id="skFoldV">Doblar sobre el eje vertical</button>
         <button type="button" class="btn small" id="skFoldH">Doblar sobre el eje horizontal</button></div>
-        <div class="sk-note" id="skFoldMsg"><b>Regla ABCDE:</b> Asimetría · Bordes · Color · Diámetro (≥6 mm es el umbral de atención) · Evolución. Un nevus normal es simétrico, de bordes regulares, color uniforme, &lt;6 mm y estable.</div>`);
+        <div class="sk-note" id="skFoldMsg"><b>Regla ABCDE:</b> Asimetría · Bordes · Color · Diámetro (≥6 mm es el umbral de atención) · Evolución. Un nevo normal es simétrico, de bordes regulares, color uniforme, &lt;6 mm y estable.</div>`);
       const dia = stage.querySelector('#skDia');
       dia.addEventListener('input', () => {
         K.dia = +dia.value; stage.querySelector('#skDiaTxt').textContent = fmt(K.dia.toFixed(1)) + ' mm';
@@ -412,7 +430,7 @@
         K.folding = true; mode = m; K.fold = 1; draw();
         const msg = stage.querySelector('#skFoldMsg');
         K.cancel.push(U.tween(900, u => { K.fold = 1 - 2 * u; draw(); }, () => {
-          msg.innerHTML = `<b>Al doblar sobre el eje ${m === 'v' ? 'vertical' : 'horizontal'} las dos mitades coinciden</b>: el nevus es simétrico (criterio A normal).`;
+          msg.innerHTML = `<b>Al doblar sobre el eje ${m === 'v' ? 'vertical' : 'horizontal'} las dos mitades coinciden</b>: el nevo es simétrico (criterio A normal).`;
           K.tm.push(setTimeout(() => {
             K.cancel.push(U.tween(700, u => { K.fold = -1 + 2 * u; draw(); }, () => { K.fold = 1; K.folding = false; draw(); }));
           }, 1200));
@@ -456,12 +474,12 @@
       const phi = Math.atan2(y - W.y, x - W.x) + 0.55, L = 15 + R() * 12, cv = (R() - 0.5) * wave * 2 + 0.3;
       const ex = x + L * Math.cos(phi), ey = y + L * Math.sin(phi), qx = x + L / 2 * Math.cos(phi + cv), qy = y + L / 2 * Math.sin(phi + cv);
       const col = t.hair[Math.floor(R() * 3)];
-      const gray = c.age >= 40 && !elder(c) && R() < 0.1 ? '#a8a8a8' : col;
+      const gray = !elder(c) && R() < (c.age >= 50 ? 0.3 : c.age >= 40 ? 0.1 : 0) ? '#a8a8a8' : col;
       hs += `<path d="M${x.toFixed(1)},${y.toFixed(1)} Q${qx.toFixed(1)},${qy.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}" stroke="${gray}" stroke-width="${elder(c) ? 1.2 : 1.6}" fill="none" opacity=".9"/>`;
     }
     s += `<g clip-path="url(#skHairClip)">${hs}</g>`;
     s += `<g class="hintring"><path d="M${W.x - 14},${W.y} a14,14 0 1,1 14,14" fill="none" stroke="#0e6a78" stroke-width="2"/><text class="svg-small" x="${W.x + 20}" y="${W.y + 30}">remolino (vértex)</text></g>`;
-    s += `<text class="svg-small" x="30" y="505">Cabello ${elder(c) ? 'canoso, fino' : c.sex === 'F' ? 'castaño oscuro, ondulado' : 'oscuro, liso'}</text>`;
+    s += `<text class="svg-small" x="30" y="505">Pelo ${elder(c) ? 'canoso, fino' : c.age >= 50 ? 'castaño con canas dispersas' : c.sex === 'F' ? 'castaño oscuro, ondulado' : 'oscuro, liso'}</text>`;
     /* lupa */
     s += `<rect x="480" y="10" width="280" height="250" rx="12" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="494" y="34">Tricoscopia (lupa)</text>`;
     s += `<clipPath id="skLupaClip"><circle cx="620" cy="150" r="82"/></clipPath><circle cx="620" cy="150" r="82" fill="${t.skin}" stroke="#5b6978" stroke-width="5"/>`;
@@ -478,14 +496,14 @@
     s += `<g clip-path="url(#skLupaClip)">${lp}</g>`;
     s += `<text class="svg-small" x="494" y="250">Unidades foliculares de 1-4 pelos</text>`;
     s += `<rect x="480" y="272" width="280" height="248" rx="12" fill="#f7fafc" stroke="#c5d0db" stroke-width="2"/><text class="svg-title" x="494" y="296">Datos de referencia</text>`;
-    ['Ciclo del cabello:', '· Anágeno (crecimiento): 85-90 %, 2-6 años', '· Catágeno (transición): 1-2 %, ≈2 semanas', '· Telógeno (reposo): 10-15 %, ≈3 meses', 'Caída normal: 50-100 pelos al día', 'Crecimiento: ≈1 cm al mes', 'Densidad: ≈150-300 pelos/cm² (≈100 000 en total)', 'Prueba de tracción: salen <10 % de un mechón'].forEach((l, i) => {
+    ['Ciclo del pelo:', '· Anágeno (crecimiento): 85-90 %, 2-6 años', '· Catágeno (transición): 1-2 %, ≈ 2 semanas', '· Telógeno (reposo): 10-15 %, ≈ 3 meses', 'Caída normal: 50-100 pelos al día', 'Crecimiento: ≈ 1 cm al mes', 'Densidad: ≈ 150-300 pelos/cm²', 'Tracción: salen < 10 % del mechón'].forEach((l, i) => {
       s += `<text class="svg-small" x="494" y="${322 + i * 22}" ${i === 0 ? 'style="font-weight:700"' : ''}>${l}</text>`;
     });
     return s;
   }
 
   function hairTools(zone) {
-    const hairDesc = c => (elder(c) ? 'canoso (≈70-100 % de canas), de calibre más fino, brillo menor' : c.age >= 40 ? 'oscuro con escasas canas, liso, brillante' : 'oscuro, ondulado, brillante y flexible');
+    const hairDesc = c => (elder(c) ? 'canoso (canicie difusa), de calibre más fino y menor brillo (cambios propios de la edad)' : c.age >= 50 ? 'castaño con canas dispersas (canicie parcial, fisiológica a esta edad), brillante' : c.age >= 40 ? 'oscuro con escasas canas, liso, brillante' : 'oscuro, ondulado, brillante y flexible');
     const Z = {
       front: c => `Línea de implantación frontal <b>regular y simétrica</b>${c.sex === 'M' ? ', con leve entrada bitemporal (normal en el varón adulto; Norwood I-II)' : ', sin entradas'}; implantación densa y homogénea hasta la frente. Cabello ${hairDesc(c)}.`,
       tem: c => `Implantación temporal simétrica${c.sex === 'M' ? ' con ligera recesión bitemporal fisiológica' : ''}; sin placas de alopecia ni cabellos rotos; vello fino habitual en las sienes.`,
@@ -521,8 +539,8 @@
   }
 
   const cabello = {
-    id: 'cab', label: 'Cabello y cuero cabelludo', viewBox: '0 0 770 530', redrawOnMode: false,
-    hint: 'Inspecciona distribución, cantidad, implantación y textura; palpa el cuero cabelludo y realiza la prueba de tracción.',
+    id: 'cab', label: 'Pelo y cuero cabelludo', viewBox: '0 0 770 530', redrawOnMode: false,
+    hint: 'Inspecciona distribución, cantidad, implantación, color y textura del pelo; palpa el cuero cabelludo y realiza la prueba de tracción.',
     svg: (learn, c) => headSvg(c, learn),
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Distribución, cantidad, implantación, color y textura del cabello; estado del cuero cabelludo.' },
@@ -532,12 +550,12 @@
     ],
     regions: [
       { id: 'front', label: 'Región frontal y línea de implantación', short: 'Frontal', x: 150, y: 110, w: 180, h: 72, lx: 240, ly: 104, anchor: 'middle', tools: hairTools('front') },
-      { id: 'temD', label: 'Región temporal derecha', short: 'Temporal D', cx: 372, cy: 200, r: 38, lx: 405, ly: 166, anchor: 'middle', tools: hairTools('tem') },
-      { id: 'temI', label: 'Región temporal izquierda', short: 'Temporal I', cx: 108, cy: 200, r: 38, lx: 78, ly: 166, anchor: 'middle', tools: hairTools('tem') },
+      { id: 'temD', label: 'Región temporal derecha', short: 'Temporal D', cx: 372, cy: 200, r: 38, lx: 420, ly: 150, anchor: 'middle', tools: hairTools('tem') },
+      { id: 'temI', label: 'Región temporal izquierda', short: 'Temporal I', cx: 108, cy: 200, r: 38, lx: 60, ly: 150, anchor: 'middle', tools: hairTools('tem') },
       { id: 'parD', label: 'Región parietal derecha', short: 'Parietal D', cx: 338, cy: 290, r: 42, lx: 338, ly: 242, anchor: 'middle', tools: hairTools('par') },
       { id: 'parI', label: 'Región parietal izquierda', short: 'Parietal I', cx: 142, cy: 290, r: 42, lx: 142, ly: 242, anchor: 'middle', tools: hairTools('par') },
       { id: 'ver', label: 'Vértex (coronilla)', short: 'Vértex', cx: 240, cy: 338, r: 44, lx: 240, ly: 288, anchor: 'middle', tools: hairTools('ver') },
-      { id: 'occ', label: 'Región occipital y nuca', short: 'Occipital', cx: 240, cy: 440, r: 48, lx: 240, ly: 494, anchor: 'middle', tools: hairTools('occ') },
+      { id: 'occ', label: 'Región occipital y nuca', short: 'Occipital', cx: 240, cy: 440, r: 48, lx: 294, ly: 448, anchor: 'start', tools: hairTools('occ') },
       { id: 'lupa', label: 'Tricoscopia (lupa)', short: 'Lupa', cx: 620, cy: 150, r: 82, lx: 620, ly: 56, anchor: 'middle', tools: { lupa: hairTools('ver').lupa, insp: hairTools('ver').lupa } }
     ],
     after: (stage) => {
@@ -644,7 +662,7 @@
         }
       },
       {
-        id: 'plL', label: 'Pliegue ungueal lateral', short: 'Pliegue lateral', x: 138, y: 108, w: 20, h: 148, lx: 132, ly: 196, anchor: 'end',
+        id: 'plL', label: 'Pliegue ungueal lateral', short: 'Pliegue lateral', x: 138, y: 108, w: 20, h: 148, lx: 128, ly: 196, anchor: 'end',
         tools: {
           insp: 'Pliegues laterales lisos, de color normal, sin eritema, edema ni supuración; la lámina no se incrusta en ellos (sin uña encarnada).',
           palp: 'Pliegue lateral blando, <b>indoloro</b>, sin calor ni bultos.'
@@ -738,7 +756,6 @@
     for (let i = 0; i < 26; i++) { const a = R() * 6.28, rr = Math.sqrt(R()) * 44; s += `<circle cx="${(520 + rr * Math.cos(a) * 0.9).toFixed(1)}" cy="${(410 + rr * Math.sin(a) * 1.4).toFixed(1)}" r="${(1.6 + R() * 1.2).toFixed(1)}" fill="#c4413d" opacity=".7"/>`; }
     s += tongue(700, '#e8908b') + `<path d="M700,420 V478" stroke="#c4605b" stroke-width="3" stroke-linecap="round"/><path d="M682,350 Q678,420 680,474 M718,350 Q722,420 720,474" stroke="#6a7fb5" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>`;
     s += `<circle cx="690" cy="482" r="3.5" fill="#f5b4ac"/><circle cx="710" cy="482" r="3.5" fill="#f5b4ac"/>`;
-    s += `<text class="svg-small" x="520" y="520" text-anchor="middle">Dorso</text><text class="svg-small" x="700" y="520" text-anchor="middle">Cara ventral</text>`;
     return s;
   }
 
@@ -747,7 +764,7 @@
     hint: 'Inspecciona y palpa (con guantes) conjuntivas, labios, mucosa yugal, encías, paladar y lengua; evierte el párpado inferior.',
     svg: (learn, c) => mucSvg(c),
     tools: [
-      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Color, humedad, brillo, integridad; con buena luz y baja lengua si es necesario.' },
+      { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Color, humedad, brillo e integridad; con buena luz y baja lengua si es necesario.' },
       { id: 'evert', icon: '🔍', label: 'Evertir párpado', hint: 'Tira suavemente del párpado inferior hacia abajo mientras el paciente mira hacia arriba.' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Con guantes: consistencia, superficie y dolor.' }
     ],
@@ -755,15 +772,15 @@
       {
         id: 'esc', label: 'Esclera y conjuntiva bulbar', short: 'Esclera', x: 112, y: 76, w: 196, h: 66, lx: 210, ly: 68, anchor: 'middle',
         tools: {
-          insp: c => `<b>Esclera blanca</b> (sin tinte amarillo: sin ictericia) y conjuntiva bulbar transparente, lisa, húmeda y brillante, con escasos vasos finos; sin inyección, hemorragias, pterigion, secreción ni lagrimeo anormal. Córnea transparente${elder(c) ? ' (arco senil: anillo blanco-grisáceo periférico, frecuente y benigno en mayores de 60 años)' : ''}.`,
-          palp: 'No se palpa el globo ocular; solo se valora el párpado: blando, sin tumefacción ni dolor.'
+          insp: c => TH('inspección con luz natural, pidiendo al paciente que mire hacia los lados.', `<b>esclera blanca</b> (sin tinte amarillo: sin ictericia) y conjuntiva bulbar transparente, lisa, húmeda y brillante, con escasos vasos finos; sin inyección, hemorragias, pterigion ni secreción. Córnea transparente${elder(c) ? ' (arco senil: anillo blanco-grisáceo periférico, variante normal del adulto mayor)' : ''}.`),
+          palp: 'No se palpa el globo ocular; solo el párpado: blando, sin tumefacción ni dolor.'
         }
       },
       {
-        id: 'cpal', label: 'Conjuntiva palpebral inferior', short: 'Conjuntiva palpebral', x: 112, y: 150, w: 196, h: 62, lx: 210, ly: 232, anchor: 'middle',
+        id: 'cpal', label: 'Conjuntiva palpebral inferior', short: 'Conj. palpebral', x: 112, y: 150, w: 196, h: 62, lx: 210, ly: 232, anchor: 'middle',
         tools: {
-          insp: 'Al evertir el párpado: conjuntiva palpebral <b>rosada-rojiza, húmeda, lisa y brillante</b>, con red vascular fina visible; <b>sin palidez</b> (se compara con el color de la propia piel), sin folículos, papilas ni hiperemia, sin cuerpos extraños.',
-          evert: 'Con el paciente mirando hacia arriba y tirando del párpado inferior hacia abajo: conjuntiva palpebral <b>rosada, húmeda</b> y de aspecto normal; la palidez conjuntival (ausente aquí) se busca como signo de anemia.',
+          insp: TH('se desciende el párpado inferior con el pulgar mientras el paciente mira hacia arriba.', 'conjuntiva palpebral <b>rosada-rojiza, húmeda, lisa y brillante</b>, con red vascular fina visible; <b>sin palidez</b> (signo de anemia), folículos, papilas ni cuerpos extraños.'),
+          evert: TH('eversión del párpado inferior: tracción suave hacia abajo con el paciente mirando hacia arriba.', 'conjuntiva palpebral <b>rosada y húmeda</b>; la palidez conjuntival, ausente aquí, se busca como signo de anemia.'),
           palp: 'Párpado inferior blando y móvil, sin tumefacción, chalazión ni dolor.'
         }
       },
@@ -777,64 +794,64 @@
       {
         id: 'lmuc', label: 'Mucosa labial interna', short: 'Mucosa labial', cx: 735, cy: 168, r: 56, lx: 735, ly: 102, anchor: 'middle',
         tools: {
-          insp: 'Mucosa labial interna <b>rosada-rojiza, húmeda y lisa</b>, con pequeñas elevaciones puntiformes (glándulas salivales menores); frenillo íntegro; sin úlceras ni placas.',
-          palp: 'Se palpan las glándulas salivales menores como <b>pequeños granos blandos e indoloros</b>; mucosa lisa y deslizante, sin induración.'
+          insp: TH('se evierte el labio entre el pulgar y el índice.', 'mucosa labial <b>rosada-rojiza, húmeda y lisa</b>, con pequeñas elevaciones puntiformes (glándulas salivales menores); frenillo íntegro; sin úlceras ni placas.'),
+          palp: 'Las glándulas salivales menores se palpan como <b>pequeños granos blandos e indoloros</b>; mucosa lisa y deslizante, sin induración.'
         }
       },
       {
-        id: 'yugD', label: 'Mucosa yugal derecha', short: 'M. yugal', cx: 84, cy: 398, r: 30, lx: 52, ly: 346, anchor: 'middle',
+        id: 'yugD', label: 'Mucosa yugal derecha', short: 'M. yugal', cx: 84, cy: 398, r: 30, lx: 80, ly: 442, anchor: 'middle',
         tools: {
-          insp: 'Mucosa yugal <b>rosada, húmeda y lisa</b>, con la línea alba oclusal; <b>papila del conducto de Stensen</b> frente al 2.º molar superior (sin enrojecimiento ni secreción). Pueden verse <b>puntos de Fordyce</b> (glándulas sebáceas ectópicas amarillentas, normales en la mayoría de los adultos). Sin placas, úlceras ni manchas.',
-          palp: 'Mucosa blanda, de superficie lisa, sin induración ni nódulos; el conducto de Stensen no está engrosado ni doloroso.'
+          insp: TH('se separa la mejilla con el depresor o un dedo enguantado.', 'mucosa yugal <b>rosada, húmeda y lisa</b>, con la línea alba oclusal; <b>papila del conducto de Stenon</b> frente al 2.º molar superior, sin enrojecimiento ni secreción. Pueden verse <b>gránulos de Fordyce</b> (glándulas sebáceas ectópicas amarillentas, normales). Sin placas, úlceras ni manchas.'),
+          palp: 'Mucosa blanda, de superficie lisa, sin induración ni nódulos; el conducto de Stenon no está engrosado ni doloroso.'
         }
       },
       {
-        id: 'yugI', label: 'Mucosa yugal izquierda', short: 'M. yugal', cx: 336, cy: 398, r: 30, lx: 368, ly: 346, anchor: 'middle',
+        id: 'yugI', label: 'Mucosa yugal izquierda', short: 'M. yugal', cx: 336, cy: 398, r: 30, lx: 344, ly: 442, anchor: 'middle',
         tools: {
-          insp: 'Mucosa yugal <b>rosada, húmeda y lisa</b>, simétrica con la contralateral; papila del conducto de Stensen normal; sin placas, úlceras ni manchas.',
+          insp: 'Mucosa yugal <b>rosada, húmeda y lisa</b>, simétrica con la contralateral; papila del conducto de Stenon normal; sin placas, úlceras ni manchas.',
           palp: 'Mucosa blanda, lisa e indolora, sin induración ni nódulos.'
         }
       },
       {
-        id: 'enc', label: 'Encías', short: 'Encías', x: 98, y: 316, w: 224, h: 20, lx: 210, ly: 306, anchor: 'middle',
+        id: 'enc', label: 'Encías', short: 'Encías', x: 98, y: 316, w: 224, h: 20, lx: 94, ly: 330, anchor: 'end',
         tools: {
-          insp: 'Encías <b>rosado-coral</b>, firmes, con punteado en «piel de naranja», márgenes festoneados y papilas interdentales puntiagudas; <b>sin enrojecimiento, hinchazón, sangrado ni retracción</b>; sin úlceras.',
+          insp: 'Encías <b>rosado coral</b>, firmes, con punteado en «piel de naranja», márgenes festoneados y papilas interdentales puntiagudas; <b>sin enrojecimiento, edema, sangrado ni retracción</b>; sin úlceras.',
           palp: 'Encía firme, adherida al hueso, indolora y que no sangra al roce suave.'
         }
       },
       {
-        id: 'den', label: 'Dientes', short: 'Dientes', x: 100, y: 338, w: 220, h: 26, lx: 210, ly: 332, anchor: 'middle',
+        id: 'den', label: 'Dientes', short: 'Dientes', x: 100, y: 338, w: 220, h: 26, lx: 96, ly: 356, anchor: 'end',
         tools: {
-          insp: c => `Dentición ${elder(c) ? 'con alguna pieza ausente o prótesis bien adaptada (esperable en el adulto mayor)' : 'completa (32 piezas en el adulto, 28 sin cordales)'}, de color uniforme, sin caries ni fracturas visibles, con oclusión correcta; mucosa de soporte sana.`,
+          insp: c => `Dentición ${elder(c) ? 'con alguna pieza ausente o prótesis bien adaptada (frecuente en el adulto mayor)' : 'completa (32 piezas en el adulto; 28 si faltan los terceros molares)'}, de color uniforme, sin caries ni fracturas visibles, con oclusión correcta; mucosa de soporte sana.`,
           palp: 'Piezas firmes, sin movilidad ni dolor a la presión.'
         }
       },
       {
-        id: 'pal', label: 'Paladar duro y blando', short: 'Paladar', x: 142, y: 364, w: 136, h: 30, lx: 286, ly: 378, anchor: 'start',
+        id: 'pal', label: 'Paladar duro y blando', short: 'Paladar', x: 142, y: 364, w: 136, h: 30, lx: 276, ly: 376, anchor: 'end',
         tools: {
-          insp: 'Paladar duro <b>rosado</b>, firme, con rugas palatinas transversales y rafe medio; paladar blando móvil y rosado; sin petequias, úlceras, tumefacciones ni exudados.',
-          palp: 'Paladar duro firme y liso; sin masas ni dolor; el torus palatino (si existe) es una variante normal.'
+          insp: 'Paladar duro <b>rosado</b>, firme, con rugosidades transversales y rafe medio; paladar blando móvil y rosado; sin petequias, úlceras, tumefacciones ni exudados.',
+          palp: 'Paladar duro firme y liso, sin masas ni dolor; el torus palatino, si existe, es una variante normal.'
         }
       },
       {
-        id: 'oro', label: 'Orofaringe y úvula', short: 'Orofaringe', cx: 210, cy: 400, r: 18, lx: 270, ly: 396, anchor: 'start',
+        id: 'oro', label: 'Fauces y úvula', short: 'Fauces', cx: 210, cy: 400, r: 18, lx: 232, ly: 420, anchor: 'start',
         tools: {
-          insp: 'Úvula <b>central y móvil</b>, pilares amigdalinos simétricos, mucosa faríngea rosada y húmeda; amígdalas no aumentadas de tamaño, sin exudados ni eritema.',
+          insp: 'Úvula <b>central y móvil</b>, pilares amigdalinos simétricos, mucosa faríngea rosada y húmeda; amígdalas sin aumento de tamaño, exudados ni eritema.',
           palp: 'No se palpa de rutina; el reflejo nauseoso está presente.'
         }
       },
       {
-        id: 'leng', label: 'Dorso de la lengua', short: 'Lengua (dorso)', x: 462, y: 320, w: 116, h: 176, lx: 520, ly: 312, anchor: 'middle',
+        id: 'leng', label: 'Dorso de la lengua', short: 'Lengua (dorso)', x: 462, y: 320, w: 116, h: 176, lx: 520, ly: 514, anchor: 'middle',
         tools: {
-          insp: 'Lengua <b>rosada y húmeda</b>, de tamaño normal, con papilas filiformes uniformes y una <b>capa blanquecina fina</b>; papilas fungiformes rojizas dispersas; surco medio. Sin fisuras, úlceras, placas ni masas. Protruye en la <b>línea media</b>, sin desviación ni temblor (XII par), y se mueve con libertad.',
-          palp: 'Lengua blanda y flexible, de superficie lisa; sin induración, nódulos ni dolor a la palpación de los bordes.'
+          insp: TH('se pide al paciente que saque la lengua y la mueva hacia los lados.', 'lengua <b>rosada y húmeda</b>, de tamaño normal, con papilas filiformes uniformes y una <b>capa blanquecina fina</b> (saburra); papilas fungiformes rojizas dispersas; surco medio. Sin fisuras, úlceras, placas ni masas; protruye en la <b>línea media</b>, sin desviación ni temblor (XII par).'),
+          palp: 'Lengua blanda y flexible; sin induración, nódulos ni dolor a la palpación de los bordes.'
         }
       },
       {
-        id: 'lengv', label: 'Cara ventral de la lengua', short: 'Lengua (ventral)', x: 642, y: 320, w: 116, h: 176, lx: 700, ly: 312, anchor: 'middle',
+        id: 'lengv', label: 'Cara ventral de la lengua', short: 'Lengua (ventral)', x: 642, y: 320, w: 116, h: 176, lx: 700, ly: 514, anchor: 'middle',
         tools: {
-          insp: 'Mucosa ventral <b>lisa, rosada y húmeda</b>, con las <b>venas raninas azuladas</b> visibles a cada lado del frenillo (normal); frenillo íntegro; carúnculas sublinguales simétricas; sin placas, úlceras ni masas.',
-          palp: 'Suelo de boca blando; sin induración ni nódulos; los conductos de Wharton no están dolorosos.'
+          insp: TH('se pide al paciente que eleve la punta de la lengua hacia el paladar.', 'mucosa ventral <b>lisa, rosada y húmeda</b>, con las <b>venas raninas azuladas</b> visibles a cada lado del frenillo (normal); frenillo íntegro; carúnculas sublinguales simétricas; sin placas, úlceras ni masas.'),
+          palp: 'Piso de la boca blando (palpación bimanual); sin induración ni nódulos; conductos de Wharton no dolorosos.'
         }
       }
     ],
@@ -844,40 +861,56 @@
     },
     onLeave: leaveAll
   };
-
   /* ============================================================ CUESTIONARIO */
-  const quiz = [
-    { q: 'En la regla ABCDE de los nevus, el diámetro normal es…', options: ['<6 mm', '≥10 mm', 'Siempre <1 mm', 'Cualquier tamaño si es pigmentado'], a: 0,
-      why: 'Un diámetro <6 mm (aprox. el de una goma de lápiz) se considera normal; junto con la simetría, los bordes regulares, el color uniforme y la estabilidad.' },
-    { q: 'El ángulo de Lovibond normal entre la lámina ungueal y el pliegue proximal es…', options: ['≥180°', '≈160°', '≈120°', '≈200°'], a: 1,
-      why: 'Normalmente ≈160° (ligera concavidad); al llegar a 180° o más se pierde el ángulo, como ocurre en el hipocratismo digital.' },
-    { q: 'El llenado capilar del lecho ungueal normal es…', options: ['<2 s', '5-10 s', '>10 s', 'Siempre inmediato (<0,1 s)'], a: 0,
-      why: 'Tras comprimir la uña unos 5 s, el color rosado vuelve en menos de 2 s.' },
-    { q: 'Al soltar un pliegue de piel pellizcado (turgor), en una persona sana la piel…', options: ['Persiste en pliegue más de 5 s', 'Regresa en <2 s', 'Nunca debe regresar completamente', 'Regresa solo con masaje'], a: 1,
-      why: 'La elasticidad conservada hace que el pliegue se aplane en <2 s; en ancianos regresa más lento y el signo no es fiable para la hidratación.' },
-    { q: 'Una mácula es…', options: ['Una elevación sólida <1 cm', 'Un cambio de color plano <1 cm', 'Una lesión con pus', 'Una elevación con líquido claro ≥1 cm'], a: 1,
-      why: 'Mácula: cambio de color, plano, no palpable, <1 cm (mancha si ≥1 cm). Pápula: elevación sólida <1 cm; pústula: con pus; ampolla: líquido claro ≥1 cm.' },
-    { q: 'La conjuntiva palpebral normal es…', options: ['Pálida y seca', 'Rosada-rojiza, húmeda y lisa', 'Amarilla y brillante', 'Azulada con vasos prominentes'], a: 1,
-      why: 'Se evalúa evirtiendo el párpado inferior; normalmente es rosada y húmeda, con red vascular fina visible; la palidez orienta a anemia.' },
-    { q: 'La pérdida diaria fisiológica de cabello es de aproximadamente…', options: ['0-5 pelos', '50-100 pelos', '300-500 pelos', '>1000 pelos'], a: 1,
-      why: 'Se pierden normalmente 50-100 cabellos al día (fase telógena); en la prueba de tracción salen <10 % de un mechón.' },
-    { q: 'Respecto a la piel de palmas y plantas es cierto que…', options: ['Tienen abundantes folículos pilosos', 'Tienen glándulas sebáceas abundantes', 'Son la piel más gruesa y carecen de pelo y de glándulas sebáceas', 'Son siempre más delgadas que la del dorso'], a: 2,
-      why: 'Palmas y plantas tienen epidermis gruesa (hasta ≈1,5 mm), crestas dérmicas, muchas glándulas ecrinas y no tienen pelo ni glándulas sebáceas.' }
-  ];
+  const quizFor = c => {
+    const t = turgT(c);
+    const turgQ = { q: `En esta persona de ${c.age} años, al soltar un pliegue de piel pellizcado en el dorso de la mano, lo esperable es que…`,
+      options: ['Persista en pliegue más de 5 s', `Regrese en ≈ ${fmt(t.toFixed(1))} s (normal < 2 s)${elder(c) ? ', algo más lento que en el joven por la menor elasticidad' : ''}`, 'No regrese hasta el masaje', 'Regrese solo si la piel está fría'],
+      a: 1, why: `El pliegue se aplana en menos de 2 s cuando el turgor y la elasticidad están conservados${elder(c) ? '; en el adulto mayor regresa más lento y el signo no es fiable para valorar la hidratación' : ''}.` };
+    const ageQ = elder(c)
+      ? { q: `¿Cuál de estos hallazgos cutáneos es un cambio benigno esperable a los ${c.age} años?`, options: ['Ampollas tensas en las piernas', 'Lentigos solares, angiomas rubí y queratosis seborreicas', 'Placas descamativas en codos', 'Nevos nuevos de más de 6 mm'], a: 1,
+        why: 'Con la edad la piel es más fina, seca y menos elástica, y aparecen lentigos solares, angiomas rubí y queratosis seborreicas, todos benignos.' }
+      : meno(c)
+        ? { q: `En esta mujer de ${c.age} años (posmenopáusica), ¿qué cambio cutáneo es fisiológico?`, options: ['Hiperpigmentación malar en alas de mariposa', 'Piel algo más fina y seca por el descenso de estrógenos', 'Edema con fóvea en ambas piernas', 'Ictericia conjuntival leve'], a: 1,
+          why: 'Tras la menopausia disminuye el colágeno dérmico y la piel se vuelve más fina, seca y menos elástica; los otros hallazgos son patológicos.' }
+        : { q: `En esta persona de ${c.age} años, ¿cuál de estos hallazgos NO es una variante normal?`, options: ['Pocos nevos regulares de menos de 6 mm', 'Brillo sebáceo leve en la zona T', 'Pelo y glándulas sebáceas en la palma', 'Lúnula visible en los pulgares'], a: 2,
+          why: 'Palmas y plantas carecen de pelo y de glándulas sebáceas; los otros tres son hallazgos normales a esta edad.' };
+    return [
+      { q: 'Una mácula es…', options: ['Una elevación sólida de la piel', 'Un cambio de color plano, no palpable', 'Una lesión con contenido purulento', 'Una elevación con líquido claro'], a: 1,
+        why: 'Mácula: cambio de color plano y no palpable. Pápula: elevación sólida pequeña; pústula: contenido purulento; vesícula/ampolla: contenido líquido claro.' },
+      { q: '¿Cuál de las siguientes es una lesión elemental SECUNDARIA?', options: ['Habón', 'Vesícula', 'Nódulo', 'Liquenificación'], a: 3,
+        why: 'Las secundarias (escama, costra, erosión, úlcera, fisura, cicatriz, atrofia, liquenificación) derivan de una lesión primaria o de la agresión de la piel; habón, vesícula y nódulo son primarias.' },
+      turgQ,
+      { q: 'En la regla ABCDE de los nevos, el diámetro que marca el umbral de atención es…', options: ['≥ 1 mm', '≥ 10 mm', '≥ 6 mm', 'Cualquiera si es pigmentado'], a: 2,
+        why: 'Un nevo normal es simétrico, de bordes regulares, color uniforme, menor de 6 mm y estable en el tiempo.' },
+      { q: 'El ángulo de Lovibond normal entre la lámina ungueal y el pliegue proximal es…', options: ['≈ 160°', '≥ 180°', '≈ 120°', '≈ 200°'], a: 0,
+        why: 'Normalmente ≈ 160° (ligera concavidad); al llegar a 180° o más se pierde el ángulo, como ocurre en el hipocratismo digital.' },
+      ageQ,
+      { q: 'La pérdida diaria fisiológica de cabello es de aproximadamente…', options: ['0-5 pelos', '300-500 pelos', 'Más de 1000 pelos', '50-100 pelos'], a: 3,
+        why: 'Se pierden normalmente 50-100 cabellos al día (fase telógena); en la prueba de tracción salen menos del 10 % de un mechón.' },
+      { q: 'La conjuntiva palpebral normal es…', options: ['Pálida y seca', 'Amarilla y brillante', 'Rosada-rojiza, húmeda y lisa', 'Azulada, con vasos gruesos'], a: 2,
+        why: 'Se evalúa descendiendo el párpado inferior; normalmente es rosada y húmeda, con red vascular fina; la palidez orienta a anemia.' }
+    ];
+  };
 
   const teaching = [
-    'Inspecciona con <b>buena luz natural</b> y compara siempre ambos lados y zonas fotoexpuestas con no expuestas; describe color, textura, humedad, temperatura (con el dorso de la mano), turgor, movilidad y lesiones con la terminología correcta (mácula, pápula, placa, vesícula, ampolla, pústula, nódulo, habón).',
-    'El <b>turgor</b> se explora pellizcando el dorso de la mano o la región infraclavicular: el pliegue debe aplanarse en <b>&lt;2 s</b>. En el anciano la piel pierde elasticidad y el signo no es fiable para valorar la hidratación.',
-    'Aplica la regla <b>ABCDE</b> a los nevus (asimetría, bordes, color, diámetro ≥6 mm, evolución) y la del «patito feo»: un nevus que no se parece a los demás merece atención. Un nevus normal es simétrico, regular, uniforme, <6 mm y estable.',
-    'En las uñas valora color, superficie, lúnula y pliegues; mide el <b>ángulo de Lovibond</b> (≈160°) y el signo de Schamroth (ventana en rombo presente) y el llenado capilar (<2 s). En el cabello, evalúa distribución, densidad, implantación y textura, y haz la prueba de tracción (<10 %).',
-    'Para las mucosas: luz adecuada y guantes; compara conjuntivas (evirtiendo el párpado inferior), labios, mucosa yugal, encías, paladar y lengua; deben ser <b>húmedas, rosadas y lisas</b>, sin palidez, cianosis ni ictericia.'
+    'Inspecciona con <b>buena luz natural</b> y compara ambos lados y las zonas fotoexpuestas con las cubiertas; describe <b>color, humedad, temperatura, textura, turgor y elasticidad, espesor y movilidad</b>, y las lesiones con la terminología de las lesiones elementales primarias y secundarias.',
+    'El <b>turgor</b> se explora pellizcando el dorso de la mano o la región infraclavicular: el pliegue debe aplanarse en <b>menos de 2 s</b>. En el adulto mayor la piel pierde elasticidad y el signo no es fiable para valorar la hidratación.',
+    'Aplica la regla <b>ABCDE</b> a los nevos (asimetría, bordes, color, diámetro ≥ 6 mm, evolución) y la del «patito feo»: un nevo que no se parece a los demás merece atención.',
+    'En las uñas valora color, superficie, lúnula y pliegues; mide el <b>ángulo de Lovibond</b> (≈ 160°), el signo de Schamroth (ventana presente) y el llenado capilar (&lt; 2 s). En el pelo, evalúa distribución, cantidad, implantación y textura, y haz la prueba de tracción (&lt; 10 %).',
+    'Mucosas: luz adecuada y guantes; compara conjuntivas (descendiendo el párpado inferior), labios, mucosa yugal, encías, paladar y lengua; deben ser <b>húmedas, rosadas y lisas</b>, sin palidez, cianosis ni ictericia.'
   ];
 
   NormalEngine.build({
     id: 'skin', title: 'Piel, faneras y mucosas (normal)', icon: '🖐️', group: 'Exploración normal',
-    desc: 'Inspección y palpación de la piel, regla ABCDE de los nevus, cabello, uñas (Lovibond y llenado capilar), mucosas y conjuntivas en personas sanas.',
-    bullets: ['Turgor con animación de pellizco y terminología dermatológica', 'Nevus con regla ABCDE y control de diámetro', 'Uñas con ángulo de Lovibond interactivo y mucosas'],
-    teaching, quiz,
+    desc: 'Inspección y palpación de la piel (color, humedad, temperatura, textura, turgor, espesor y movilidad), lesiones elementales, regla ABCDE de los nevos, pelo, uñas (Lovibond y llenado capilar), mucosas y conjuntivas en personas sanas.',
+    bullets: ['Turgor con animación de pellizco y lesiones elementales primarias y secundarias', 'Nevos con regla ABCDE y control de diámetro', 'Uñas con ángulo de Lovibond interactivo, pelo y mucosas'],
+    refs: [
+      'Argente HA, Álvarez ME. <i>Semiología Médica</i>. Ed. Médica Panamericana — Piel y faneras: examen de la piel (color, humedad, temperatura, textura, turgor, espesor, movilidad), lesiones elementales primarias y secundarias, pelo y uñas; mucosas.',
+      'Fitzpatrick TB (1988). Clasificación de los fototipos cutáneos I-VI.',
+      'Regla ABCDE del nevo (Friedman RJ y cols., 1985; ampliada con «E» por Abbasi NR y cols., 2004).'
+    ],
+    teaching, quiz: quizFor,
     scenes: [piel, lunares, cabello, unas, mucosas]
   });
 })();

@@ -245,7 +245,7 @@
   const insSvg = abdSVG({ grid: 'none' });
   const inspeccion = {
     id: 'insp', label: 'Inspección', viewBox: '0 0 420 520',
-    hint: 'Paciente en decúbito supino, brazos a los lados, abdomen descubierto del xifoides al pubis, buena luz. Observa desde los pies y desde el lateral.',
+    hint: 'Paciente en decúbito dorsal, brazos a los lados, abdomen descubierto del xifoides al pubis, buena luz. Observa desde los pies y desde el lateral.',
     svg: insSvg,
     tools: [
       { id: 'ojo', icon: '👁️', label: 'Inspección general', hint: 'Observa forma, simetría, ombligo, piel y movimientos respiratorios. Haz clic en cada zona.' },
@@ -389,7 +389,7 @@
         setStatus({ sh }, 'Sin escucha', 'Haz clic en un cuadrante o en un punto vascular.');
       });
       bar.querySelector('#abdCount').addEventListener('click', () => {
-        if (!RT.act) { sh.log('Primero apoya el fonendoscopio en un cuadrante y luego cuenta durante 10 s.', 'warn'); return; }
+        if (!RT.act) { sh.log('Primero apoya el estetoscopio en un cuadrante y luego cuenta durante 10 s.', 'warn'); return; }
         if (RT.timer) clearInterval(RT.timer);
         const a = RT.act; let t = 10;
         setStatus({ sh }, a.label, `Contando… ${t} s`);
@@ -475,7 +475,7 @@
         tools: { perc: () => tymp('<b>espacio de Traube timpánico</b> (semiluna en la base del hemitórax izquierdo, sobre la cámara gástrica; limitado por el 6.º cartílago costal, el reborde costal izquierdo y la línea axilar anterior). La matidez en esta zona no es normal (esplenomegalia, derrame pleural izquierdo).') }
       },
       {
-        id: 'castell', label: 'Área esplénica (línea axilar media izquierda)', short: 'Área esplénica', cx: 326, cy: 200, r: 13, lx: 336, ly: 232, anchor: 'start',
+        id: 'castell', label: 'Área esplénica (línea axilar media izquierda)', short: 'Área esplénica', cx: 326, cy: 200, r: 13, lx: 332, ly: 236,
         tools: { perc: () => tymp('<b>matidez esplénica normal</b>: pequeña franja de matidez entre la 9.ª y la 11.ª costilla sobre la línea axilar media izquierda, que no sobrepasa la línea axilar anterior ni el reborde costal (espacio de Traube timpánico). Al percutir el último espacio intercostal en la línea axilar anterior la nota sigue timpánica en inspiración y espiración (signo de Castell negativo, según la fuente).') }
       },
       {
@@ -490,73 +490,73 @@
   /* =====================================================================
      4) PALPACIÓN
      ===================================================================== */
-  const SUP = lbl => `Palpación superficial en ${lbl.toLowerCase()}: pared <b>blanda y depresible</b>, <b>indolora</b>, sin defensa voluntaria ni involuntaria (sin rigidez), sin hiperestesia cutánea ni masas superficiales; tono muscular normal y temperatura simétrica.`;
+  const SUP = lbl => `<i>Palpación superficial</i> en ${lbl.toLowerCase()}: pared <b>blanda y depresible</b>, <b>indolora</b>, sin defensa voluntaria ni contractura involuntaria, sin hiperestesia cutánea ni masas superficiales; tono muscular normal y temperatura simétrica.`;
   const DEEP = {
     hd: 'Hipocondrio derecho: sin masas ni dolor; el borde hepático y la vesícula se exploran en sus puntos específicos.',
-    ep: 'Epigastrio: sin masas ni dolor; se percibe la pulsación de la aorta (punto “Aorta”); el estómago y el páncreas no son palpables.',
+    ep: 'Epigastrio: sin masas ni dolor; se percibe el latido de la aorta (punto “Aorta”); el estómago y el páncreas normales no se palpan.',
     hi: 'Hipocondrio izquierdo: sin masas ni dolor; el bazo no es palpable en inspiración profunda.',
     fd: 'Flanco derecho: colon ascendente blando, sin masas ni dolor.',
-    mes: 'Región umbilical: sin masas ni dolor a la palpación profunda; se transmite la pulsación aórtica; asas blandas y depresibles.',
+    mes: 'Región umbilical: sin masas ni dolor a la palpación profunda; se transmite el latido aórtico; asas blandas y depresibles.',
     fi: 'Flanco izquierdo: colon descendente blando, sin masas ni dolor.',
-    fid: 'Fosa ilíaca derecha: sin masas ni dolor a la presión profunda; el ciego se percibe como estructura blanda (punto “Ciego”).',
-    hip: 'Hipogastrio: sin masas ni dolor; no se palpa la vejiga ni el útero por encima del pubis.',
+    fid: 'Fosa ilíaca derecha: sin masas ni dolor a la presión profunda; el ciego se percibe como una estructura blanda (punto “Ciego”).',
+    hip: 'Hipogastrio: sin masas ni dolor; no se palpan la vejiga ni el útero por encima del pubis.',
     fii: 'Fosa ilíaca izquierda: sin masas ni dolor; el sigmoides se palpa como un cordón (punto “Sigmoides”).'
   };
   const palpNine = nine(id => ({
     sup: (c, ctx) => T(SUP(ctx.region.label), false, false),
-    prof: (c, ctx) => T(`${DEEP[id]} Pared blanda sin defensa ni dolor a la descompresión.`, true, false)
+    prof: (c, ctx) => T(`<i>Palpación profunda.</i> ${DEEP[id]} Pared blanda, sin defensa ni dolor a la descompresión.`, true, false)
   }));
   const liverTool = (c, ctx) => {
     const p = pd(c);
     const txt = p.liver
-      ? `<b>borde hepático palpable</b> ≈ 1 cm por debajo del reborde costal derecho (LMC) en inspiración profunda: <b>liso, romo (no cortante), de consistencia blanda</b>, regular e indoloro; la superficie es lisa. Altura por percusión: ${p.span} cm. Variante normal en personas delgadas.`
-      : `<b>borde hepático no palpable</b> bajo el reborde costal derecho en inspiración profunda (a veces se palpa hasta 1–2 cm bajo el reborde, blando, liso, romo e indoloro). Altura por percusión: ${p.span} cm; el hígado normal no desborda el reborde.`;
-    return T(txt + ' Técnica: mano derecha plana, paralela al reborde, desde la fosa ilíaca hacia arriba, que sube en cada espiración y “recibe” el borde en la inspiración.', true, false);
+      ? `<b>borde hepático palpable</b> ≈ 1 cm por debajo del reborde costal derecho (LMC) en inspiración profunda: <b>liso, romo (no cortante), de consistencia blanda</b>, regular e indoloro; superficie lisa. Hepatimetría: ${p.span} cm. Variante normal en personas delgadas.`
+      : `<b>borde hepático no palpable</b> bajo el reborde costal derecho en inspiración profunda (en algunas personas se palpa hasta 1–2 cm bajo el reborde, blando, liso, romo e indoloro). Hepatimetría: ${p.span} cm; el hígado normal no sobrepasa el reborde.`;
+    return T(txt + ' <i>Técnica:</i> palpación monomanual simple (mano derecha plana, paralela al reborde, que asciende desde la fosa ilíaca en cada espiración y “recibe” el borde en la inspiración), <b>mano en cuchara</b> (dedos flexionados bajo el reborde) o <b>maniobra del enganche de Mathieu</b> (ambas manos desde arriba, dedos en gancho bajo el reborde).', true, false);
   };
-  const aortaTool = c => T(`<b>aorta abdominal</b>: pulsátil en la línea media (algo a la izquierda), por encima del ombligo, con <b>expansión lateral</b> al colocar una mano a cada lado (no solo anteroposterior); diámetro estimado ≈ ${pd(c).aorta} cm (normal < 3 cm); no se palpa masa pulsátil.`, true, false);
+  const aortaTool = c => T(`<b>aorta abdominal</b>: latido en la línea media (algo a la izquierda), por encima del ombligo, con <b>expansión lateral</b> al colocar una mano a cada lado (no solo anteroposterior); diámetro estimado ≈ ${pd(c).aorta} cm (normal < 3 cm); no se palpa masa pulsátil ni expansiva.`, true, false);
   const palpOrgans = [
-    { id: 'hig', label: 'Hígado (borde hepático)', short: 'Hígado', cx: 124, cy: 176, r: 14, lx: 100, ly: 200, anchor: 'end', tools: { prof: liverTool } },
-    { id: 'ves', label: 'Vesícula biliar', short: 'Vesícula', cx: 152, cy: 146, r: 11, lx: 172, ly: 134, anchor: 'start',
-      tools: { prof: () => T('<b>vesícula no palpable</b> (la vesícula normal no se palpa); sin dolor a la palpación bajo el reborde costal derecho, en el borde lateral del recto. Murphy negativo.', true, false) } },
+    { id: 'hig', label: 'Hígado (borde hepático)', short: 'Hígado', cx: 124, cy: 176, r: 14, lx: 124, ly: 206, tools: { prof: liverTool } },
+    { id: 'ves', label: 'Vesícula biliar (punto cístico)', short: 'Vesícula', cx: 152, cy: 146, r: 11, lx: 170, ly: 118, anchor: 'start',
+      tools: { prof: () => T('<b>vesícula no palpable</b> (la vesícula normal no se palpa); sin dolor a la presión en el punto cístico (unión del reborde costal derecho con el borde externo del recto). Signo de Murphy negativo.', true, false) } },
     { id: 'baz', label: 'Bazo', short: 'Bazo', cx: 296, cy: 172, r: 13, lx: 316, ly: 150, anchor: 'start',
-      tools: { prof: () => T('<b>bazo no palpable</b> en inspiración profunda (solo se palpa si su tamaño aumenta 2–3 veces); técnica: mano izquierda en el flanco posterior que lo empuja hacia delante y mano derecha en el reborde. Espacio de Traube timpánico.', true, true) } },
+      tools: { prof: () => T('<b>bazo no palpable</b> en inspiración profunda (solo se palpa cuando su tamaño aumenta 2–3 veces). <i>Técnica:</i> bimanual en decúbito dorsal (mano izquierda en la fosa lumbar que empuja hacia delante y mano derecha bajo el reborde), <b>maniobra de Middleton</b> (puño del paciente bajo el hemitórax izquierdo; el examinador, a la izquierda y mirando a los pies, engancha el reborde con los dedos durante la inspiración) y, si hace falta, en decúbito lateral derecho (posición de Schuster). Espacio de Traube timpánico.', true, true) } },
     { id: 'rd', label: 'Riñón derecho', short: 'Riñón D', cx: 166, cy: 238, r: 13, lx: 150, ly: 268, anchor: 'end',
       tools: { prof: c => T(pd(c).kidney
-        ? '<b>riñón derecho</b>: en esta persona delgada se palpa el polo inferior en inspiración profunda (técnica bimanual: mano posterior en el ángulo costovertebral que empuja hacia delante): liso, redondeado, firme, móvil con la respiración e indoloro.'
-        : '<b>riñón derecho no palpable</b> (técnica bimanual con peloteo: la mano posterior empuja hacia delante en el ángulo costovertebral y la anterior hace presión profunda en inspiración); habitualmente los riñones no se palpan.', true, true) } },
+        ? '<b>riñón derecho</b>: en esta persona delgada se palpa el <b>polo inferior</b> en inspiración profunda con la <b>maniobra de Guyon</b> (bimanual: mano izquierda en la fosa lumbar y mano derecha en el flanco, que presiona en inspiración): liso, redondeado, firme, con <b>peloteo renal</b> positivo (los impulsos de la mano posterior se perciben en la anterior), móvil con la respiración e indoloro. Variante normal en personas delgadas.'
+        : '<b>riñón derecho no palpable</b> con la <b>maniobra de Guyon</b> (bimanual: mano posterior en la fosa lumbar, que empuja hacia delante, y mano anterior en el flanco, que presiona en inspiración profunda); sin peloteo renal; habitualmente los riñones no se palpan.', true, true) } },
     { id: 'ri', label: 'Riñón izquierdo', short: 'Riñón I', cx: 254, cy: 238, r: 13, lx: 270, ly: 268, anchor: 'start',
-      tools: { prof: () => T('<b>riñón izquierdo no palpable</b> (el riñón izquierdo es más alto y más difícil de palpar que el derecho); sin dolor ni masas en el flanco.', true, true) } },
-    { id: 'ao', label: 'Aorta abdominal', short: 'Aorta', cx: 210, cy: 204, r: 12, lx: 210, ly: 190, tools: { prof: aortaTool } },
-    { id: 'cie', label: 'Ciego', short: 'Ciego', cx: 118, cy: 354, r: 13, lx: 112, ly: 376, anchor: 'end',
+      tools: { prof: () => T('<b>riñón izquierdo no palpable</b> con la maniobra de Guyon (el riñón izquierdo es más alto y más difícil de palpar que el derecho); sin peloteo, sin dolor ni masas en el flanco.', true, true) } },
+    { id: 'ao', label: 'Aorta abdominal', short: 'Aorta', cx: 210, cy: 204, r: 12, lx: 228, ly: 208, anchor: 'start', tools: { prof: aortaTool } },
+    { id: 'cie', label: 'Ciego', short: 'Ciego', cx: 118, cy: 354, r: 13, lx: 104, ly: 394, anchor: 'end',
       tools: { prof: () => T('<b>ciego</b> palpable como una masa blanda, de unos 4–5 cm, ligeramente gorgoteante, móvil e <b>indolora</b> en la fosa ilíaca derecha; el apéndice normal no se palpa.', true, false) } },
-    { id: 'sig', label: 'Colon sigmoides', short: 'Sigmoides', cx: 302, cy: 354, r: 13, lx: 308, ly: 376, anchor: 'start',
-      tools: { prof: () => T('<b>sigmoides</b>: cordón liso y firme de 2–3 cm, móvil, a veces con heces en su interior, <b>indoloro</b> (el colon descendente se palpa de forma similar en el flanco).', true, false) } },
-    { id: 'vej', label: 'Vejiga', short: 'Vejiga', cx: 210, cy: 372, r: 20, lx: 210, ly: 420,
-      tools: { sup: c => T(st(c).bladder ? '<b>vejiga llena</b>: se palpa una masa suave, lisa, simétrica y de borde superior convexo por encima de la sínfisis (≈ 400 mL), que genera deseo miccional; es mate a la percusión y desaparece al orinar.' : '<b>vejiga no palpable</b> por encima de la sínfisis del pubis (vacía); región suprapúbica blanda e indolora, sin globo vesical.', false, false),
-        prof: c => T(st(c).bladder ? '<b>vejiga llena</b>: masa suave de borde superior convexo, indolora, algo molesta; mate a la percusión.' : '<b>vejiga no palpable</b>; hipogastrio blando e indoloro a la presión profunda.', true, false) } },
-    { id: 'gl', label: 'Ganglios inguinales derechos', short: 'Ganglios ing. D', cx: 138, cy: 398, r: 12, lx: 124, ly: 428, anchor: 'end',
-      tools: { sup: () => T('ganglios inguinales (horizontales) pequeños: ≤ 1 cm, blandos, móviles e indoloros (hallazgo normal); sin adenopatías.', false, false),
+    { id: 'sig', label: 'Colon sigmoides', short: 'Sigmoides', cx: 302, cy: 354, r: 13, lx: 316, ly: 394, anchor: 'start',
+      tools: { prof: () => T('<b>sigmoides</b>: cordón liso y firme de 2–3 cm de diámetro (“cuerda cólica”), móvil, a veces con heces en su interior, <b>indoloro</b> (el colon descendente se palpa de forma similar en el flanco).', true, false) } },
+    { id: 'vej', label: 'Vejiga', short: '', cx: 210, cy: 372, r: 20,
+      tools: { sup: c => T(st(c).bladder ? '<b>vejiga llena</b>: se palpa una masa suave, lisa, simétrica y de límite superior convexo por encima de la sínfisis (≈ 400 mL), que despierta deseo miccional; es mate a la percusión y desaparece al orinar.' : '<b>vejiga no palpable</b> por encima de la sínfisis del pubis (vacía); región suprapúbica blanda e indolora, sin globo vesical.', false, false),
+        prof: c => T(st(c).bladder ? '<b>vejiga llena</b>: masa suave de límite superior convexo, indolora aunque algo molesta; mate a la percusión.' : '<b>vejiga no palpable</b>; hipogastrio blando e indoloro a la presión profunda.', true, false) } },
+    { id: 'gl', label: 'Ganglios inguinales derechos', short: 'Ganglios ing. D', cx: 138, cy: 398, r: 12, lx: 122, ly: 416, anchor: 'end',
+      tools: { sup: () => T('ganglios inguinales (cadena horizontal, bajo el ligamento inguinal) pequeños: ≤ 1 cm, blandos, móviles e indoloros (hallazgo normal); sin adenopatías.', false, false),
         prof: () => T('ganglios inguinales ≤ 1 cm, blandos, móviles e indoloros (hallazgo normal); sin adenopatías ni masas.', true, false) } },
-    { id: 'gl2', label: 'Ganglios inguinales izquierdos', short: 'Ganglios ing. I', cx: 282, cy: 398, r: 12, lx: 296, ly: 428, anchor: 'start',
+    { id: 'gl2', label: 'Ganglios inguinales izquierdos', short: 'Ganglios ing. I', cx: 282, cy: 398, r: 12, lx: 298, ly: 416, anchor: 'start',
       tools: { sup: () => T('ganglios inguinales ≤ 1 cm, blandos, móviles e indoloros (normal).', false, false),
         prof: () => T('ganglios inguinales ≤ 1 cm, blandos, móviles e indoloros (normal); sin adenopatías.', true, false) } },
-    { id: 'omb', label: 'Anillo umbilical', short: 'Ombligo', cx: 210, cy: UMB, r: 13,
+    { id: 'omb', label: 'Anillo umbilical', short: '', cx: 210, cy: UMB, r: 13,
       tools: { vals: () => T('<b>sin hernia umbilical</b>: con Valsalva (toser o elevar la cabeza) el anillo umbilical está cerrado y no se produce protrusión ni impulso a la tos.', false, false), sup: () => T('ombligo sin masas ni dolor; anillo cerrado.', false, false) } },
-    { id: 'ingd', label: 'Región inguinal derecha', short: 'Hernia ing. D', cx: 176, cy: 372, r: 14, lx: 176, ly: 350,
-      tools: { vals: () => T('<b>sin hernias inguinales ni crurales derechas</b>: con Valsalva, tos y en bipedestación no hay protrusión ni impulso en el canal inguinal (dedo en el anillo superficial).', false, false) } },
-    { id: 'ingi', label: 'Región inguinal izquierda', short: 'Hernia ing. I', cx: 244, cy: 372, r: 14, lx: 244, ly: 350,
+    { id: 'ingd', label: 'Región inguinal derecha', short: 'Ingle D', cx: 176, cy: 372, r: 14, lx: 176, ly: 398,
+      tools: { vals: () => T('<b>sin hernias inguinales ni crurales derechas</b>: con Valsalva, tos y de pie no hay protrusión ni impulso en el trayecto inguinal (dedo en el anillo inguinal superficial).', false, false) } },
+    { id: 'ingi', label: 'Región inguinal izquierda', short: 'Ingle I', cx: 244, cy: 372, r: 14, lx: 244, ly: 398,
       tools: { vals: () => T('<b>sin hernias inguinales ni crurales izquierdas</b>: sin protrusión ni impulso con Valsalva y tos.', false, false) } },
-    { id: 'lin', label: 'Línea alba', short: 'Línea alba', x: 198, y: 120, w: 24, h: 66, rx: 6, lx: 230, ly: 150, anchor: 'start',
+    { id: 'lin', label: 'Línea alba', short: 'Línea alba', x: 200, y: 126, w: 20, h: 60, rx: 6, lx: 226, ly: 150, anchor: 'start',
       tools: { vals: () => T('<b>sin diástasis de los rectos ni hernia epigástrica</b>: al elevar la cabeza (Valsalva) la línea alba no se abomba ni se palpa defecto aponeurótico.', false, false) } }
   ];
   const palpSvg = abdSVG({ grid: 'nine', liver: true, organs: true, bladder: true });
   const palpacion = {
     id: 'palp', label: 'Palpación', viewBox: '0 0 420 520',
-    hint: 'Manos tibias, uñas cortas, paciente relajado con las rodillas semiflexionadas. Empieza lejos de cualquier zona dolorosa; primero superficial, luego profunda.',
+    hint: 'Manos tibias, uñas cortas, paciente relajado en decúbito dorsal con las rodillas semiflexionadas. Empieza lejos de cualquier zona dolorosa; primero superficial, luego profunda.',
     svg: palpSvg,
     tools: [
-      { id: 'sup', icon: '✋', label: 'Palpación superficial', hint: 'Presión suave (1-2 cm) con la palma y los dedos juntos: busca defensa, dolor, masas superficiales y hernias.' },
-      { id: 'prof', icon: '🤲', label: 'Profunda / bimanual', hint: 'Presión profunda para vísceras y masas: hígado, vesícula, bazo, riñones, aorta, ciego, sigmoides. Respeta la inspiración profunda.' },
+      { id: 'sup', icon: '✋', label: 'Palpación superficial', hint: 'Presión suave (1–2 cm) con la palma y los dedos juntos: busca defensa, dolor, masas superficiales y hernias.' },
+      { id: 'prof', icon: '🤲', label: 'Profunda / bimanual', hint: 'Presión profunda para vísceras y masas: hígado, vesícula, bazo, riñones, aorta, ciego, sigmoides. Aprovecha la inspiración profunda.' },
       { id: 'vals', icon: '💨', label: 'Valsalva / tos (hernias)', hint: 'Pide toser o hacer Valsalva y busca protrusión o impulso en el ombligo, la línea alba y las regiones inguinales.' }
     ],
     regions: palpNine.concat(palpOrgans),
@@ -584,32 +584,32 @@
   const mt = (html, anim) => ({ html, run: anim ? (ctx => note(ctx, anim)) : null });
   const maniobras = {
     id: 'man', label: 'Maniobras', viewBox: '0 0 660 520',
-    hint: 'Maniobras de irritación peritoneal y signos clásicos. En esta persona sana todas son negativas.',
+    hint: 'Puntos dolorosos, signos de irritación peritoneal y maniobras clásicas. En esta persona sana todos son negativos.',
     svg: manSvg,
     tools: [
-      { id: 'murphy', icon: '🫗', label: 'Murphy', hint: 'Presiona bajo el reborde costal derecho (borde lateral del recto) y pide inspirar profundamente.' },
-      { id: 'mcburney', icon: '📍', label: 'McBurney', hint: 'Presiona el punto de McBurney: unión del tercio externo con los dos tercios internos de la línea EIAS derecha-ombligo.' },
-      { id: 'blumberg', icon: '↩️', label: 'Blumberg (rebote)', hint: 'Presiona lentamente en cualquier zona y suelta de golpe. Prueba en la fosa ilíaca derecha y en el resto del abdomen.' },
-      { id: 'rovsing', icon: '🔄', label: 'Rovsing', hint: 'Presiona la fosa ilíaca izquierda, empujando el gas hacia el ciego, y pregunta por dolor en la derecha.' },
+      { id: 'murphy', icon: '🫗', label: 'Murphy (punto cístico)', hint: 'Presiona bajo el reborde costal derecho (borde externo del recto) y pide inspirar profundamente.' },
+      { id: 'mcburney', icon: '📍', label: 'McBurney', hint: 'Presiona el punto de McBurney: unión del tercio externo con los dos tercios internos de la línea que une la EIAS derecha con el ombligo.' },
+      { id: 'blumberg', icon: '↩️', label: 'Blumberg (descompresión)', hint: 'Presiona lentamente y suelta de golpe. Prueba en la fosa ilíaca derecha y en el resto del abdomen (Gueneau de Mussy).' },
+      { id: 'rovsing', icon: '🔄', label: 'Rovsing', hint: 'Presiona la fosa ilíaca izquierda, desplazando el gas del colon hacia el ciego, y pregunta por dolor en la derecha.' },
       { id: 'psoas', icon: '🦵', label: 'Signo del psoas', hint: 'Haz clic en el muslo derecho: elevar el muslo extendido contra resistencia.' },
       { id: 'obt', icon: '🌀', label: 'Signo del obturador', hint: 'Haz clic en el muslo derecho: flexión de cadera y rodilla a 90° con rotación interna.' },
       { id: 'onda', icon: '〰️', label: 'Onda ascítica', hint: 'Haz clic en un flanco: golpe en un flanco con la mano de un ayudante en la línea media.' },
-      { id: 'giordano', icon: '👊', label: 'Giordano (puñopercusión)', hint: 'Haz clic en el ángulo costovertebral de la vista posterior: golpe suave con el borde cubital del puño sobre la mano apoyada.' }
+      { id: 'giordano', icon: '👊', label: 'Puñopercusión lumbar', hint: 'Haz clic en el ángulo costovertebral de la vista posterior: golpe suave con el borde cubital del puño sobre la mano apoyada (signo de Giordano).' }
     ],
     regions: [
       { id: 'abd', label: 'Abdomen', short: '', x: 88, y: 118, w: 244, h: 284, rx: 14,
-        tools: { blumberg: () => mt('<b>Blumberg negativo</b>: tras presionar lentamente y soltar de golpe no hay dolor al descomprimir (no hay irritación peritoneal); no hay defensa ni rigidez.', '↓ presionar … ↑ soltar') } },
-      { id: 'mur', label: 'Punto de Murphy', short: 'Murphy', cx: 150, cy: 146, r: 12, lx: 150, ly: 124,
-        tools: { murphy: () => mt('<b>signo de Murphy negativo</b>: al presionar bajo el reborde costal derecho (borde lateral del recto) el paciente inspira profundamente sin dolor y sin detener la inspiración.', 'inspire …') } },
-      { id: 'mcb', label: 'Punto de McBurney', short: 'McBurney', cx: 139, cy: 319, r: 12, lx: 126, ly: 346, anchor: 'end',
+        tools: { blumberg: () => mt('<b>Blumberg negativo</b>: tras presionar lentamente y soltar de golpe no hay dolor a la descompresión (no hay irritación peritoneal); tampoco en zonas alejadas del punto explorado (signo de Gueneau de Mussy negativo); sin defensa ni contractura.', '↓ presionar … ↑ soltar') } },
+      { id: 'mur', label: 'Punto cístico (Murphy)', short: 'Murphy', cx: 150, cy: 146, r: 12, lx: 150, ly: 124,
+        tools: { murphy: () => mt('<b>signo de Murphy negativo</b>: al presionar en el punto cístico (bajo el reborde costal derecho, en el borde externo del recto) el paciente inspira profundamente sin dolor y sin interrumpir la inspiración.', 'inspire …') } },
+      { id: 'mcb', label: 'Punto de McBurney', short: 'McBurney', cx: 139, cy: 319, r: 12, lx: 139, ly: 300,
         tools: {
-          mcburney: () => mt('<b>McBurney negativo</b>: la presión en el punto de McBurney (1/3 externo de la línea EIAS-ombligo) es <b>indolora</b>, sin defensa muscular.', '↓ presión'),
-          blumberg: () => mt('<b>Blumberg negativo</b> en fosa ilíaca derecha: no hay dolor al soltar de golpe tras la presión lenta.', '↓ presionar … ↑ soltar')
+          mcburney: () => mt('<b>punto de McBurney indoloro</b>: la presión en la unión del tercio externo con los dos tercios internos de la línea EIAS derecha-ombligo no provoca dolor ni defensa muscular.', '↓ presión'),
+          blumberg: () => mt('<b>Blumberg negativo</b> en la fosa ilíaca derecha: no hay dolor al soltar de golpe tras la presión lenta.', '↓ presionar … ↑ soltar')
         } },
-      { id: 'lif', label: 'Fosa ilíaca izquierda', short: 'Rovsing', cx: 296, cy: 340, r: 18, lx: 296, ly: 366, anchor: 'middle',
+      { id: 'lif', label: 'Fosa ilíaca izquierda', short: 'Rovsing', cx: 296, cy: 340, r: 18, lx: 296, ly: 372, anchor: 'middle',
         tools: {
-          rovsing: () => mt('<b>Rovsing negativo</b>: la presión en la fosa ilíaca izquierda (con empuje retrógrado del colon descendente) no provoca dolor en la fosa ilíaca derecha.', '↓ presión FII'),
-          blumberg: () => mt('<b>Blumberg negativo</b> en fosa ilíaca izquierda: sin dolor al descomprimir.', '↓ presionar … ↑ soltar')
+          rovsing: () => mt('<b>Rovsing negativo</b>: la presión en la fosa ilíaca izquierda (desplazando el contenido gaseoso del colon hacia el ciego) no provoca dolor en la fosa ilíaca derecha.', '↓ presión FII'),
+          blumberg: () => mt('<b>Blumberg negativo</b> en la fosa ilíaca izquierda: sin dolor a la descompresión.', '↓ presionar … ↑ soltar')
         } },
       { id: 'flD', label: 'Flanco derecho', short: '', x: 88, y: 222, w: 46, h: 90, lx: 82, ly: 270, anchor: 'end',
         tools: { onda: waveTool } },
@@ -621,9 +621,9 @@
           obt: () => mt('<b>signo del obturador negativo</b>: con cadera y rodilla a 90°, la rotación interna de la cadera derecha no produce dolor en el hipogastrio ni en la fosa ilíaca derecha.', '⟲ rotación interna')
         } },
       { id: 'cvd', label: 'Ángulo costovertebral derecho', short: 'ACV D', cx: 440 + 138, cy: 188, r: 17, lx: 440 + 100 + 62, ly: 164,
-        tools: { giordano: () => mt('<b>Giordano (puñopercusión lumbar) negativo a la derecha</b>: el golpe suave con el borde cubital del puño en el ángulo costovertebral (entre la 12.ª costilla y la columna) no provoca dolor.', 'golpe suave') } },
+        tools: { giordano: () => mt('<b>puñopercusión lumbar negativa a la derecha</b> (signo de Giordano negativo): el golpe suave con el borde cubital del puño sobre la mano apoyada en el ángulo costovertebral (entre la 12.ª costilla y la columna) no provoca dolor.', 'golpe suave') } },
       { id: 'cvi', label: 'Ángulo costovertebral izquierdo', short: 'ACV I', cx: 440 + 62, cy: 188, r: 17, lx: 440 + 100 - 62, ly: 164,
-        tools: { giordano: () => mt('<b>Giordano negativo a la izquierda</b>: sin dolor a la puñopercusión lumbar; es un signo simétrico.', 'golpe suave') } }
+        tools: { giordano: () => mt('<b>puñopercusión lumbar negativa a la izquierda</b>: sin dolor; el hallazgo es simétrico con el lado derecho.', 'golpe suave') } }
     ],
     onLeave: clearRT
   };
@@ -631,7 +631,8 @@
   /* =====================================================================
      CUESTIONARIO
      ===================================================================== */
-  const PK = { 28: 0, 45: 1, 72: 2 };
+  /* posición de la respuesta correcta: varía con la persona (índice en la lista) y con la pregunta */
+  const kOf = c => { const i = (NormalEngine.people || []).findIndex(p => p.id === c.id); return i >= 0 ? i : (c.age % 4); };
   function mk(k, q, correct, wrongs, why) {
     const opts = wrongs.slice();
     const pos = k % (opts.length + 1);
@@ -639,50 +640,55 @@
     return { q, options: opts, a: pos, why };
   }
   const quiz = c => {
-    const p = pd(c), k = (PK[c.age] || 0);
+    const p = pd(c), k = kOf(c);
     const span = p.span;
     return [
-      mk(k, 'Orden clásico de la exploración abdominal', 'Inspección, auscultación, percusión y palpación',
+      mk(k, 'Orden de la exploración del abdomen', 'Inspección, auscultación, percusión y palpación',
         ['Inspección, palpación, percusión y auscultación', 'Palpación, percusión, auscultación e inspección', 'Percusión, palpación, inspección y auscultación'],
-        'La percusión y la palpación pueden modificar la actividad intestinal; por eso se ausculta antes de tocar el abdomen.'),
-      mk(k + 1, 'Frecuencia normal de ruidos hidroaéreos', '5–30 por minuto',
+        'A diferencia del resto del examen físico, en el abdomen se ausculta antes de percutir y palpar, porque la manipulación modifica el peristaltismo y los RHA.'),
+      mk(k + 1, 'Frecuencia normal de los ruidos hidroaéreos (RHA)', '5–30 por minuto',
         ['1–2 por minuto', '40–60 por minuto', 'Ausentes en reposo'],
-        'Se consideran ausentes solo tras auscultar 2-5 minutos en cada cuadrante. Regla práctica: ~3 ruidos en 10 s ≈ 18/min.'),
-      mk(k + 2, 'Altura de la matidez hepática en la LMC de esta persona (normal 6–12 cm)', `${span} cm`,
-        [`${span - 4} cm`, `${span + 6} cm`, 'No se puede medir'],
-        `Percutiendo de arriba abajo en la LMC derecha la matidez comienza en el 5.º espacio intercostal y termina en el reborde costal: ≈ ${span} cm en esta persona.`),
+        'Se consideran ausentes (silencio abdominal) solo tras auscultar varios minutos (2–5 min según la fuente). Regla práctica: ~3 ruidos en 10 s ≈ 18/min.'),
+      mk(k + 2, `Hepatimetría en la LMC de esta persona (${c.age} años, ${c.sex === 'F' ? 'mujer' : 'varón'}; normal 6–12 cm)`, `${span} cm`,
+        [`${span - 4} cm`, `${span + 6} cm`, 'No se puede medir por percusión'],
+        `Percutiendo en la LMC derecha, la matidez comienza en el 5.º espacio intercostal y termina en el reborde costal: ≈ ${span} cm en esta persona (≈ 10–12 cm en el varón adulto y menor en la mujer).`),
       mk(k + 3, 'Límite superior de la matidez hepática en la línea medioclavicular', '5.º espacio intercostal',
         ['2.º espacio intercostal', '8.º espacio intercostal', 'Reborde costal'],
-        'El hígado se percute desde la sonoridad pulmonar hacia abajo; el borde superior es el 5.º EIC en la LMC y el inferior coincide con el reborde costal.'),
-      mk(k, 'Sonido normal en el espacio de Traube', 'Timpánico (cámara gástrica)',
-        ['Mate por el bazo', 'Mate por el hígado', 'Resonante pulmonar'],
-        'Bajo el hemitórax izquierdo se encuentra la burbuja gástrica: el timpanismo es normal; la matidez en esa zona no lo es.'),
+        'Se percute desde la sonoridad pulmonar hacia abajo; el límite superior está en el 5.º EIC en la LMC y el inferior coincide con el reborde costal.'),
+      mk(k, 'Sonido normal en el espacio de Traube', 'Timpanismo (cámara gástrica)',
+        ['Matidez por el bazo', 'Matidez por el hígado', 'Sonoridad pulmonar'],
+        'En la base del hemitórax izquierdo se encuentra la cámara gástrica: el timpanismo es normal; la matidez en esa zona (esplenomegalia, derrame) no lo es.'),
       mk(k + 1, 'Borde hepático a la palpación en esta persona',
         p.liver ? 'Palpable ≈ 1 cm bajo el reborde en inspiración, liso, romo y blando' : 'No palpable bajo el reborde costal',
         p.liver
           ? ['No palpable', 'Palpable 5 cm, duro e irregular', 'Palpable, doloroso y de borde cortante']
           : ['Palpable 5 cm bajo el reborde, duro e irregular', 'Palpable 1 cm, doloroso y de borde cortante', 'Siempre palpable 3 cm en todas las personas'],
         p.liver ? 'En personas delgadas el borde puede palparse 1–2 cm bajo el reborde en inspiración profunda: liso, romo, blando e indoloro.'
-          : 'El hígado normal suele no palparse; si se palpa, no pasa de 1–2 cm bajo el reborde y es liso, romo, blando e indoloro.'),
-      mk(k + 2, 'Diámetro normal de la aorta abdominal', 'Menor de 3 cm, pulsátil con expansión lateral',
-        ['Mayor de 4 cm y no pulsátil', 'Exactamente 5 cm', 'No debe percibirse nunca en ninguna persona'],
-        'Un diámetro ≥ 3 cm define un aneurisma de aorta abdominal; en personas delgadas la aorta normal se palpa como pulsación en la línea media.'),
-      mk(k + 3, 'Un signo de Murphy negativo significa que', 'Al presionar bajo el reborde costal derecho se inspira profundamente sin dolor ni interrupción',
-        ['El paciente detiene la inspiración por dolor', 'Hay dolor al soltar de golpe en la fosa ilíaca derecha', 'El hígado es palpable y doloroso'],
-        'El Murphy se busca con presión en el punto cístico; la detención de la inspiración por dolor lo hace positivo.')
+          : 'El hígado normal suele no palparse; si se palpa, no sobrepasa 1–2 cm bajo el reborde y es liso, romo, blando e indoloro.'),
+      mk(k + 2, 'Diámetro normal de la aorta abdominal a la palpación', 'Menor de 3 cm, con latido y expansión lateral',
+        ['Mayor de 4 cm y sin latido', 'Exactamente 5 cm', 'No debe percibirse nunca en ninguna persona'],
+        'Un diámetro ≥ 3 cm define un aneurisma de aorta abdominal; en personas delgadas la aorta normal se palpa como un latido en la línea media supraumbilical.'),
+      mk(k + 3, 'Un signo de Murphy negativo significa que', 'Al presionar en el punto cístico el paciente inspira profundamente sin dolor ni interrupción',
+        ['El paciente detiene la inspiración por dolor', 'Hay dolor a la descompresión en la fosa ilíaca derecha', 'El hígado es palpable y doloroso'],
+        'Se presiona bajo el reborde costal derecho en el borde externo del recto (punto cístico); la interrupción de la inspiración por dolor lo hace positivo.')
     ];
   };
 
   NormalEngine.build({
     id: 'abdomen', title: 'Abdomen (normal)', icon: '🫃', group: 'Exploración normal',
     desc: 'Exploración física normal del abdomen: inspección, auscultación, percusión, palpación y maniobras.',
-    bullets: ['Cuadrantes y 9 regiones', 'Ruidos hidroaéreos y matidez hepática', 'Palpación superficial y profunda, Murphy, McBurney, Blumberg'],
+    bullets: ['Cuadrantes y 9 regiones', 'Ruidos hidroaéreos, timpanismo y hepatimetría', 'Palpación superficial y profunda; Murphy, McBurney, Blumberg, puñopercusión lumbar'],
+    refs: [
+      'Argente HA, Álvarez ME. <i>Semiología Médica. Fisiopatología, semiotecnia y propedéutica</i>. Editorial Médica Panamericana — Aparato digestivo: examen físico del abdomen (inspección, auscultación, percusión y palpación), hígado, bazo y riñón; signos peritoneales.',
+      'Surós Batlló A, Surós Batlló J. <i>Semiología médica y técnica exploratoria</i>. Elsevier Masson — Abdomen: maniobras de palpación de hígado, bazo y riñón.',
+      'Bickley LS. <i>Bates. Guía de exploración física e historia clínica</i>. Wolters Kluwer — Abdomen: ruidos hidroaéreos, hepatimetría y ascitis.'
+    ],
     teaching: [
-      'Orden: inspección → auscultación → percusión → palpación; la auscultación va antes para no alterar los ruidos intestinales.',
-      'Paciente en decúbito supino, relajado, con las rodillas semiflexionadas, manos y fonendoscopio tibios; comienza lejos de cualquier zona dolorosa.',
-      'Ruidos hidroaéreos normales: 5–30/min; se dan por ausentes solo tras 2–5 minutos de escucha. Busca soplos en aorta, renales, ilíacas y femorales.',
-      'Altura hepática en la LMC: 6–12 cm (típico 7–10); borde superior en el 5.º EIC y borde inferior en el reborde costal; el espacio de Traube es timpánico.',
-      'Palpa en inspiración profunda: hígado (borde romo, blando, liso), aorta (< 3 cm) y ciego/sigmoides; el bazo, la vesícula y los riñones normales no se palpan (salvo variantes en personas delgadas).'
+      'Orden: inspección → auscultación → percusión → palpación; la auscultación va antes para no modificar los ruidos hidroaéreos con la manipulación.',
+      'Paciente en decúbito dorsal, relajado, con las rodillas semiflexionadas; manos y estetoscopio tibios; comienza lejos de cualquier zona dolorosa y termina con las maniobras y los puntos dolorosos.',
+      'RHA normales: 5–30/min; se dan por ausentes solo tras varios minutos de escucha (2–5 min según la fuente). Busca soplos en aorta, arterias renales, ilíacas y femorales.',
+      'Hepatimetría en la LMC: 6–12 cm (≈ 10–12 cm en el varón adulto, menor en la mujer); límite superior en el 5.º EIC y límite inferior en el reborde costal; el espacio de Traube es timpánico.',
+      'Palpa en inspiración profunda: hígado (mano en cuchara o enganche de Mathieu: borde romo, blando, liso), bazo (Middleton: no palpable), riñón (Guyon y peloteo: no palpable), aorta (< 3 cm), ciego y sigmoides. La vesícula normal no se palpa.'
     ],
     scenes: [inspeccion, auscultacion, percusion, palpacion, maniobras],
     quiz
