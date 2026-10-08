@@ -7,9 +7,9 @@
     // focos cardíacos (cara anterior)
     AO: { x: 190, y: 149, type: 'focus', view: 'ant', short: 'Aórtico', label: 'Foco aórtico (2.º EIC, borde esternal derecho)' },
     PU: { x: 230, y: 149, type: 'focus', view: 'ant', short: 'Pulmonar', label: 'Foco pulmonar (2.º EIC, borde esternal izquierdo)' },
-    ER: { x: 230, y: 181, type: 'focus', view: 'ant', short: 'Erb', label: 'Punto de Erb (3.er EIC, borde esternal izquierdo)' },
-    TR: { x: 230, y: 213, type: 'focus', view: 'ant', short: 'Tricúspide', label: 'Foco tricuspídeo (4.º-5.º EIC, borde esternal izquierdo)' },
-    MI: { x: 275, y: 246, type: 'focus', view: 'ant', short: 'Mitral', label: 'Foco mitral (5.º EIC, línea medioclavicular izquierda)' },
+    ER: { x: 230, y: 181, type: 'focus', view: 'ant', short: 'Mesocárdico', label: 'Foco mesocárdico o de Erb (3.er EIC, borde esternal izquierdo)' },
+    TR: { x: 230, y: 213, type: 'focus', view: 'ant', short: 'Tricuspídeo', label: 'Foco tricuspídeo (4.º-5.º EIC, borde esternal izquierdo)' },
+    MI: { x: 275, y: 246, type: 'focus', view: 'ant', short: 'Mitral', label: 'Foco mitral o apexiano (5.º EIC, línea medioclavicular izquierda)' },
     CR: { x: 172, y: 64, type: 'carotid', view: 'ant', short: 'Carótida D', label: 'Carótida derecha' },
     CL: { x: 248, y: 64, type: 'carotid', view: 'ant', short: 'Carótida I', label: 'Carótida izquierda' },
     AX: { x: 346, y: 216, type: 'ax', view: 'ant', short: 'Axila I', label: 'Axila izquierda (línea axilar anterior)' },
@@ -31,13 +31,20 @@
     pLB: { x: 125, y: 335, type: 'lung', view: 'post', short: 'Base I', label: 'Base pulmonar izquierda (posterior)' }
   };
 
+  /* Nomenclatura de Argente-Álvarez en los textos visibles; las claves de código (s1, s2, resonant, dull…) no cambian. */
   const KIND_TXT = {
-    sys_ejection: 'soplo sistólico eyectivo (en rombo)', holosystolic: 'soplo holosistólico',
-    early_diastolic: 'soplo diastólico decreciente', diastolic_rumble: 'retumbo diastólico'
+    sys_ejection: 'soplo sistólico eyectivo (mesosistólico, «en rombo»)', holosystolic: 'soplo sistólico regurgitativo (holosistólico)',
+    early_diastolic: 'soplo diastólico regurgitativo (protodiastólico, decreciente)', diastolic_rumble: 'rolido (retumbo) mitral diastólico'
   };
-  const LUNG_TXT = { normal: 'murmullo vesicular normal', bronchial: 'soplo tubárico (respiración bronquial)', diminished: 'murmullo vesicular disminuido o abolido' };
-  const ADV_TXT = { fine_crackles: 'crepitantes finos', coarse_crackles: 'crepitantes gruesos', wheeze: 'sibilancias', rhonchi: 'roncus', rub: 'roce pleural' };
-  const PERC_TXT = { resonant: 'resonante (normal)', dull: 'mate (matidez)', hyper: 'hiperresonante' };
+  const LUNG_TXT = {
+    normal: 'murmullo vesicular conservado', bronchial: 'soplo tubario (respiración bronquial sobre el parénquima)',
+    broncovesicular: 'respiración broncovesicular', diminished: 'murmullo vesicular disminuido o abolido', absent: 'murmullo vesicular abolido (silencio auscultatorio)'
+  };
+  const ADV_TXT = {
+    fine_crackles: 'estertores crepitantes', coarse_crackles: 'estertores subcrepitantes (de burbuja)',
+    wheeze: 'sibilancias', rhonchi: 'roncus', rub: 'frote pleural'
+  };
+  const PERC_TXT = { resonant: 'sonoridad (normal)', dull: 'matidez', hyper: 'hipersonoridad' };
 
   const lungAt = (c, id) => Object.assign({}, c.lung.base, c.lung.over[id] || {});
 
@@ -75,10 +82,11 @@
     }
     if (p.type === 'carotid') return h.kind && s.lvl >= 0.2 ? KIND_TXT[h.kind] + ' irradiado' : 'sin soplo carotídeo';
     // foco cardíaco
-    parts.push(h.s1 > 1.2 ? 'S1 intenso' : h.s1 < 0.7 ? 'S1 disminuido' : 'S1 normal');
-    parts.push(h.s2 < 0.7 ? 'S2 disminuido' : 'S2 normal');
-    if (h.s3) parts.push('S3 (galope ventricular)');
-    if (h.snap) parts.push('chasquido de apertura');
+    parts.push(h.s1 > 1.2 ? 'R1 intenso' : h.s1 < 0.7 ? 'R1 disminuido' : 'R1 normal');
+    parts.push(h.s2 < 0.7 ? 'R2 disminuido' : 'R2 normal');
+    if (h.s3) parts.push('R3 (galope ventricular, protodiastólico)');
+    if (h.s4) parts.push('R4 (galope auricular, presistólico)');
+    if (h.snap) parts.push('chasquido de apertura tras R2');
     if (h.kind && s.lvl >= 0.6) parts.push(KIND_TXT[h.kind]);
     else if (h.kind && s.lvl >= 0.2) parts.push(KIND_TXT[h.kind] + ' suave (irradiado)');
     else parts.push('sin soplos');
@@ -133,9 +141,9 @@
       this.label = view === 'ant' ? 'Cara anterior' : 'Cara posterior';
       this.hint = '';
       this.tools = [
-        { id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma' },
-        { id: 'bell', icon: '🔔', label: 'Fonendoscopio · campana' },
-        { id: 'perc', icon: '🖐️', label: 'Percusión' }
+        { id: 'steth', icon: '🩺', label: 'Estetoscopio · membrana (diafragma)' },
+        { id: 'bell', icon: '🔔', label: 'Estetoscopio · campana' },
+        { id: 'perc', icon: '🖐️', label: 'Percusión dígito-digital' }
       ];
     }
 
@@ -191,9 +199,9 @@
 
     setTool(id) {
       const t = {
-        steth: 'Diafragma: sonidos agudos (S1, S2, soplos, sonidos respiratorios). Haz clic en un punto y escucha un ciclo completo; compara lados simétricos.',
-        bell: 'Campana: sonidos graves (S3, S4, retumbo mitral). Presión leve. Los sonidos agudos se atenúan.',
-        perc: 'Percusión: haz clic sobre los campos pulmonares. Compara un lado con el otro.'
+        steth: 'Membrana: sonidos agudos (R1, R2, soplos regurgitativos, murmullo vesicular y estertores). Haz clic en un punto y escucha un ciclo completo; compara puntos simétricos.',
+        bell: 'Campana: sonidos graves (R3, R4, rolido mitral). Apóyala con presión leve; los sonidos agudos se atenúan.',
+        perc: 'Percusión dígito-digital: haz clic sobre los campos pulmonares. Compara un lado con el otro (sonoridad, matidez, hipersonoridad).'
       };
       this.sh.hint(t[id]);
       if (id === 'steth' || id === 'bell') {
@@ -224,6 +232,7 @@
       if (pt.type !== 'lung') { sh.log('La percusión se hace sobre los campos pulmonares.', 'warn'); return; }
       const k = lungAt(c, id).perc || 'resonant';
       Sound.percuss(k);
+      sh.explored(`perc:${id}`);
       sh.log(sh.mode === 'learn'
         ? `<b>Percusión · ${pt.label}</b>: ${PERC_TXT[k]}.`
         : `Percusión en ${pt.label.toLowerCase()}. Escucha el sonido y regístralo en “Mis hallazgos”.`, sh.mode === 'learn' ? 'find' : '');
@@ -240,11 +249,12 @@
       const act = this.svg.querySelector('#act');
       act.style.display = ''; act.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
       sh.$('#wTitle').textContent = pt.label;
-      sh.$('#wSub').textContent = bell ? 'Campana' : 'Diafragma';
+      sh.$('#wSub').textContent = bell ? 'Campana' : 'Membrana';
+      sh.explored(`${bell ? 'bell' : 'steth'}:${id}`);
       if (first || sh.tool === 'steth' || sh.tool === 'bell') {
         sh.log(sh.mode === 'learn'
-          ? `<b>${pt.label}</b> (${bell ? 'campana' : 'diafragma'}): ${describe(c, id)}.`
-          : `Auscultación en ${pt.label.toLowerCase()} con ${bell ? 'la campana' : 'el diafragma'}.`, sh.mode === 'learn' ? 'find' : '');
+          ? `<b>${pt.label}</b> (${bell ? 'campana' : 'membrana'}): ${describe(c, id)}.`
+          : `Auscultación en ${pt.label.toLowerCase()} con ${bell ? 'la campana' : 'la membrana'}.`, sh.mode === 'learn' ? 'find' : '');
       }
       void cur;
     }
@@ -276,7 +286,7 @@
       if (this.sh.mode === 'learn' && this.spec) {
         const t = Sound.timing(cur.spec.rate);
         g.fillStyle = ink; g.font = '11px system-ui';
-        g.fillText('S1', t.tS1 / t.T * W - 4, 11); g.fillText('S2', t.tS2 / t.T * W - 4, 11);
+        g.fillText('R1', t.tS1 / t.T * W - 4, 11); g.fillText('R2', t.tS2 / t.T * W - 4, 11);
       }
       const x = cur.pos * W;
       g.strokeStyle = '#d9534f'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke();
@@ -285,13 +295,13 @@
 
   /* ------------------------------------------------------------ REGISTRO */
   const OPT = {
-    heart: [['normal', 'Normal (sin soplos)'], ['sys_ejection', 'Soplo sistólico eyectivo'], ['holosystolic', 'Soplo holosistólico'],
-      ['early_diastolic', 'Soplo diastólico decreciente'], ['rumble', 'Retumbo diastólico + chasquido'], ['s3', 'Tercer ruido (S3)']],
-    lung: [['vesicular', 'Murmullo vesicular normal'], ['bronchial', 'Soplo tubárico (bronquial)'], ['diminished', 'Disminuido o abolido']],
-    adv: [['none', 'Ninguno'], ['crackles', 'Crepitantes'], ['wheeze', 'Sibilancias'], ['rhonchi', 'Roncus'], ['rub', 'Roce pleural']],
-    perc: [['resonant', 'Resonante'], ['dull', 'Mate'], ['hyper', 'Hiperresonante']]
+    heart: [['normal', 'R1 y R2 normales, sin soplos'], ['sys_ejection', 'Soplo sistólico eyectivo (en rombo)'], ['holosystolic', 'Soplo sistólico regurgitativo (holosistólico)'],
+      ['early_diastolic', 'Soplo diastólico regurgitativo (decreciente)'], ['rumble', 'Rolido mitral + chasquido de apertura'], ['s3', 'Tercer ruido (R3, galope)']],
+    lung: [['vesicular', 'Murmullo vesicular conservado'], ['bronchial', 'Soplo tubario (respiración bronquial)'], ['diminished', 'Disminuido o abolido']],
+    adv: [['none', 'Ninguno'], ['crackles', 'Estertores crepitantes'], ['wheeze', 'Sibilancias'], ['rhonchi', 'Roncus'], ['rub', 'Frote pleural']],
+    perc: [['resonant', 'Sonoridad (normal)'], ['dull', 'Matidez'], ['hyper', 'Hipersonoridad']]
   };
-  const ROWS = [['heart', 'Ruidos cardíacos'], ['lung', 'Murmullo vesicular'], ['adv', 'Ruidos agregados'], ['perc', 'Percusión (zona alterada)']];
+  const ROWS = [['heart', 'Ruidos cardíacos y soplos'], ['lung', 'Murmullo vesicular'], ['adv', 'Ruidos agregados'], ['perc', 'Percusión (zona alterada)']];
   const label = (k, v) => (OPT[k].find(o => o[0] === v) || [0, v])[1];
 
   function recordHTML() {
@@ -309,19 +319,31 @@
       return `<tr><td>${t}</td><td>${good ? '<span class="m-ok">✔</span>' : mine === '' ? '<span class="m-bad">–</span>' : '<span class="m-bad">✘</span>'} ${mine ? label(k, mine) : ''}</td>
         <td><small>${real.map(v => label(k, v)).join(' / ')}</small></td></tr>`;
     }).join('');
-    return `<h4>Comparación con el caso</h4>
+    const html = `<h4>Comparación con el caso</h4>
       <table class="res"><tr><th></th><th>Tú</th><th>Real</th></tr>${rows}</table>
       <p><b>${ok}</b> de ${ROWS.length} correctos.</p>`;
+    return { html, ok, total: ROWS.length };
   }
+
+  const CHEST_REFS = [
+    'Argente HA, Álvarez ME. <i>Semiología Médica</i> (Panamericana) — Aparato respiratorio: percusión (sonoridad, matidez, hipersonoridad) y auscultación (murmullo vesicular, soplo tubario, estertores, frote pleural); síndromes de condensación, derrame pleural, neumotórax y obstrucción bronquial.',
+    'Argente HA, Álvarez ME. <i>Semiología Médica</i> — Aparato cardiovascular: focos de auscultación, ruidos cardíacos (R1-R4, chasquido de apertura) y soplos (eyectivos, regurgitativos, rolido mitral); síndromes valvulares e insuficiencia cardíaca.',
+    'Guías GINA (asma) y GOLD (EPOC): valoración clínica de la gravedad de la obstrucción bronquial.'
+  ];
+  /* Claves explorables: cada punto con membrana y campana; además percusión en los campos pulmonares. */
+  const CHEST_TOTAL = Object.keys(PTS).reduce((n, k) => n + 2 + (PTS[k].type === 'lung' ? 1 : 0), 0);
 
   window.ChestModule = {
     mount(root) {
       const sh = new Shell(root, {
+        id: 'chest',
+        progressTotal: CHEST_TOTAL,
         cases: window.CHEST_CASES,
         scenes: { ant: new ChestScene('ant'), post: new ChestScene('post') },
         order: ['ant', 'post'],
         record: recordHTML,
-        evaluate
+        evaluate,
+        refs: CHEST_REFS
       });
       sh.start();
       return sh;
@@ -331,7 +353,8 @@
   registerModule({
     id: 'chest', title: 'Tórax: auscultación y percusión', icon: '🫀', group: 'Casos clínicos',
     desc: 'Auscultación cardíaca y pulmonar, y percusión (11 casos).',
-    bullets: ['Focos cardíacos, soplos, S3, chasquido', 'Crepitantes, sibilancias, roncus, soplo tubárico', 'Diafragma, campana y percusión'],
+    bullets: ['Focos cardíacos, soplos, R3, chasquido de apertura', 'Estertores crepitantes, sibilancias, roncus, soplo tubario', 'Membrana, campana y percusión (sonoridad, matidez, hipersonoridad)'],
+    refs: CHEST_REFS,
     mount: root => window.ChestModule.mount(root)
   });
 })();

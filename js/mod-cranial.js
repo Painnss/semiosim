@@ -1,5 +1,6 @@
-/* Módulo: Pares craneales, motor y estado mental (exploración normal).
-   Escenas: pares craneales I-XII, motor, cerebelo, equilibrio y marcha, sensibilidad, signos meníngeos y estado mental (Mini-Mental).
+/* Módulo: Examen neurológico normal (conciencia y estado mental, pares craneales, motilidad, taxia, sensibilidad, marcha y signos meníngeos).
+   Orden de las escenas según Argente-Álvarez: estado mental → pares craneales I-XII → motilidad (fuerza, tono, trofismo) → taxia → sensibilidad
+   superficial y profunda → marcha y equilibrio → signos meníngeos. Los reflejos se exploran en el módulo «Neurología: reflejos, pies y ojos».
    Usa NormalEngine.build; las animaciones y controles extra se hacen con `run` y con el gancho `after`. */
 (function () {
   'use strict';
@@ -38,8 +39,13 @@
     return e;
   };
   const $q = (svg, id) => svg.querySelector('#' + id);
-  const ageOld = c => c.age >= 60;
+  const ageOld = c => c.age >= 60;          // solo para el dibujo (canas)
+  const elder = c => c.age >= 65;           // cambios fisiológicos del envejecimiento en los textos
   const hairOf = c => (ageOld(c) ? '#c8ccd2' : (c.sex === 'F' ? '#4a2f20' : '#3a2a1e'));
+  /* temporizadores de la escena (se cancelan al salir) */
+  const timers = [];
+  const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+  function clearTimers() { while (timers.length) clearTimeout(timers.pop()); }
   const smooth = u => u * u * (3 - 2 * u);
   const tri = (u, a, b) => (u < a ? u / a : u < b ? 1 : 1 - (u - b) / (1 - b));   // 0→1, meseta, 1→0
 
@@ -48,7 +54,7 @@
     if (anim) anim();
     anim = tween(ms, fn, () => { anim = null; if (done) done(); });
   }
-  function stopAnim() { if (anim) { anim(); anim = null; } }
+  function stopAnim() { if (anim) { anim(); anim = null; } clearTimers(); }
 
   /* texto flotante (p. ej. "5/5") junto al punto explorado */
   function popText(svg, p, txt, color) {
@@ -106,22 +112,22 @@
     { n: 1, rn: 'I', name: 'Olfatorio', kind: 'Sensitivo', tag: 'Olfato',
       fn: 'Olfato. Los filamentos olfatorios atraviesan la lámina cribosa del etmoides y llegan al bulbo olfatorio.',
       how: 'Con los ojos cerrados y ocluyendo una narina, se acerca a la otra una sustancia aromática <b>no irritante</b> (café, vainilla, clavo, menta, jabón) y se pregunta si la percibe y cuál es; luego se repite con la otra fosa. Se evita el amoníaco o el alcohol, que estimulan el trigémino. Antes se comprueba que las fosas estén permeables.',
-      normal: 'Percibe e identifica el aroma en cada fosa nasal por separado (basta reconocer que huele; nombrarlo es mejor). Una hiposmia leve después de los 65 años es fisiológica.' },
+      normal: 'Percibe e identifica el aroma en cada fosa nasal por separado (basta reconocer que huele; nombrarlo es mejor). Después de los 65 años puede haber una hiposmia leve sin significado patológico.' },
     { n: 2, rn: 'II', name: 'Óptico', kind: 'Sensitivo', tag: 'Visión',
       fn: 'Visión. Retina → nervio óptico → quiasma → cintilla → cuerpo geniculado lateral → radiaciones ópticas → corteza occipital. Es la vía aferente del reflejo fotomotor.',
-      how: '<b>Agudeza visual</b> (Snellen a 6 m; Rosenbaum o Jaeger de cerca), <b>campos visuales por confrontación</b> (cada ojo por separado, enfrentado al ojo del examinador, en los 4 cuadrantes), <b>fondo de ojo</b> y <b>reflejo fotomotor</b>.',
-      normal: 'Agudeza 20/20 (6/6), con corrección si la usa; campos visuales completos por confrontación (≈ 90° temporal, 60° nasal, 50° superior y 70° inferior); papila de bordes nítidos; reflejo fotomotor directo y consensual presentes.' },
-    { n: 3, rn: 'III', name: 'Oculomotor', kind: 'Motor y parasimpático', tag: 'Mov. ocular y pupila',
+      how: '<b>Agudeza visual</b> (Snellen a 6 m; tabla de Jaeger de cerca), <b>visión de los colores</b>, <b>campos visuales por confrontación</b> (cada ojo por separado, enfrentado al ojo del examinador, en los 4 cuadrantes), <b>fondo de ojo</b> y <b>reflejo fotomotor</b>.',
+      normal: 'Agudeza 20/20 (6/6), con corrección si la usa; distingue los colores; campos visuales completos por confrontación; papila de bordes nítidos; reflejo fotomotor directo y consensual presentes.' },
+    { n: 3, rn: 'III', name: 'Oculomotor', kind: 'Motor y parasimpático', tag: 'Ojo y pupila',
       fn: 'Rectos superior, inferior y medial, oblicuo inferior y elevador del párpado. Sus fibras parasimpáticas inervan el esfínter de la pupila (miosis) y el músculo ciliar (acomodación).',
       how: 'Seguimiento de un dedo en <b>H</b> (movimientos conjugados en las 6 posiciones cardinales de la mirada), observación de los <b>párpados</b> (hendidura palpebral), tamaño y forma de las <b>pupilas</b>, reflejo fotomotor directo y consensual y reflejo de acomodación-convergencia.',
-      normal: 'Movimientos oculares completos y conjugados, sin diplopía ni nistagmo; sin ptosis (hendidura de ≈ 9-11 mm, simétrica); pupilas de 3-4 mm, redondas, isocóricas y reactivas a la luz y a la acomodación (PIRRLA).' },
-    { n: 4, rn: 'IV', name: 'Troclear', kind: 'Motor', tag: 'Mirada abajo-adentro',
+      normal: 'Movimientos oculares completos y conjugados, sin diplopía ni nistagmo; sin ptosis (hendiduras palpebrales simétricas); pupilas de 2-4 mm, redondas, isocóricas, con reflejo fotomotor directo y consensual y reflejo de acomodación-convergencia presentes.' },
+    { n: 4, rn: 'IV', name: 'Troclear', kind: 'Motor', tag: 'Mirada abajo y adentro',
       fn: 'Oblicuo superior (hace descender y rotar hacia adentro el ojo, sobre todo en aducción). Es el único par que emerge por la cara dorsal del tronco y tiene el trayecto intracraneal más largo.',
       how: 'Se pide mirar hacia <b>abajo y adentro</b> (hacia la nariz; como al leer o bajar escaleras). Se explora junto con III y VI en el patrón en H.',
       normal: 'Descenso del ojo en aducción completo, sin diplopía vertical ni inclinación compensadora de la cabeza.' },
     { n: 5, rn: 'V', name: 'Trigémino', kind: 'Mixto', tag: 'Cara · masticación',
       fn: '<b>Sensitivo</b>: cara, córnea, mucosa nasal y bucal y 2/3 anteriores de la lengua (sensibilidad general). Tiene tres ramas: <b>V1 oftálmica</b> (frente, párpado superior, dorso de la nariz, córnea), <b>V2 maxilar</b> (mejilla, ala nasal, labio superior) y <b>V3 mandibular</b> (mentón, mandíbula, labio inferior). <b>Motor</b> (V3): masetero, temporal y pterigoideos.',
-      how: '<b>Sensibilidad</b> (algodón para el tacto, aguja para el dolor, frío) en las 3 ramas, comparando ambos lados; <b>reflejo corneal</b> (algodón sobre la córnea desde un lado: parpadeo); <b>masetero y temporales</b> (palpar al apretar los dientes) y apertura bucal con la mandíbula en línea media.',
+      how: '<b>Sensibilidad</b> (algodón para el tacto, alfiler para el dolor, tubo frío) en las 3 ramas, comparando ambos lados; <b>reflejo corneal</b> (algodón sobre la córnea desde un lado: parpadeo); <b>maseteros y temporales</b> (palpar al apretar los dientes) y apertura bucal con la mandíbula en línea media.',
       normal: 'Sensibilidad facial simétrica en V1, V2 y V3; reflejo corneal presente y bilateral (aferente V1, eferente VII); maseteros y temporales firmes y simétricos al apretar los dientes; la mandíbula abre sin desviarse.' },
     { n: 6, rn: 'VI', name: 'Abducens', kind: 'Motor', tag: 'Abducción ocular',
       fn: 'Recto lateral: abducción del ojo (mirada hacia afuera).',
@@ -131,10 +137,10 @@
       fn: '<b>Motor</b>: músculos de la mímica y estapedio. <b>Sensitivo</b> (cuerda del tímpano): gusto de los 2/3 anteriores de la lengua. <b>Parasimpático</b>: glándulas lagrimal, submandibular y sublingual.',
       how: 'Observar la simetría en reposo (surcos nasolabiales, hendiduras palpebrales) y pedir: <b>arrugar la frente</b> y elevar las cejas, <b>cerrar los ojos con fuerza</b> (el examinador intenta abrirlos), <b>mostrar los dientes o sonreír</b>, inflar las mejillas y silbar.',
       normal: 'Cara simétrica en reposo y en movimiento; frente que se arruga por igual (la frente está inervada por ambos hemisferios, por eso la parálisis central la respeta); cierre ocular con fuerza vencible solo con gran esfuerzo; sonrisa simétrica sin desviación de la comisura.' },
-    { n: 8, rn: 'VIII', name: 'Vestibulococlear', kind: 'Sensitivo', tag: 'Audición · equilibrio',
+    { n: 8, rn: 'VIII', name: 'Vestibulococlear', kind: 'Sensitivo', tag: 'Oído · equilibrio',
       fn: '<b>Coclear</b>: audición. <b>Vestibular</b>: equilibrio y orientación en el espacio (reflejo vestíbulo-ocular).',
-      how: '<b>Audición</b>: voz susurrada a 60 cm, frotar los dedos junto al oído, diapasón de 512 Hz (Rinne y Weber) tras la otoscopia. <b>Vestibular</b>: buscar nistagmo, vértigo, Romberg y marcha.',
-      normal: 'Oye el susurro a 60 cm con cada oído; Rinne positivo (conducción aérea &gt; ósea) y Weber en la línea media; sin nistagmo espontáneo ni vértigo; Romberg y marcha normales.' },
+      how: '<b>Audición</b>: voz susurrada a 60 cm, frotar los dedos junto al oído, diapasón de 256-512 Hz (pruebas de Rinne y Weber) tras la otoscopia. <b>Vestibular</b>: buscar nistagmo, vértigo, Romberg y marcha.',
+      normal: 'Oye el susurro a 60 cm con cada oído; Rinne positivo (conducción aérea mayor que la ósea) y Weber en la línea media (no lateraliza); sin nistagmo espontáneo ni vértigo; Romberg y marcha normales.' },
     { n: 9, rn: 'IX', name: 'Glosofaríngeo', kind: 'Mixto', tag: 'Deglución · gusto',
       fn: '<b>Sensitivo</b>: tercio posterior de la lengua (gusto y sensibilidad), faringe, amígdala, oído medio y seno carotídeo (barorreceptores). <b>Motor</b>: estilofaríngeo. <b>Parasimpático</b>: parótida.',
       how: 'Se explora con el X: pedir decir <b>"ah"</b>, <b>reflejo nauseoso</b> (tocar la pared posterior de la faringe con un depresor: aferente IX, eferente X), observar la <b>deglución</b> y la voz.',
@@ -153,6 +159,8 @@
       normal: 'Lengua de bordes lisos, sin atrofia ni fasciculaciones; protruye en la línea media; fuerza simétrica al empujar la mejilla; articulación clara.' }
   ];
 
+  /* tarjetas de los 12 pares (columna derecha de la escena) */
+  const CARD_W = 128, CARD_X = i => 530 + (i % 2) * 138, CARD_Y = i => 50 + Math.floor(i / 2) * 92;
   const WAY = [[0, 0], [-1, 0], [-1, -1], [-1, 1], [-1, 0], [1, 0], [1, -1], [1, 1], [1, 0], [0, 0]];
   function setMouth(svg, k) {
     const g = $q(svg, 'crMouthO'); if (!g) return;
@@ -237,8 +245,8 @@
   function nervesSvg(learn, c) {
     const hair = hairOf(c), old = ageOld(c);
     const cards = NERVES.map((n, i) => {
-      const x = 540 + (i % 2) * 126, y = 50 + Math.floor(i / 2) * 92;
-      return `<rect x="${x}" y="${y}" width="118" height="84" rx="10" fill="#fff" stroke="#c9d3dd" stroke-width="2"/>
+      const x = CARD_X(i), y = CARD_Y(i);
+      return `<rect x="${x}" y="${y}" width="${CARD_W}" height="84" rx="10" fill="#fff" stroke="#c9d3dd" stroke-width="2"/>
         <text x="${x + 10}" y="${y + 30}" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#0e6a78">${n.rn}</text>
         <text x="${x + 10}" y="${y + 50}" font-family="system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#38495a">${n.name.length > 15 ? n.name.replace(' (accesorio)', '') : n.name}</text>
         <text x="${x + 10}" y="${y + 68}" font-family="system-ui,sans-serif" font-size="10.5" fill="#55677a">${n.tag}</text>`;
@@ -254,7 +262,7 @@
     return `
     <rect width="820" height="620" fill="#e8eef4"/>
     <text x="270" y="34" text-anchor="middle" class="svg-title">Pares craneales · cara y cuello</text>
-    <text x="602" y="34" text-anchor="middle" class="svg-title">Los 12 pares (haz clic)</text>
+    <text x="663" y="34" text-anchor="middle" class="svg-title">Los 12 pares (haz clic)</text>
     <g id="crSh">
       <path d="M205 460 L205 520 Q120 540 40 620 L500 620 Q420 540 335 520 L335 460 Z" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3"/>
       <path d="M40 620 Q120 552 205 530 L270 580 L335 530 Q420 552 500 620 Z" fill="#9fb4c4"/>
@@ -285,7 +293,7 @@
   function nerveTools(list, run, extra) {
     const head = list.map(n => `<b>${n.rn} · ${n.name}</b> (${n.kind.toLowerCase()})`).join(' · ');
     const info = (extra ? extra + '<br>' : '') + list.map(n => `<b>${n.rn} · ${n.name}</b> (${n.kind.toLowerCase()}). ${n.fn}`).join('<br>');
-    const html = list.map(n => `<b>${n.rn} · ${n.name}.</b> <b>Cómo se explora:</b> ${n.how}<br><b>Hallazgo normal:</b> ${n.normal}`).join('<br><br>');
+    const html = list.map(n => `<b>${n.rn} · ${n.name}.</b> <i>Técnica:</i> ${n.how}<br><i>Hallazgo normal:</i> ${n.normal}`).join('<br><br>');
     return { info, exam: { html, run } };
   }
   const NV = i => NERVES[i - 1];
@@ -332,8 +340,7 @@
       R.push({ id: 'fXIt' + s, label: 'Trapecio (XI)', short: s === 'R' ? 'XI' : '', cx, cy: 565, r: 22, tools: nerveTools([NV(11)], RUN[11]) });
     });
     NERVES.forEach((n, i) => {
-      const x = 540 + (i % 2) * 126, y = 50 + Math.floor(i / 2) * 92;
-      R.push({ id: 'c' + n.n, label: `${n.rn} · ${n.name}`, short: '', x, y, w: 118, h: 84, rx: 10, tools: nerveTools([n], RUN[n.n]) });
+      R.push({ id: 'c' + n.n, label: `${n.rn} · ${n.name}`, short: '', x: CARD_X(i), y: CARD_Y(i), w: CARD_W, h: 84, rx: 10, tools: nerveTools([n], RUN[n.n]) });
     });
     return R;
   })();
@@ -352,31 +359,31 @@
     { id: 'tib', label: 'Tibial anterior', x: 275, y: 536, r: 12, man: 'Dorsiflexión del pie contra resistencia (caminar sobre los talones).', root: 'L4-L5 · nervio peroneo profundo', limb: 'd', lab: 'Tibial anterior' }
   ];
   const TONE = {
-    a: 'Con la movilización pasiva del codo y del hombro (el paciente relajado), la resistencia es <b>mínima, uniforme y suave</b> en todo el recorrido, sin rigidez ni "rueda dentada" ni espasticidad ("navaja"); al soltar el miembro cae con peso y se balancea libremente.',
-    b: 'Flexo-extensión pasiva de la muñeca y los dedos con resistencia mínima y uniforme; al sacudir la mano ("signo de la sacudida") la muñeca oscila con soltura. Tono normal.',
-    c: 'Con el movimiento pasivo de cadera y rodilla (balanceo de la pierna, rodar el muslo, soltar la rodilla flexionada) hay resistencia mínima y uniforme; el talón se levanta o cae con facilidad. Tono normal, sin rigidez ni espasticidad.',
-    d: 'Dorsiflexión y flexión plantar pasivas del pie con resistencia suave y uniforme; sin clonus ni rigidez. Tono normal.'
+    a: '<i>Técnica:</i> motilidad pasiva del hombro y del codo con el paciente relajado (flexo-extensión, balanceo del brazo). <i>Hallazgo normal:</i> resistencia <b>mínima y uniforme</b> en todo el recorrido, sin rigidez ("rueda dentada") ni espasticidad ("navaja"); al soltarlo, el miembro cae y se balancea libremente.',
+    b: '<i>Técnica:</i> flexo-extensión pasiva de la muñeca y los dedos y sacudida de la mano. <i>Hallazgo normal:</i> resistencia mínima y uniforme; la muñeca oscila con soltura. Tono normal (eutonía).',
+    c: '<i>Técnica:</i> motilidad pasiva de cadera y rodilla (rodar el muslo, levantar y soltar la rodilla flexionada, prueba del péndulo de la pierna). <i>Hallazgo normal:</i> resistencia mínima y uniforme, sin rigidez ni espasticidad; el talón se levanta y cae con facilidad.',
+    d: '<i>Técnica:</i> dorsiflexión y flexión plantar pasivas del pie, incluida una dorsiflexión brusca. <i>Hallazgo normal:</i> resistencia suave y uniforme, sin rigidez ni clonus.'
   };
   const TROPH = {
-    a: 'Volumen y contorno <b>simétricos</b>; sin atrofia, hipertrofia ni <b>fasciculaciones</b>. La diferencia de perímetro braquial entre ambos lados es &lt; 1 cm (medido a 10 cm por encima del olécranon).',
-    b: 'Masa muscular del antebrazo y de la mano (eminencias tenar e hipotenar, interóseos dorsales) conservada y simétrica; sin atrofia ni fasciculaciones.',
-    c: 'Volumen del muslo simétrico, sin atrofia ni fasciculaciones; diferencia de perímetro entre ambos muslos &lt; 2 cm (medido a 15 cm por encima de la rótula).',
-    d: 'Pantorrillas y loge anterior de la pierna simétricas, sin atrofia ni fasciculaciones; diferencia de perímetro &lt; 2 cm.'
+    a: '<i>Técnica:</i> inspección y palpación comparativa de hombro y brazo; perímetro braquial a 10 cm del olécranon. <i>Hallazgo normal:</i> volumen y contorno <b>simétricos</b>; sin atrofia, hipertrofia ni <b>fasciculaciones</b>; diferencia de perímetro entre ambos lados &lt; 1 cm.',
+    b: '<i>Técnica:</i> inspección de antebrazo y mano (eminencias tenar e hipotenar, espacios interóseos). <i>Hallazgo normal:</i> masa muscular conservada y simétrica, sin atrofia ni fasciculaciones.',
+    c: '<i>Técnica:</i> inspección del muslo y perímetro a 15 cm del borde superior de la rótula. <i>Hallazgo normal:</i> volumen simétrico, sin atrofia ni fasciculaciones; diferencia entre ambos muslos ≤ 1-2 cm (según la fuente).',
+    d: '<i>Técnica:</i> inspección de la pantorrilla y del compartimento anterior de la pierna; perímetro máximo de la pantorrilla. <i>Hallazgo normal:</i> simétricas, sin atrofia ni fasciculaciones; diferencia ≤ 1-2 cm.'
   };
   function motorSvg(learn, c) {
-    const rows = [['5', 'Normal: vence resistencia máxima'], ['4', 'Vence gravedad y resistencia parcial'], ['3', 'Vence la gravedad, no resistencia'],
-      ['2', 'Movimiento sin gravedad'], ['1', 'Contracción visible, sin movimiento'], ['0', 'Sin contracción']];
+    const rows = [['5', 'Normal: vence la resistencia máxima'], ['4', 'Vence la gravedad y una resistencia parcial'], ['3', 'Vence la gravedad, no la resistencia'],
+      ['2', 'Movimiento solo sin gravedad'], ['1', 'Contracción visible, sin movimiento'], ['0', 'Sin contracción']];
     return `
     <rect width="820" height="620" fill="#e8eef4"/>
     ${bodyFront(c)}
     <text x="300" y="20" text-anchor="middle" class="svg-title">Persona examinada (vista anterior)</text>
-    <text x="670" y="34" text-anchor="middle" class="svg-title">Escala de fuerza MRC / Daniels</text>
+    <text x="670" y="34" text-anchor="middle" class="svg-title">Escala de fuerza 0-5 (MRC)</text>
     ${rows.map((r, i) => `<g id="crMrc${r[0]}"><rect x="530" y="${50 + i * 62}" width="280" height="54" rx="10" fill="#fff" stroke="#c9d3dd" stroke-width="2"/>
       <text x="548" y="${88 + i * 62}" font-family="system-ui,sans-serif" font-size="26" font-weight="700" fill="${r[0] === '5' ? '#237a4b' : '#7b8a99'}">${r[0]}</text>
       <text x="580" y="${74 + i * 62}" font-family="system-ui,sans-serif" font-size="12" fill="#38495a">${r[1]}</text>
       <text x="580" y="${92 + i * 62}" font-family="system-ui,sans-serif" font-size="10.5" fill="#55677a">${['Valor esperado en esta persona', '4-, 4 y 4+ según la resistencia', '', '', '', ''][i]}</text></g>`).join('')}
-    <text x="670" y="440" text-anchor="middle" class="svg-small">Explora fuerza (5/5), tono y trofismo</text>
-    <text x="670" y="458" text-anchor="middle" class="svg-small">comparando siempre ambos lados.</text>`;
+    <text x="670" y="440" text-anchor="middle" class="svg-small">Motilidad activa y fuerza (5/5), tono (motilidad</text>
+    <text x="670" y="458" text-anchor="middle" class="svg-small">pasiva) y trofismo: compara siempre ambos lados.</text>`;
   }
   const strengthRun = m => ctx => {
     popText(ctx.svg, ctx.point, '5/5');
@@ -393,7 +400,7 @@
         R.push({
           id: m.id + s, label: `${m.label} (${side})`, short: s === 'R' ? m.lab : '', cx: x, cy: m.y, r: m.r, anchor: 'end', lx: x - m.r - 6, ly: m.y + 4,
           tools: {
-            strength: { html: `<b>Fuerza 5/5</b> (MRC): vence la resistencia máxima del examinador y la gravedad. <b>Maniobra:</b> ${m.man} <b>Raíz y nervio:</b> ${m.root}. Simétrica con el lado contrario.`, run: strengthRun(m) },
+            strength: { html: `<i>Técnica:</i> ${m.man} <i>Hallazgo normal:</i> motilidad activa completa y <b>fuerza 5/5</b> (vence la gravedad y la resistencia máxima del examinador), simétrica con el lado contrario. Raíz y nervio: ${m.root}.`, run: strengthRun(m) },
             tone: TONE[m.limb],
             trophy: TROPH[m.limb]
           }
@@ -473,7 +480,7 @@
     <rect x="10" y="28" width="470" height="288" rx="12" fill="#f4f7fa" stroke="#c9d3dd" stroke-width="2"/>
     <rect x="500" y="28" width="310" height="288" rx="12" fill="#f4f7fa" stroke="#c9d3dd" stroke-width="2"/>
     <rect x="10" y="342" width="800" height="250" rx="12" fill="#f4f7fa" stroke="#c9d3dd" stroke-width="2"/>
-    <text x="245" y="20" text-anchor="middle" class="svg-title">Prueba dedo-nariz</text>
+    <text x="245" y="20" text-anchor="middle" class="svg-title">Prueba índice-nariz</text>
     <text x="655" y="20" text-anchor="middle" class="svg-title">Diadococinesia</text>
     <text x="410" y="336" text-anchor="middle" class="svg-title">Prueba talón-rodilla</text>
     <!-- paciente de perfil -->
@@ -486,7 +493,7 @@
     <!-- dedo del examinador -->
     <path d="M474 200 L440 170" stroke="${SKIN_D}" stroke-width="30" stroke-linecap="round"/><path d="M474 200 L440 170" stroke="#f6d3b3" stroke-width="25" stroke-linecap="round"/>
     <path d="M440 170 L${A_T.x + 8} ${A_T.y}" stroke="${SKIN_D}" stroke-width="20" stroke-linecap="round"/><path d="M440 170 L${A_T.x + 8} ${A_T.y}" stroke="#f6d3b3" stroke-width="15" stroke-linecap="round"/>
-    <text x="440" y="236" text-anchor="middle" class="svg-small">Dedo del examinador</text>
+    <text x="400" y="240" text-anchor="middle" class="svg-small">Dedo del examinador</text>
     <!-- brazo del paciente -->
     <path id="crArmO" d="" fill="none" stroke="${SKIN_D}" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
     <path id="crArmF" d="" fill="none" stroke="${SKIN}" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
@@ -510,24 +517,24 @@
     <path id="crLegO" d="" fill="none" stroke="${SKIN_D}" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
     <path id="crLegF" d="" fill="none" stroke="${SKIN}" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
     <ellipse id="crLegFt" cx="0" cy="0" rx="11" ry="22" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5"/>
-    <text x="600" y="400" class="svg-small">Decúbito: el talón sube a la rodilla</text>
-    <text x="600" y="418" class="svg-small">contraria y baja por la tibia.</text>`;
+    <text x="560" y="400" class="svg-small">Decúbito dorsal: el talón sube a la rodilla</text>
+    <text x="560" y="418" class="svg-small">contraria y baja por la cresta tibial.</text>`;
   }
-  const cerebLook = 'En reposo: sin temblor, sin movimientos anormales, sin nistagmo espontáneo y con tono y postura normales.';
+  const cerebLook = '<i>Técnica:</i> observación en reposo, sentado y de pie (taxia estática: ver Romberg en «Marcha y equilibrio»). <i>Hallazgo normal:</i> sin temblor ni movimientos anormales, sin nistagmo, con postura y tono normales.';
   const cerebRegions = [
-    { id: 'fn', label: 'Prueba dedo-nariz', short: 'Dedo-nariz', x: 20, y: 36, w: 450, h: 272, rx: 12, lx: 245, ly: 56,
+    { id: 'fn', label: 'Prueba índice-nariz', short: 'Índice-nariz', x: 20, y: 36, w: 450, h: 272, rx: 12, lx: 245, ly: 56,
       tools: {
-        do: { html: '<b>Dedo-nariz normal</b>: con los ojos abiertos y luego cerrados, el paciente toca alternadamente su nariz y el dedo del examinador (que cambia de sitio), con velocidad creciente. La trayectoria es <b>suave y precisa</b>: llega al blanco sin pasarse ni quedarse corto (<b>sin dismetría</b>), sin <b>temblor intencional</b> ni descomposición del movimiento. Igual en ambos lados.', run: runFN },
+        do: { html: '<i>Técnica:</i> con los ojos abiertos y luego cerrados, el paciente toca alternadamente la punta de su nariz y el dedo del examinador (que cambia de sitio), cada vez más rápido. <i>Hallazgo normal:</i> trayectoria <b>suave y precisa</b>, llega al blanco sin pasarse ni quedarse corto (<b>sin dismetría</b>), sin <b>temblor intencional</b> ni descomposición del movimiento; igual en ambos lados.', run: runFN },
         look: cerebLook
       } },
     { id: 'dia', label: 'Diadococinesia', short: 'Diadococinesia', x: 510, y: 36, w: 290, h: 272, rx: 12, lx: 655, ly: 56,
       tools: {
-        do: { html: '<b>Diadococinesia normal</b>: la alternancia rápida de pronación y supinación de las manos (golpeando el muslo o la palma contraria) es <b>regular, rítmica y de amplitud constante</b>, de 2-4 alternancias por segundo y sin enlentecimiento; la mano dominante es algo más rápida. Sin disdiadococinesia.', run: runDia },
+        do: { html: '<i>Técnica:</i> pronación y supinación alternadas y rápidas de las manos sobre los muslos (prueba de las marionetas). <i>Hallazgo normal:</i> movimiento <b>regular, rítmico y de amplitud constante</b>, sin enlentecimiento; la mano dominante es algo más rápida. Sin adiadococinesia.', run: runDia },
         look: cerebLook
       } },
     { id: 'heel', label: 'Prueba talón-rodilla', short: 'Talón-rodilla', x: 20, y: 350, w: 780, h: 234, rx: 12, lx: 410, ly: 370,
       tools: {
-        do: { html: '<b>Talón-rodilla normal</b>: en decúbito, el paciente lleva el talón de un pie a la rodilla de la otra pierna y lo desliza a lo largo de la cresta tibial hasta el tobillo y de vuelta. El movimiento es <b>fluido</b>, el talón <b>permanece sobre la tibia</b> sin oscilar ni descomponerse, y es igual en ambos lados.', run: runHeel },
+        do: { html: '<i>Técnica:</i> en decúbito dorsal, el paciente lleva el talón de un pie a la rodilla contraria y lo desliza por la cresta tibial hasta el tobillo y de vuelta, con los ojos abiertos y cerrados. <i>Hallazgo normal:</i> movimiento <b>fluido</b>, el talón <b>permanece sobre la tibia</b> sin oscilar ni descomponerse; igual en ambos lados.', run: runHeel },
         look: cerebLook
       } }
   ];
@@ -638,11 +645,11 @@
   const gaitRegions = [
     { id: 'pers', label: 'Persona examinada', short: 'Persona', x: 300, y: 80, w: 220, h: 390, rx: 18, lx: 410, ly: 96,
       tools: {
-        romberg: { html: '<b>Romberg negativo</b>: de pie, con los pies juntos y los brazos a los lados, mantiene la postura <b>30 s con los ojos abiertos y luego con los ojos cerrados</b> sin caer ni perder el equilibrio (oscila poco, como lo normal). Indica propiocepción y función vestibular conservadas.', run: runRomberg },
-        gait: c => ({ html: `<b>Marcha normal</b>: base de sustentación estrecha (5-10 cm entre los pies), paso de ≈ 60-75 cm, cadencia de 100-120 pasos/min (velocidad ≈ ${ageOld(c) ? '1,0-1,2' : '1,2-1,4'} m/s), balanceo simétrico de los brazos, cabeza y tronco erguidos, despegue del talón y de la punta bien marcados y giro en bloque sin vacilación.`, run: runGait('gait') }),
-        tandem: { html: '<b>Marcha en tándem</b> (talón con punta en línea recta, 10 pasos): la realiza <b>sin separarse de la línea y sin balancearse</b> (en mayores de 70 años puede haber una ligera oscilación). Es una prueba sensible de la función cerebelosa del vermis.', run: runGait('tandem') },
-        heels: { html: '<b>Marcha sobre talones</b> (dorsiflexión, L4-L5) normal: camina varios pasos con las puntas elevadas.', run: runGait('heels') },
-        toes: { html: '<b>Marcha sobre puntillas</b> (flexión plantar, S1) normal: camina varios pasos sin que caiga el talón; sin pérdida de equilibrio.', run: runGait('toes') }
+        romberg: { html: '<i>Técnica (taxia estática):</i> de pie, pies juntos y brazos a los lados, 30 s con los ojos abiertos y luego cerrados; el examinador se mantiene cerca para sujetarlo. <i>Hallazgo normal:</i> <b>Romberg negativo</b>, mantiene la postura sin caer ni oscilar de forma apreciable (propiocepción y función vestibular conservadas).', run: runRomberg },
+        gait: c => ({ html: `<i>Técnica:</i> se observa caminar ida y vuelta, de frente y de perfil, con y sin calzado. <i>Hallazgo normal:</i> marcha eubásica: base de sustentación de 5-10 cm, paso de ≈ 60-75 cm, cadencia de 100-120 pasos/min (velocidad ≈ ${elder(c) ? '1,0-1,2' : '1,2-1,4'} m/s), braceo simétrico, cabeza y tronco erguidos, apoyo del talón y despegue de la punta bien marcados y giro sin vacilación.`, run: runGait('gait') }),
+        tandem: { html: '<i>Técnica:</i> marcha en tándem, talón con punta en línea recta, unos 10 pasos. <i>Hallazgo normal:</i> la realiza <b>sin separarse de la línea ni balancearse</b> (en mayores de 70 años puede haber una ligera oscilación). Es sensible para la ataxia de línea media (vermis cerebeloso).', run: runGait('tandem') },
+        heels: { html: '<i>Técnica:</i> caminar sobre los talones (dorsiflexión, L4-L5). <i>Hallazgo normal:</i> varios pasos con las puntas elevadas, sin que caigan.', run: runGait('heels') },
+        toes: { html: '<i>Técnica:</i> caminar en puntas de pie (flexión plantar, S1). <i>Hallazgo normal:</i> varios pasos sin que descienda el talón ni pierda el equilibrio.', run: runGait('toes') }
       } }
   ];
 
@@ -653,16 +660,17 @@
     { id: 'arm', label: 'Cara lateral del brazo (C5)', x: 226, y: 196, r: 14, lab: 'C5' },
     { id: 'fore', label: 'Antebrazo (C6 lateral, T1 medial)', x: 205, y: 288, r: 14, lab: 'C6-T1' },
     { id: 'hand', label: 'Mano (C6 pulgar, C7 medio, C8 meñique)', x: 187, y: 364, r: 15, lab: 'C6-C8' },
-    { id: 'chest', label: 'Tórax (T4 a nivel del pezón)', x: 268, y: 190, r: 14, lab: 'T4' },
+    { id: 'chest', label: 'Tórax (T4 a nivel del pezón)', x: 268, y: 190, r: 14, lab: 'T4', up: true },
     { id: 'abd', label: 'Abdomen (T10 a nivel del ombligo)', x: 272, y: 270, r: 14, lab: 'T10' },
     { id: 'thigh', label: 'Muslo anterior (L2-L3)', x: 276, y: 420, r: 17, lab: 'L2-L3' },
     { id: 'leg', label: 'Pierna (L4 medial, L5 lateral)', x: 268, y: 518, r: 14, lab: 'L4-L5' },
     { id: 'foot', label: 'Pie (L5 dorso, S1 borde lateral)', x: 260, y: 596, r: 15, lab: 'S1' }
   ];
   const SENS_TXT = {
-    touch: z => `<b>Tacto leve</b> (algodón): percibe cada roce y lo localiza correctamente, de forma simétrica con el lado contrario (comparar zonas homólogas con los ojos cerrados). Territorio: ${z}.`,
-    pain: z => `<b>Dolor</b> (alfiler): distingue entre "punzante" y "romo" sin errores y de forma simétrica. Territorio: ${z}.`,
-    temp: z => `<b>Temperatura</b> (tubos con agua fría y tibia): identifica correctamente frío y calor, con igual percepción en ambos lados. Territorio: ${z}.`
+    touch: z => `<i>Técnica:</i> sensibilidad <b>táctil</b> con un algodón, con los ojos cerrados, comparando zonas homólogas. <i>Hallazgo normal:</i> percibe cada roce y lo localiza correctamente, de forma simétrica. Territorio: ${z}.`,
+    pain: z => `<i>Técnica:</i> sensibilidad <b>dolorosa</b> con un alfiler, alternando punta y cabeza. <i>Hallazgo normal:</i> distingue "punzante" de "romo" sin errores y de forma simétrica. Territorio: ${z}.`,
+    temp: z => `<i>Técnica:</i> sensibilidad <b>térmica</b> con dos tubos, uno con agua fría y otro con agua tibia. <i>Hallazgo normal:</i> identifica frío y calor con igual percepción en ambos lados. Territorio: ${z}.`,
+    bar: z => `<i>Técnica:</i> <b>barestesia</b> (sensibilidad a la presión): se presiona con el pulpejo del dedo o con un objeto romo las masas musculares o la piel con distinta intensidad. <i>Hallazgo normal:</i> percibe la presión, la distingue del tacto y reconoce intensidades diferentes, de forma simétrica. Territorio: ${z}.`
   };
   const sensRun = (kind, snd) => ctx => {
     instrument(ctx.svg, ctx.point, kind);
@@ -673,14 +681,15 @@
     T.touch = { html: SENS_TXT.touch(z.label), run: sensRun('cotton') };
     T.pain = { html: SENS_TXT.pain(z.label), run: sensRun('pin') };
     T.temp = { html: SENS_TXT.temp(z.label), run: sensRun('cold') };
+    T.bar = { html: SENS_TXT.bar(z.label), run: ctx => popText(ctx.svg, ctx.point, '👆', '#38495a') };
     if (['neck', 'arm', 'fore', 'hand', 'thigh', 'leg', 'foot'].includes(z.id)) {
-      T.vib = c => ({ html: `<b>Vibración</b> (diapasón de 128 Hz sobre ${z.id === 'foot' ? 'el hallux (interfalángica) y el maléolo' : z.id === 'hand' ? 'la articulación interfalángica distal del dedo índice y la apófisis estiloides' : z.id === 'leg' ? 'la tuberosidad tibial y el maléolo' : 'una prominencia ósea cercana'}): siente la vibración y avisa cuándo desaparece, de forma simétrica (tiempo similar al del examinador).${ageOld(c) && ['foot', 'leg'].includes(z.id) ? ' A los 70 años puede estar <b>ligeramente disminuida</b> en maléolos y dedos de los pies, hallazgo frecuente y sin significado patológico.' : ''}`, run: sensRun('fork', true) });
+      T.vib = c => ({ html: `<i>Técnica:</i> <b>palestesia</b> (sensibilidad vibratoria) con el diapasón de 128 Hz sobre ${z.id === 'foot' ? 'la interfalángica del hallux y el maléolo' : z.id === 'hand' ? 'la interfalángica distal del índice y la apófisis estiloides' : z.id === 'leg' ? 'la tuberosidad tibial y el maléolo' : 'una prominencia ósea cercana'}; el paciente avisa cuándo deja de sentirla. <i>Hallazgo normal:</i> percibe la vibración un tiempo similar al del examinador y simétrico.${elder(c) && ['foot', 'leg'].includes(z.id) ? ' En el adulto mayor puede estar <b>ligeramente disminuida</b> en maléolos y dedos de los pies, hallazgo frecuente y sin significado patológico.' : ''}`, run: sensRun('fork', true) });
     }
     if (['hand', 'foot'].includes(z.id)) {
-      T.pos = { html: `<b>Sentido de la posición articular</b>: con los ojos cerrados, detecta el movimiento hacia arriba o hacia abajo de la articulación interfalángica ${z.id === 'foot' ? 'del hallux' : 'del dedo'} sujetada por los bordes laterales, incluso en desplazamientos de 1-2°.`, run: ctx => popText(ctx.svg, ctx.point, '↑ / ↓') };
+      T.pos = { html: `<i>Técnica:</i> <b>batiestesia</b> (sensibilidad posicional): con los ojos cerrados, el examinador toma por los bordes laterales la falange distal ${z.id === 'foot' ? 'del hallux' : 'del dedo'} y la mueve hacia arriba o hacia abajo. <i>Hallazgo normal:</i> identifica la dirección del movimiento, incluso con desplazamientos pequeños, de forma simétrica.`, run: ctx => popText(ctx.svg, ctx.point, '↑ / ↓') };
     }
     if (z.id === 'hand') {
-      T.cort = { html: '<b>Sensibilidad discriminativa</b>: reconoce un objeto conocido (llave, moneda) por el tacto con los ojos cerrados (<b>estereognosia</b>), una cifra trazada en la palma (<b>grafestesia</b>) y distingue <b>2 puntos</b> separados 2-5 mm en el pulpejo.', run: ctx => popText(ctx.svg, ctx.point, 'moneda') };
+      T.cort = { html: '<i>Técnica:</i> sensibilidad <b>discriminativa (cortical)</b> con los ojos cerrados: reconocer un objeto por el tacto (<b>estereognosia</b>), una cifra trazada en la palma (<b>grafestesia</b>) y la <b>discriminación de dos puntos</b> en el pulpejo. <i>Hallazgo normal:</i> reconoce el objeto y la cifra y distingue dos puntos separados 2-5 mm.', run: ctx => popText(ctx.svg, ctx.point, 'moneda') };
     }
     return T;
   }
@@ -689,8 +698,11 @@
     <rect width="820" height="620" fill="#e8eef4"/>
     ${bodyFront(c)}
     <text x="300" y="20" text-anchor="middle" class="svg-title">Persona examinada · explora ambos lados</text>
-    ${learn ? `<text x="560" y="60" class="svg-title">Referencias dermatómicas</text>
-      ${[['C6', 'pulgar'], ['C7', 'dedo medio'], ['C8', 'meñique'], ['T4', 'nivel del pezón'], ['T10', 'nivel del ombligo'], ['L1', 'ingle'], ['L4', 'rodilla y maléolo medial'], ['L5', 'dorso del pie y hallux'], ['S1', 'borde lateral del pie y talón']].map((r, i) => `<text x="560" y="${92 + i * 24}" class="svg-small"><tspan font-weight="700" fill="#0e6a78">${r[0]}</tspan>  ${r[1]}</text>`).join('')}` :
+    ${learn ? `<text x="560" y="40" class="svg-title">Sensibilidad superficial y profunda</text>
+      <text x="560" y="60" class="svg-small">Superficial: táctil, dolorosa, térmica · Profunda: palestesia,</text>
+      <text x="560" y="76" class="svg-small">batiestesia, barestesia · Cortical: estereognosia, grafestesia</text>
+      <text x="560" y="106" class="svg-title">Referencias dermatómicas</text>
+      ${[['C6', 'pulgar'], ['C7', 'dedo medio'], ['C8', 'meñique'], ['T4', 'nivel del pezón'], ['T10', 'nivel del ombligo'], ['L1', 'ingle'], ['L4', 'rodilla y maléolo medial'], ['L5', 'dorso del pie y hallux'], ['S1', 'borde lateral del pie y talón']].map((r, i) => `<text x="560" y="${134 + i * 24}" class="svg-small"><tspan font-weight="700" fill="#0e6a78">${r[0]}</tspan>  ${r[1]}</text>`).join('')}` :
       '<text x="560" y="60" class="svg-small">Compara siempre zonas homólogas</text><text x="560" y="78" class="svg-small">con los ojos cerrados.</text>'}`;
   }
   const sensRegions = (() => {
@@ -701,7 +713,7 @@
         const x = s === 'L' ? mirror(z.x) : z.x;
         R.push({
           id: z.id + s, label: z.label + (s === 'C' ? '' : ' ' + (s === 'R' ? 'derecho' : 'izquierdo')), short: s === 'L' ? '' : z.lab, cx: x, cy: z.y, r: z.r,
-          anchor: s === 'C' ? 'middle' : 'end', lx: s === 'C' ? x : x - z.r - 6, ly: s === 'C' ? z.y - z.r - 6 : z.y + 4,
+          anchor: s === 'C' || z.up ? 'middle' : 'end', lx: s === 'C' || z.up ? x : x - z.r - 6, ly: s === 'C' || z.up ? z.y - z.r - 6 : z.y + 4,
           tools: sensTools(z)
         });
       });
@@ -794,19 +806,19 @@
   const meningRegions = [
     { id: 'mhead', label: 'Cabeza y cuello', short: 'Cuello', cx: 120, cy: 384, r: 52, lx: 120, ly: 322,
       tools: {
-        neck: c => ({ html: `<b>Rigidez de nuca ausente</b>: con una mano bajo el occipucio, la flexión pasiva del cuello se hace <b>sin resistencia ni dolor</b> y el mentón alcanza (o casi alcanza) el esternón. <b>Signo de Brudzinski (nuca) negativo</b>: al flexionar el cuello no se flexionan las caderas ni las rodillas. Paciente afebril (${String(c.v.temp).replace('.', ',')} °C), sin cefalea ni fotofobia.`, run: mRun.neck }),
-        look: 'Paciente tranquilo y cómodo en decúbito, sin postura en opistótonos ni rigidez cervical, sin fotofobia ni cefalea.'
+        neck: c => ({ html: `<i>Técnica:</i> en decúbito dorsal, con una mano bajo el occipucio, se flexiona pasivamente el cuello intentando llevar el mentón al esternón. <i>Hallazgo normal:</i> <b>sin rigidez de nuca</b> (flexión libre, sin resistencia ni dolor) y <b>signo de Brudzinski (de la nuca) negativo</b>: no se flexionan caderas ni rodillas. Persona afebril (${String(c.v.temp).replace('.', ',')} °C), sin cefalea ni fotofobia.`, run: mRun.neck }),
+        look: '<i>Técnica:</i> inspección de la actitud en decúbito. <i>Hallazgo normal:</i> paciente tranquilo, sin actitud en opistótonos ni «en gatillo de fusil», sin fotofobia ni cefalea.'
       } },
     { id: 'mleg', label: 'Pierna explorada', short: 'Kernig', x: 394, y: 255, w: 226, h: 180, rx: 26, lx: 520, ly: 245,
       tools: {
-        kernig: { html: '<b>Signo de Kernig negativo</b>: con la cadera y la rodilla flexionadas a 90°, la extensión pasiva de la rodilla es posible hasta &gt; 135° (casi completa) <b>sin dolor, resistencia ni flexión refleja</b> de la otra pierna. Una ligera tensión de los isquiotibiales en la elongación extrema no es patológica.', run: mRun.kernig },
-        brud2: { html: '<b>Brudzinski contralateral negativo</b>: al flexionar pasivamente la cadera y la rodilla de una pierna, la pierna contraria <b>permanece extendida y relajada</b>.', run: mRun.brud2 },
-        look: 'Piernas simétricas, relajadas y en extensión.'
+        kernig: { html: '<i>Técnica:</i> signo de Kernig: se flexionan cadera y rodilla a 90° y se extiende pasivamente la rodilla (variante: elevar el miembro inferior extendido, o sentar pasivamente al paciente y observar las rodillas). <i>Hallazgo normal:</i> <b>Kernig negativo</b>, la rodilla se extiende casi por completo <b>sin dolor, resistencia ni flexión refleja</b>; al sentarlo o elevar la pierna extendida, las rodillas no se flexionan. Una ligera tensión de los isquiotibiales al final no es patológica.', run: mRun.kernig },
+        brud2: { html: '<i>Técnica:</i> signo de Brudzinski contralateral: se flexionan pasivamente la cadera y la rodilla de una pierna. <i>Hallazgo normal:</i> negativo, la pierna contraria <b>permanece extendida y relajada</b>.', run: mRun.brud2 },
+        look: '<i>Hallazgo normal:</i> miembros inferiores simétricos, relajados y en extensión.'
       } },
     { id: 'mfix', label: 'Pierna contraria', short: 'Pierna contraria', cx: 560, cy: 440, r: 46, lx: 560, ly: 380,
       tools: {
-        brud2: { html: '<b>Brudzinski contralateral negativo</b>: al flexionar pasivamente la otra pierna, esta pierna <b>no se flexiona</b> de forma refleja.', run: mRun.brud2 },
-        look: 'Pierna relajada, en extensión, sin posturas anormales.'
+        brud2: { html: '<i>Técnica:</i> se flexiona pasivamente la otra pierna y se observa esta. <i>Hallazgo normal:</i> <b>Brudzinski contralateral negativo</b>, esta pierna <b>no se flexiona</b> de forma refleja.', run: mRun.brud2 },
+        look: '<i>Hallazgo normal:</i> pierna relajada, en extensión, sin posturas anormales.'
       } }
   ];
   function meningAfter(stage, sh, ctx) { setLegM(ctx.svg, 0, 0); setHeadM(ctx.svg, 0); }
@@ -852,7 +864,7 @@
     if (svg) {
       const g = $q(svg, 'crMm'); if (g) g.textContent = `${tot}/30`;
       const a = $q(svg, 'crArc'); if (a) a.setAttribute('stroke-dashoffset', (390 * (1 - tot / 30)).toFixed(1));
-      const v = $q(svg, 'crMmV'); if (v) v.textContent = tot >= 27 ? 'Normal (27-30)' : tot >= 24 ? 'Límite' : 'Por debajo del punto de corte (24)';
+      const v = $q(svg, 'crMmV'); if (v) v.textContent = tot === 30 ? 'Puntuación máxima: sin déficit' : tot >= 24 ? 'Dentro del punto de corte (≥ 24)' : 'Por debajo del punto de corte (24)';
     }
   }
   function mmComplete(sh, ids) {
@@ -877,8 +889,8 @@
     <text id="crMm" x="660" y="128" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#38495a">0/30</text>
     <text x="660" y="162" text-anchor="middle" class="svg-small">Mini-Mental</text>
     <text id="crMmV" x="660" y="216" text-anchor="middle" class="svg-small"></text>
-    <text x="660" y="236" text-anchor="middle" class="svg-small">Normal: 27-30 (corte 24;</text>
-    <text x="660" y="252" text-anchor="middle" class="svg-small">ajustar por edad y escolaridad)</text>
+    <text x="660" y="236" text-anchor="middle" class="svg-small">Máximo 30 · corte habitual &lt; 24</text>
+    <text x="660" y="252" text-anchor="middle" class="svg-small">(ajustar por edad y escolaridad)</text>
     <rect x="520" y="278" width="280" height="226" rx="12" fill="#fff" stroke="#c9d3dd" stroke-width="2"/>
     <text x="660" y="300" text-anchor="middle" class="svg-small">Copia de dos pentágonos</text>
     <g id="crPent" fill="none" stroke="#38495a" stroke-width="3" stroke-linejoin="round">
@@ -898,8 +910,8 @@
       } },
     { id: 'aten', label: 'Atención y cálculo', short: '', x: 20, y: 166, w: 480, h: 62, rx: 12,
       tools: {
-        obs: 'Mantiene la atención durante la entrevista sin distraerse; <b>dígitos</b> directos de 5-7 cifras e inversos de 4-5.',
-        ask: { html: '<b>Restas seriadas de 7</b> desde 100: 93, 86, 79, 72, 65 (5/5). Alternativa: deletrear "MUNDO" al revés (O-D-N-U-M). Sin errores ni enlentecimiento; atención sostenida y concentración normales.', run: ctx => { mmComplete(ctx.sh, ['att']); ['93', '86', '79', '72', '65'].forEach((n, i) => setTimeout(() => ctx.sh.say(n, 'yes', 900), i * 900)); } }
+        obs: 'Mantiene la atención durante la entrevista sin distraerse; repite series de <b>dígitos</b> directos (habitualmente 5-7 cifras) e inversos (4-5).',
+        ask: { html: '<i>Técnica:</i> <b>restas seriadas de 7</b> desde 100 (alternativa: deletrear "MUNDO" al revés). <i>Hallazgo normal:</i> 93, 86, 79, 72, 65 (5/5), sin errores ni enlentecimiento; atención y concentración conservadas.', run: ctx => { mmComplete(ctx.sh, ['att']); ['93', '86', '79', '72', '65'].forEach((n, i) => later(() => ctx.sh.say(n, 'yes', 900), i * 900)); } }
       } },
     { id: 'memo', label: 'Memoria', short: '', x: 20, y: 238, w: 480, h: 62, rx: 12,
       tools: {
@@ -949,7 +961,7 @@
         mmRefresh(P);
       } else if (e.target.id === 'crMmAll') {
         mmComplete(sh, MM_DOM.map(d => d.id));
-        P.querySelector('#crMmR').innerHTML = '<b>Mini-Mental 30/30</b>: orientación 10, registro 3, atención y cálculo 5, recuerdo 3, lenguaje 8 y praxia constructiva 1. Normal ≥ 27 (corte de deterioro cognitivo: &lt; 24, ajustado por edad y escolaridad).';
+        P.querySelector('#crMmR').innerHTML = '<b>Mini-Mental 30/30</b>: orientación 10, registro 3, atención y cálculo 5, recuerdo 3, lenguaje 8 y praxia constructiva 1. Punto de corte habitual de deterioro cognitivo: &lt; 24 (ajustar por edad y escolaridad).';
         sh.log('<b>Mini-Mental:</b> 30/30, sin déficit cognitivo.', 'find');
       } else if (e.target.id === 'crMmClr') {
         MM = { cid: c.id, done: {} }; P.querySelector('#crMmR').textContent = 'Puntuación reiniciada.'; mmRefresh(P);
@@ -959,85 +971,103 @@
   }
 
   /* ============================================================ definición del módulo */
-  const QUIZ = [
+  /* 8 preguntas; la 4.ª y la 6.ª dependen de la persona examinada (edad). */
+  const QUIZ = c => [
     { q: 'Reflejo corneal: vías aferente y eferente', options: ['Aferente II, eferente III', 'Aferente V, eferente VII', 'Aferente VII, eferente V', 'Aferente III, eferente VI', 'Aferente IX, eferente X'], a: 1,
       why: 'El estímulo corneal viaja por V1 (trigémino) y el parpadeo lo produce el orbicular de los párpados (VII).' },
     { q: 'Al decir "ah", la úvula normal', options: ['Se desvía hacia el lado sano', 'Se desvía hacia el lado enfermo', 'No se mueve', 'Se eleva simétricamente en la línea media', 'Se eleva solo con el reflejo nauseoso'], a: 3,
       why: 'La elevación simétrica del paladar blando con la úvula central indica integridad de IX y X.' },
-    { q: 'Fuerza muscular normal en la escala MRC', options: ['3/5', '4/5', '4+/5', '5/5 (vence la resistencia máxima)', '5-/5 siempre'], a: 3,
-      why: 'Con 5/5 el paciente vence la gravedad y la resistencia máxima del examinador.' },
-    { q: 'Un Romberg negativo significa que el paciente', options: ['Cae con los ojos abiertos', 'Cae con los ojos cerrados', 'Mantiene la postura con los pies juntos y los ojos cerrados', 'Camina sin brazos', 'Solo se mantiene apoyado'], a: 2,
-      why: 'Romberg positivo = pérdida del equilibrio al cerrar los ojos (alteración propioceptiva o vestibular).' },
-    { q: 'Signo de Kernig normal (negativo)', options: ['Dolor y resistencia al extender la rodilla', 'Flexión refleja de la otra pierna', 'Rodilla extensible &gt; 135° sin dolor ni resistencia', 'Imposibilidad de flexionar la cadera', 'Rigidez de nuca'], a: 2,
-      why: 'Se explora con cadera y rodilla a 90°; la extensión pasiva es posible sin dolor ni resistencia.' },
-    { q: 'Puntuación normal del Mini-Mental (MMSE)', options: ['≤ 10', '11-17', '18-23', '24 (punto de corte)', '27-30'], a: 4,
-      why: 'Normal 27-30 sobre 30; por debajo de 24 (ajustado por edad y escolaridad) sugiere deterioro cognitivo.' },
-    { q: 'El nervio espinal (XI) inerva', options: ['Deltoides y bíceps', 'Esternocleidomastoideo y trapecio', 'Músculos de la mímica', 'Músculos de la lengua', 'Músculos masticadores'], a: 1,
-      why: 'Se explora con la elevación de los hombros (trapecio) y la rotación de la cabeza contra resistencia (ECM).' },
+    { q: 'Fuerza muscular normal en la escala 0-5 (MRC)', options: ['3/5', '4/5', '4+/5', '5/5 (vence la resistencia máxima)', '5-/5 siempre'], a: 3,
+      why: 'Con 5/5 el paciente vence la gravedad y la resistencia máxima del examinador; 3/5 solo vence la gravedad.' },
+    { q: `En esta persona (${c.age} años), ¿cuál de estos hallazgos sensitivos puede considerarse fisiológico?`,
+      options: ['Reflejo fotomotor ausente', 'Anestesia táctil en un dermatoma', elder(c) ? 'Palestesia algo disminuida en maléolos y dedos de los pies' : 'Ninguno: palestesia y batiestesia conservadas y simétricas', 'Batiestesia abolida en los dedos', 'Grafestesia ausente en una mano'], a: 2,
+      why: elder(c) ? 'En el adulto mayor la sensibilidad vibratoria distal de los miembros inferiores puede estar algo disminuida sin significado patológico; el resto es siempre anormal.' : 'A esta edad toda la sensibilidad superficial y profunda debe ser normal y simétrica; una disminución distal de la palestesia se tolera solo en el adulto mayor.' },
+    { q: 'Signo de Kernig negativo (normal)', options: ['Dolor y resistencia al extender la rodilla', 'Flexión refleja de la otra pierna', 'Con cadera y rodilla a 90°, la rodilla se extiende sin dolor ni resistencia', 'Imposibilidad de flexionar la cadera', 'Rigidez de nuca'], a: 2,
+      why: 'Es negativo cuando la extensión pasiva de la rodilla (o la elevación de la pierna extendida) no despierta dolor, resistencia ni flexión de las rodillas.' },
+    { q: `Velocidad de marcha habitual esperada en esta persona (${c.age} años)`, options: ['0,3-0,5 m/s', '0,8 m/s con base amplia', '2,5-3 m/s', elder(c) ? '≈ 1,0-1,2 m/s' : '≈ 1,2-1,4 m/s', 'No se valora en la exploración'], a: 3,
+      why: elder(c) ? 'En el adulto mayor sano la velocidad de marcha es algo menor (≈ 1,0-1,2 m/s), con base de 5-10 cm y braceo conservado.' : 'En el adulto la marcha normal tiene una velocidad de ≈ 1,2-1,4 m/s, con base de 5-10 cm y braceo simétrico.' },
+    { q: 'Puntuación máxima del Mini-Mental (MMSE) y punto de corte habitual', options: ['Máximo 24; corte 20', '30; corte &lt; 24 (ajustado por edad y escolaridad)', 'Máximo 15 (como el Glasgow)', '30; corte 10', '100; corte 70'], a: 1,
+      why: 'El Mini-Mental suma 30 puntos; por debajo de 24 (ajustado por edad y escolaridad) se sospecha deterioro cognitivo. Esta persona obtiene 30/30.' },
     { q: 'Al protruir la lengua (XII) normal', options: ['Se desvía hacia el lado débil', 'Sale en la línea media, sin atrofia ni fasciculaciones', 'Se desvía hacia el lado sano', 'Presenta fasciculaciones', 'No puede moverse lateralmente'], a: 1,
       why: 'La protrusión en línea media indica función simétrica del hipogloso.' }
   ];
 
   injectStyle();
   NormalEngine.build({
-    id: 'cranial', title: 'Pares craneales, motor y estado mental (normal)', icon: '🧠', group: 'Exploración normal',
-    desc: 'Exploración neurológica normal: los 12 pares craneales, fuerza, tono y cerebelo, marcha, sensibilidad, signos meníngeos y estado mental.',
-    bullets: ['Pares craneales I-XII con función, maniobra y hallazgo normal', 'Fuerza 5/5, Romberg, dedo-nariz y marcha animados', 'Signos meníngeos y Mini-Mental 30/30 interactivo'],
+    id: 'cranial', title: 'Examen neurológico: estado mental, pares craneales, motilidad y sensibilidad (normal)', icon: '🧠', group: 'Exploración normal',
+    desc: 'Examen neurológico normal en el orden de Argente-Álvarez: conciencia y estado mental, pares craneales I-XII, motilidad (fuerza, tono, trofismo), taxia, sensibilidad superficial y profunda, marcha y signos meníngeos. Los reflejos se exploran en «Neurología: reflejos, pies y ojos».',
+    bullets: ['Conciencia, Glasgow 15/15 y Mini-Mental 30/30 interactivo', 'Pares craneales I-XII con función, técnica y hallazgo normal', 'Fuerza 0-5, tono, trofismo, taxia, Romberg y marcha animados', 'Sensibilidad superficial, profunda (palestesia, batiestesia, barestesia) y signos meníngeos'],
+    refs: [
+      'Argente HA, Álvarez ME. <i>Semiología Médica</i>. Panamericana — Examen neurológico: conciencia y estado mental, pares craneales, motilidad, taxia, sensibilidad, marcha y signos meníngeos.',
+      'Folstein MF, Folstein SE, McHugh PR. "Mini-Mental State": a practical method for grading the cognitive state of patients for the clinician. <i>J Psychiatr Res</i> 1975 (MMSE, 30 puntos).',
+      'Medical Research Council. <i>Aids to the examination of the peripheral nervous system</i> (escala de fuerza 0-5).'
+    ],
     teaching: [
-      'Los pares craneales se exploran en orden y comparando siempre ambos lados; los pares mixtos (V, VII, IX, X) tienen componente sensitivo y motor.',
-      'Fuerza: examina cada grupo contra resistencia y compara con el lado contrario; 5/5 vence la gravedad y la resistencia máxima del examinador (escala MRC de 0 a 5).',
-      'Romberg: pies juntos, ojos abiertos y luego cerrados, con el examinador listo para sujetar al paciente; es negativo si mantiene la postura.',
-      'Kernig y Brudzinski se buscan con el paciente en decúbito; en una persona sin fiebre ni cefalea deben ser negativos y la nuca flexible.',
-      'En el Mini-Mental el máximo es 30; un valor ≥ 27 es normal y por debajo de 24 se sospecha deterioro cognitivo (ajustar por escolaridad y edad).'
+      'Orden del examen: conciencia y estado mental, pares craneales, motilidad (activa, pasiva/tono, trofismo, fuerza), reflejos, taxia, praxia, sensibilidad, marcha y signos meníngeos; se compara siempre con el lado contrario.',
+      'Los pares craneales se exploran en orden del I al XII; los pares mixtos (V, VII, IX, X) tienen componente sensitivo y motor.',
+      'Fuerza: cada grupo muscular contra resistencia, graduada de 0 a 5 (5/5 vence la gravedad y la resistencia máxima). Las maniobras de Mingazzini y Barré descubren paresias leves.',
+      'Sensibilidad superficial (táctil, dolorosa, térmica) y profunda (palestesia con diapasón de 128 Hz, batiestesia, barestesia), con los ojos cerrados y por dermatomas.',
+      'Romberg: pies juntos, ojos abiertos y luego cerrados; es negativo si mantiene la postura. Kernig y Brudzinski se buscan en decúbito y, sin fiebre ni cefalea, son negativos.',
+      'Mini-Mental: máximo 30; por debajo de 24 (ajustado por edad y escolaridad) se sospecha deterioro cognitivo.'
     ],
     scenes: [
+      { id: 'mental', label: 'Conciencia y estado mental', viewBox: '0 0 820 540', redrawOnMode: false,
+        hint: 'Haz clic en cada dominio: observa y aplica la prueba; el Mini-Mental suma puntos hasta 30/30 (también por ítems en el panel inferior).',
+        svg: mentalSvg, regions: mentalRegions, after: mentalAfter,
+        tools: [
+          { id: 'obs', icon: '👁️', label: 'Observar / conversar', hint: 'Observación y entrevista: conciencia, lenguaje espontáneo, ánimo.' },
+          { id: 'ask', icon: '🗣️', label: 'Preguntar / aplicar la prueba', hint: 'Aplica las preguntas de cada dominio (suma puntos al Mini-Mental).' }
+        ],
+        onLeave: stopAnim },
       { id: 'nerves', label: 'Pares craneales I-XII', viewBox: '0 0 820 620', redrawOnMode: false,
-        hint: 'Haz clic en la zona de la cara o en la tarjeta de cada par. Usa "Función" o "Exploración y hallazgo normal".',
+        hint: 'Haz clic en la zona de la cara o en la tarjeta de cada par. Usa "Función" o "Técnica y hallazgo normal".',
         svg: nervesSvg, regions: nervRegions,
         tools: [
           { id: 'info', icon: '📖', label: 'Función y trayecto', hint: 'Función del par craneal que elijas (cara o tarjeta).' },
-          { id: 'exam', icon: '🩺', label: 'Exploración y hallazgo normal', hint: 'Cómo se explora y qué se espera encontrar (algunas maniobras se animan).' }
+          { id: 'exam', icon: '🩺', label: 'Técnica y hallazgo normal', hint: 'Cómo se explora y qué se espera encontrar (algunas maniobras se animan).' }
         ],
         onLeave: stopAnim },
-      { id: 'motor', label: 'Motor', viewBox: '0 0 820 620', redrawOnMode: false,
-        hint: 'Fuerza contra resistencia (5/5), tono y trofismo de nueve grupos musculares, en ambos lados.',
+      { id: 'motor', label: 'Motilidad: fuerza, tono y trofismo', viewBox: '0 0 820 620', redrawOnMode: false,
+        hint: 'Motilidad activa y fuerza contra resistencia (0-5), tono (motilidad pasiva) y trofismo de nueve grupos musculares, en ambos lados.',
         svg: motorSvg, regions: motorRegions,
         tools: [
-          { id: 'strength', icon: '💪', label: 'Fuerza (contra resistencia)', hint: 'Fuerza: haz clic en el grupo muscular y compara con el lado contrario.' },
-          { id: 'tone', icon: '🤲', label: 'Tono (movilización pasiva)', hint: 'Tono: movilización pasiva del miembro.' },
-          { id: 'trophy', icon: '👁️', label: 'Trofismo (inspección)', hint: 'Trofismo: volumen muscular, simetría, atrofia y fasciculaciones.' }
+          { id: 'strength', icon: '💪', label: 'Fuerza (motilidad activa contra resistencia)', hint: 'Fuerza: haz clic en el grupo muscular y compara con el lado contrario.' },
+          { id: 'tone', icon: '🤲', label: 'Tono (motilidad pasiva)', hint: 'Tono: movilización pasiva del miembro relajado.' },
+          { id: 'trophy', icon: '👁️', label: 'Trofismo (inspección y palpación)', hint: 'Trofismo: volumen muscular, simetría, atrofia y fasciculaciones.' }
         ],
         onLeave: stopAnim },
-      { id: 'cereb', label: 'Cerebelo', viewBox: '0 0 820 600', redrawOnMode: false,
-        hint: 'Realiza las pruebas cerebelosas (animación) y observa en reposo.',
+      { id: 'cereb', label: 'Taxia (coordinación)', viewBox: '0 0 820 600', redrawOnMode: false,
+        hint: 'Taxia dinámica: índice-nariz, diadococinesia y talón-rodilla (animación); observa también en reposo.',
         svg: cerebSvg, regions: cerebRegions, after: cerebAfter,
         tools: [
-          { id: 'do', icon: '🧪', label: 'Realizar la prueba', hint: 'Haz clic en el recuadro de cada prueba: dedo-nariz, diadococinesia o talón-rodilla.' },
+          { id: 'do', icon: '🧪', label: 'Realizar la prueba', hint: 'Haz clic en el recuadro de cada prueba: índice-nariz, diadococinesia o talón-rodilla.' },
           { id: 'look', icon: '👁️', label: 'Observar en reposo', hint: 'Observa temblor y movimientos anormales en reposo.' }
-        ],
-        onLeave: stopAnim },
-      { id: 'gait', label: 'Equilibrio y marcha', viewBox: '0 0 820 520', redrawOnMode: false,
-        hint: 'Elige una prueba y haz clic sobre la persona: Romberg, marcha, tándem, talones y puntillas.',
-        svg: gaitSvg, regions: gaitRegions,
-        tools: [
-          { id: 'romberg', icon: '🧍', label: 'Romberg', hint: 'Romberg: pies juntos, ojos abiertos y luego cerrados.' },
-          { id: 'gait', icon: '🚶', label: 'Marcha libre', hint: 'Marcha libre: observa base, paso, braceo y giro.' },
-          { id: 'tandem', icon: '🦶', label: 'Marcha en tándem', hint: 'Marcha en tándem: talón con punta en línea recta.' },
-          { id: 'heels', icon: '⬆️', label: 'Marcha sobre talones', hint: 'Marcha sobre talones (dorsiflexión).' },
-          { id: 'toes', icon: '🩰', label: 'Marcha sobre puntillas', hint: 'Marcha sobre puntillas (flexión plantar).' }
         ],
         onLeave: stopAnim },
       { id: 'sens', label: 'Sensibilidad', viewBox: '0 0 820 620', redrawOnMode: true,
         hint: 'Elige el estímulo y haz clic en cada zona (compara ambos lados con los ojos cerrados).',
         svg: sensSvg, regions: sensRegions,
         tools: [
-          { id: 'touch', icon: '🪶', label: 'Tacto leve (algodón)', hint: 'Tacto leve con algodón.' },
-          { id: 'pain', icon: '📍', label: 'Dolor (alfiler)', hint: 'Dolor con alfiler (punzante / romo).' },
-          { id: 'temp', icon: '🌡️', label: 'Temperatura (frío / calor)', hint: 'Temperatura con tubos de agua fría y tibia.' },
-          { id: 'vib', icon: '🎵', label: 'Vibración (diapasón 128 Hz)', hint: 'Vibración con el diapasón sobre prominencias óseas.' },
-          { id: 'pos', icon: '🖐️', label: 'Posición articular', hint: 'Sentido de posición en dedos de la mano y del pie.' },
-          { id: 'cort', icon: '🔑', label: 'Sensibilidad discriminativa', hint: 'Estereognosia, grafestesia y discriminación de dos puntos (mano).' }
-        ] },
+          { id: 'touch', icon: '🪶', label: 'Táctil (algodón)', hint: 'Sensibilidad táctil con algodón.' },
+          { id: 'pain', icon: '📍', label: 'Dolorosa (alfiler)', hint: 'Sensibilidad dolorosa con alfiler (punzante / romo).' },
+          { id: 'temp', icon: '🌡️', label: 'Térmica (frío / calor)', hint: 'Sensibilidad térmica con tubos de agua fría y tibia.' },
+          { id: 'vib', icon: '🎵', label: 'Palestesia (diapasón 128 Hz)', hint: 'Sensibilidad vibratoria con el diapasón sobre prominencias óseas.' },
+          { id: 'pos', icon: '🖐️', label: 'Batiestesia (posición)', hint: 'Sensibilidad posicional en los dedos de la mano y del pie.' },
+          { id: 'bar', icon: '👆', label: 'Barestesia (presión)', hint: 'Sensibilidad a la presión sobre piel y masas musculares.' },
+          { id: 'cort', icon: '🔑', label: 'Discriminativa (cortical)', hint: 'Estereognosia, grafestesia y discriminación de dos puntos (mano).' }
+        ],
+        onLeave: stopAnim },
+      { id: 'gait', label: 'Marcha y equilibrio', viewBox: '0 0 820 520', redrawOnMode: false,
+        hint: 'Elige una prueba y haz clic sobre la persona: Romberg (taxia estática), marcha, tándem, talones y puntas de pie.',
+        svg: gaitSvg, regions: gaitRegions,
+        tools: [
+          { id: 'romberg', icon: '🧍', label: 'Romberg', hint: 'Romberg: pies juntos, ojos abiertos y luego cerrados.' },
+          { id: 'gait', icon: '🚶', label: 'Marcha libre', hint: 'Marcha libre: observa base, paso, braceo y giro.' },
+          { id: 'tandem', icon: '🦶', label: 'Marcha en tándem', hint: 'Marcha en tándem: talón con punta en línea recta.' },
+          { id: 'heels', icon: '⬆️', label: 'Marcha sobre talones', hint: 'Marcha sobre talones (dorsiflexión).' },
+          { id: 'toes', icon: '🩰', label: 'Marcha en puntas de pie', hint: 'Marcha en puntas de pie (flexión plantar).' }
+        ],
+        onLeave: stopAnim },
       { id: 'mening', label: 'Signos meníngeos', viewBox: '0 100 820 420', redrawOnMode: false,
         hint: 'Flexión pasiva del cuello (rigidez de nuca y Brudzinski) y signo de Kernig en decúbito.',
         svg: meningSvg, regions: meningRegions, after: meningAfter,
@@ -1045,15 +1075,7 @@
           { id: 'neck', icon: '🙆', label: 'Flexión pasiva del cuello', hint: 'Haz clic en la cabeza: rigidez de nuca y Brudzinski.' },
           { id: 'kernig', icon: '🦵', label: 'Kernig', hint: 'Haz clic en la pierna: cadera y rodilla a 90° y extensión de la rodilla.' },
           { id: 'brud2', icon: '↕️', label: 'Brudzinski contralateral', hint: 'Flexiona una pierna y observa la contraria.' },
-          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Observa la postura y el estado general.' }
-        ],
-        onLeave: stopAnim },
-      { id: 'mental', label: 'Estado mental', viewBox: '0 0 820 540', redrawOnMode: false,
-        hint: 'Haz clic en cada dominio: observa y aplica la prueba; el Mini-Mental suma puntos hasta 30/30 (también por ítems en el panel inferior).',
-        svg: mentalSvg, regions: mentalRegions, after: mentalAfter,
-        tools: [
-          { id: 'obs', icon: '👁️', label: 'Observar / conversar', hint: 'Observación y entrevista: conciencia, lenguaje espontáneo, ánimo.' },
-          { id: 'ask', icon: '🗣️', label: 'Preguntar / aplicar la prueba', hint: 'Aplica las preguntas de cada dominio (suma puntos al Mini-Mental).' }
+          { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Observa la actitud y el estado general.' }
         ],
         onLeave: stopAnim }
     ],

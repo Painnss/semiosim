@@ -13,18 +13,42 @@
   const bmiCat = b => (b < 18.5 ? 0 : b < 25 ? 1 : b < 30 ? 2 : b < 35 ? 3 : b < 40 ? 4 : 5);
   const BMI_NAMES = ['Bajo peso', 'Normal', 'Sobrepeso (preobesidad)', 'Obesidad grado I', 'Obesidad grado II', 'Obesidad grado III'];
   const BMI_RANGES = ['< 18,5', '18,5–24,9', '25–29,9', '30–34,9', '35–39,9', '≥ 40'];
+  /* Temperatura: c.v.temp es la AXILAR (sitio habitual en Argente-Álvarez). Rango axilar 35,8–37,0 °C;
+     la oral es ≈ 0,3–0,5 °C mayor y la rectal ≈ 0,5–0,8 °C mayor (se usa el punto medio de cada diferencia). */
   const SITES = {
-    oral: { name: 'Oral (sublingual)', short: 'Oral', lo: 36.1, hi: 37.2, off: 0 },
-    axilar: { name: 'Axilar', short: 'Axilar', lo: 35.5, hi: 36.5, off: -0.5 },
-    timp: { name: 'Timpánica', short: 'Timpánica', lo: 36.0, hi: 37.5, off: 0.3 },
-    rectal: { name: 'Rectal', short: 'Rectal', lo: 36.6, hi: 37.9, off: 0.5 }
+    axilar: { name: 'Axilar', short: 'Axilar', lo: 35.8, hi: 37.0, off: 0 },
+    oral: { name: 'Oral (sublingual)', short: 'Oral', lo: 36.2, hi: 37.4, off: 0.4 },
+    rectal: { name: 'Rectal', short: 'Rectal', lo: 36.4, hi: 37.6, off: 0.6 },
+    timp: { name: 'Timpánica (infrarroja)', short: 'Timpánica', lo: 36.2, hi: 37.4, off: 0.4 }
   };
   const siteTemp = (c, site) => Math.round((c.v.temp + SITES[site].off) * 10) / 10;
+  /* Caracteres del pulso según Argente-Álvarez: frecuencia, ritmo (regularidad), amplitud, tensión, igualdad y simetría. */
   const PULSE_TXT = {
-    rhythm: { reg: 'rítmico', irr: 'arrítmico' },
-    amp: { full: 'lleno', weak: 'débil', bound: 'saltón' },
+    rhythm: { reg: 'rítmico (regular)', irr: 'arrítmico (irregular)' },
+    amp: { full: 'amplitud normal', weak: 'amplitud disminuida (parvus)', bound: 'amplitud aumentada (magnus)' },
+    tens: { norm: 'tensión normal (blando)', hard: 'duro (tensión aumentada)' },
+    eq: { eq: 'igual', uneq: 'desigual' },
     sym: { sym: 'simétrico', asym: 'asimétrico' }
   };
+  const PULSE_KEYS = ['rhythm', 'amp', 'tens', 'eq', 'sym'];
+  const PULSE_NORMAL = { rhythm: 'reg', amp: 'full', tens: 'norm', eq: 'eq', sym: 'sym' };
+
+  /* Claves de progreso (sh.explored) que este módulo puede marcar. */
+  const GEN_ITEMS = ['asp', 'act', 'fac', 'hab', 'nut', 'hid', 'col', 'mar', 'hig'];
+  const PROGRESS_KEYS = [
+    'pa:sistolica', 'pa:diastolica', 'pa:palpatorio',
+    'pulso:frecuencia', 'pulso:caracteres',
+    'fr:frecuencia',
+    ...Object.keys(SITES).map(k => 'temp:' + k), 'spo2:lectura',
+    'antro:peso', 'antro:talla', 'antro:cintura', 'antro:imc',
+    ...GEN_ITEMS.map(k => 'gen:' + k),
+    'glasgow:ocular', 'glasgow:verbal', 'glasgow:motora', 'glasgow:registro'
+  ];
+  const REFS = [
+    'Argente HA, Álvarez ME. <i>Semiología Médica. Fisiopatología, semiotecnia y propedéutica</i>. Panamericana — Impresión general; Signos vitales (pulso arterial, presión arterial, respiración, temperatura); Examen neurológico: escala de Glasgow.',
+    'OMS. Clasificación del estado nutricional por IMC; OMS/IDF, puntos de corte del perímetro de cintura.',
+    'ESC/ESH y ACC/AHA. Guías de hipertensión arterial (categorías de presión arterial y técnica de medición).'
+  ];
 
   function loop(fn) {
     let on = true, last = performance.now();
@@ -108,7 +132,7 @@
     const el = sh.$('#vitMine');
     if (!el) return;
     const r = (k, v) => `<tr><td>${k}</td><td><b>${v}</b></td></tr>`;
-    const pc = S.pulse ? ' · ' + [PULSE_TXT.rhythm[S.pulse.rhythm], PULSE_TXT.amp[S.pulse.amp], PULSE_TXT.sym[S.pulse.sym]].join(', ') : '';
+    const pc = S.pulse ? ' · ' + PULSE_KEYS.map(k => PULSE_TXT[k][S.pulse[k]]).join(', ') : '';
     el.innerHTML = '<table class="vit-mine">' +
       r('PA', (S.sbp != null || S.dbp != null) ? `${nv(S.sbp)}/${nv(S.dbp)} mmHg` : '–') +
       r('Pulso', S.hr != null ? `${S.hr} lpm${pc}` : (S.pulse ? pc.slice(3) : '–')) +
@@ -117,11 +141,8 @@
       r('SpO₂', S.spo2 != null ? `${S.spo2} %` : '–') +
       r('IMC', S.bmi != null ? `${fmt(S.bmi)} kg/m²` : '–') +
       r('Cintura', S.waist != null ? `${S.waist} cm` : '–') +
-      r('Glasgow', S.gcs ? `${S.gcs.t} (E${S.gcs.e} V${S.gcs.v} M${S.gcs.m})` : '–') + '</table>';
+      r('Glasgow', S.gcs ? `${S.gcs.t} (O${S.gcs.e} V${S.gcs.v} M${S.gcs.m})` : '–') + '</table>';
   }
-  const learnFeedback = (sh, ok, msgOk, msgBad) => {
-    if (sh.mode === 'learn') sh.log(ok ? msgOk : msgBad, ok ? 'find' : 'warn');
-  };
 
   /* ================================================================ PRESIÓN ARTERIAL */
   const BP = {
@@ -142,7 +163,7 @@
         ticks += `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#333" stroke-width="${long ? 1.6 : 1}"/>`;
         if (long) {
           const t = pt(p, 63);
-          ticks += `<text x="${t[0].toFixed(1)}" y="${t[1].toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#333">${p}</text>`;
+          ticks += `<text x="${t[0].toFixed(1)}" y="${t[1].toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#333">${p}</text>`;
         }
       }
       stage.innerHTML = `
@@ -194,15 +215,16 @@
       <div class="vit-ctrl">
         <label>Brazo <select id="bpArm"><option value="0">A nivel del corazón</option><option value="10">Colgando (bajo el corazón)</option><option value="-8">Elevado sobre el corazón</option></select></label>
         <label>Manguito <select id="bpCuffSel"><option value="0">Adecuado (cámara ≈ 80 % del brazo)</option><option value="10">Demasiado estrecho</option></select></label>
-        <label><input type="checkbox" id="bpGap"> Simular hiato auscultatorio</label>
+        <label><input type="checkbox" id="bpGap"> Simular pozo auscultatorio</label>
       </div>
       <details class="vit-note" open><summary>Notas de técnica</summary><ul>
         <li><b>Preparación:</b> reposo de 5 min, sentado con la espalda apoyada y los pies en el suelo, sin hablar, sin café ni tabaco en los 30 min previos, vejiga vacía y el brazo desnudo.</li>
         <li><b>Brazo a nivel del corazón</b> (4.º espacio intercostal): por cada 10 cm por debajo la cifra aumenta ≈ 7 mmHg; si el brazo cuelga se sobrestima la PA.</li>
         <li><b>Manguito:</b> la cámara debe abarcar ≈ 80 % de la circunferencia del brazo (ancho ≈ 40 %); un manguito estrecho sobrestima la PA. Borde inferior 2–3 cm por encima del pliegue del codo; fonendoscopio sobre la arteria braquial, sin presionar de más.</li>
-        <li><b>Método palpatorio previo:</b> palpa la radial, infla hasta que el pulso desaparezca y anota esa cifra; para auscultar infla 20–30 mmHg por encima de ella. Así no se subestima la sistólica si hay <b>hiato auscultatorio</b> (silencio transitorio entre la sistólica y la diastólica).</li>
-        <li><b>Desinflado lento</b> de 2–3 mmHg/s. Sistólica = aparición de al menos 2 ruidos consecutivos (fase I de Korotkoff); diastólica = desaparición (fase V). Fases: I golpeteo, II soplo, III golpeteo intenso, IV apagamiento, V silencio.</li>
-        <li><b>Repetir</b> tras 1–2 min y promediar; la primera vez medir en ambos brazos (diferencia normal &lt; 10–15 mmHg). Referencia ESC/ESH en adultos: óptima &lt; 120/80; normal 120–129/80–84; normal-alta 130–139/85–89; HTA ≥ 140/90.</li>
+        <li><b>Método palpatorio previo:</b> palpa la radial, infla hasta que el pulso desaparezca y anota esa cifra; para auscultar infla 20–30 mmHg por encima de ella. Así no se subestima la sistólica si hay <b>pozo o agujero auscultatorio</b> (silencio transitorio entre la fase I y la fase II; también llamado hiato auscultatorio).</li>
+        <li><b>Desinflado lento</b> de 2–3 mmHg/s. <b>Fases de Korotkoff:</b> I aparición de ruidos claros (sistólica); II ruidos más suaves o soplantes; III ruidos intensos; IV apagamiento brusco; V desaparición (diastólica). Si los ruidos persisten hasta 0 (p. ej. embarazo, fiebre), se anota la fase IV como diastólica.</li>
+        <li><b>Presión de pulso (diferencial)</b> = PAS − PAD, normalmente 30–50 mmHg.</li>
+        <li><b>Repetir</b> tras 1–2 min y promediar; la primera vez medir en ambos brazos (diferencia habitual &lt; 10 mmHg). Categorías en el consultorio: normal &lt; 120/80 mmHg; PA elevada o normal-alta 120–139/80–89; <b>HTA ≥ 140/90</b> (ESC/ESH y guías latinoamericanas). La guía ACC/AHA define HTA desde 130/80, por lo que una misma cifra puede clasificarse distinto según la guía; aquí se usa 140/90.</li>
       </ul></details>`;
       const q = s => stage.querySelector(s);
       this.svg = q('svg');
@@ -237,7 +259,7 @@
       });
       q('#bpGap').addEventListener('change', e => {
         this.gap = e.target.checked;
-        if (this.gap && sh.mode === 'learn') sh.log('Hiato auscultatorio activado: los ruidos desaparecen unos mmHg tras la sistólica y reaparecen más abajo. Por eso se usa el método palpatorio previo.', 'find');
+        if (this.gap && sh.mode === 'learn') sh.log('Pozo auscultatorio activado: los ruidos desaparecen unos mmHg por debajo de la sistólica y reaparecen más abajo. Por eso se usa el método palpatorio previo.', 'find');
       });
       q('#bpSys').addEventListener('click', () => this.mark('sbp'));
       q('#bpDia').addEventListener('click', () => this.mark('dbp'));
@@ -275,7 +297,9 @@
       if (sh.mode === 'learn') {
         const ok = d <= 4;
         sh.log(`${name} marcada: <b>${val}</b> mmHg · valor real ${real} → ${ok ? '✔ dentro de ±4 mmHg' : '✘ difiere ' + d + ' mmHg'}${off ? ` (con error de técnica de ${off > 0 ? '+' : ''}${off} mmHg)` : ''}.`, ok ? 'find' : 'warn');
+        if (kind === 'dbp' && S.sbp != null) sh.log(`Presión de pulso: ${S.sbp} − ${val} = <b>${S.sbp - val} mmHg</b> (normal 30–50).`, 'find');
       } else sh.log(`${name} registrada: ${val} mmHg. Se comparará al comprobar.`);
+      sh.explored(kind === 'sbp' ? 'pa:sistolica' : 'pa:diastolica');
       mine(sh);
     },
     markPalp() {
@@ -285,6 +309,7 @@
         const real = v.sbp + this.armOff + this.cuffOff, ok = Math.abs(val - (real - 3)) <= 10;
         sh.log(`PA sistólica palpatoria ≈ <b>${val}</b> mmHg ${ok ? '✔ coherente con la sistólica real (' + v.sbp + ')' : '✘ lejos de la sistólica real (' + v.sbp + ')'}. Para auscultar, infla hasta ≈ ${val + 30} mmHg.`, ok ? 'find' : 'warn');
       } else sh.log(`Pulso radial: cambio a ${val} mmHg. Infla ≈ ${val + 30} mmHg para auscultar.`);
+      sh.explored('pa:palpatorio');
     },
     tic() {
       const c = this.svg.querySelector('#bpTic');
@@ -340,7 +365,7 @@
   /* ====================================================================== PULSO */
   const PULSE = {
     label: 'Pulso',
-    hint: 'Posa los dedos sobre la arteria radial, cuenta los latidos en 15 s (×4) o 30 s (×2) y valora ritmo, amplitud y simetría.',
+    hint: 'Posa los dedos sobre la arteria radial, cuenta los latidos en 15 s (×4) o 30 s (×2) y valora ritmo, amplitud, tensión, igualdad y simetría.',
     tools: [
       { id: 'radial', icon: '🖐️', label: 'Palpar con índice y medio' },
       { id: 'thumb', icon: '👍', label: 'Palpar con el pulgar (incorrecto)' }
@@ -382,15 +407,17 @@
       </div>
       <div class="vit-ctrl">
         <label>Ritmo <select id="plRh"><option value="">–</option><option value="reg">Rítmico (regular)</option><option value="irr">Arrítmico (irregular)</option></select></label>
-        <label>Amplitud <select id="plAm"><option value="">–</option><option value="full">Lleno (amplitud normal)</option><option value="weak">Débil (filiforme)</option><option value="bound">Saltón (amplitud aumentada)</option></select></label>
+        <label>Amplitud <select id="plAm"><option value="">–</option><option value="full">Normal</option><option value="weak">Disminuida (parvus, filiforme)</option><option value="bound">Aumentada (magnus, saltón)</option></select></label>
+        <label>Tensión <select id="plTe"><option value="">–</option><option value="norm">Normal (blando)</option><option value="hard">Duro (tensión aumentada)</option></select></label>
+        <label>Igualdad <select id="plEq"><option value="">–</option><option value="eq">Igual (todos los latidos iguales)</option><option value="uneq">Desigual (alternante, paradójico)</option></select></label>
         <label>Simetría <select id="plSy"><option value="">–</option><option value="sym">Simétrico (D = I)</option><option value="asym">Asimétrico</option></select></label>
-        <button class="btn small" id="plRegCh">Registrar características</button>
+        <button class="btn small" id="plRegCh">Registrar caracteres</button>
       </div>
       <details class="vit-note" open><summary>Notas de técnica</summary><ul>
         <li>Palpa con la <b>yema del índice y del medio</b> (a veces el anular) sobre la arteria radial, lateral al tendón del flexor radial del carpo; <b>no uses el pulgar</b>: tiene su propio pulso digital y puede confundirte.</li>
         <li>Presión suave: si es excesiva se oblitera el pulso. Cuenta <b>15 s × 4</b> (pulso regular), <b>30 s × 2</b> o, si es irregular, un minuto completo.</li>
         <li><b>Frecuencia normal en reposo del adulto: 60–100 lpm</b> (menos de 60 = bradicardia; más de 100 = taquicardia). En niños es mayor y en deportistas entrenados puede ser menor.</li>
-        <li><b>Ritmo</b> regular (en jóvenes puede haber arritmia sinusal respiratoria fisiológica: aumenta al inspirar). <b>Amplitud</b> normal («lleno»), pared arterial elástica y blanda. <b>Simetría</b>: compara ambas radiales (y los pulsos braquial, carotídeo, femoral y pedio).</li>
+        <li><b>Caracteres del pulso:</b> frecuencia, <b>ritmo</b> (regular; en jóvenes puede haber arritmia sinusal respiratoria fisiológica: se acelera al inspirar), <b>amplitud</b> (normal; disminuida = parvus, aumentada = magnus), <b>tensión</b> (resistencia a comprimir la arteria: blando/normal o duro), <b>igualdad</b> (todos los latidos de igual amplitud) y <b>simetría</b> (igual en ambas radiales; compara también braquial, carotídeo, femoral, poplíteo, tibial posterior y pedio).</li>
       </ul></details>`;
       const q = s => stage.querySelector(s);
       this.svg = q('svg'); this.q = q;
@@ -415,21 +442,23 @@
         const real = sh.case.v.hr, d = Math.abs(val - real), cat = val < 60 ? 'bradicardia' : val > 100 ? 'taquicardia' : 'frecuencia normal (60–100)';
         if (sh.mode === 'learn') sh.log(`Frecuencia registrada: <b>${val}</b> lpm (${cat}) · real ${real} → ${d <= 5 ? '✔ dentro de ±5 lpm' : '✘ difiere ' + d + ' lpm'}.`, d <= 5 ? 'find' : 'warn');
         else sh.log(`Frecuencia registrada: ${val} lpm.`);
+        sh.explored('pulso:frecuencia');
         mine(sh);
       });
       q('#plRegCh').addEventListener('click', () => {
-        const rh = q('#plRh').value, am = q('#plAm').value, sy = q('#plSy').value;
-        if (!rh || !am || !sy) { sh.log('Elige ritmo, amplitud y simetría antes de registrar.', 'warn'); return; }
-        S.pulse = { rhythm: rh, amp: am, sym: sy };
-        const ok = rh === 'reg' && am === 'full' && sy === 'sym';
-        if (sh.mode === 'learn') sh.log(ok ? '✔ Pulso rítmico, lleno y simétrico: coincide con el hallazgo normal.' : '✘ No coincide: esta persona tiene un pulso rítmico, lleno (amplitud normal) y simétrico.', ok ? 'find' : 'warn');
-        else sh.log('Características del pulso registradas.');
+        const p = { rhythm: q('#plRh').value, amp: q('#plAm').value, tens: q('#plTe').value, eq: q('#plEq').value, sym: q('#plSy').value };
+        if (PULSE_KEYS.some(k => !p[k])) { sh.log('Elige ritmo, amplitud, tensión, igualdad y simetría antes de registrar.', 'warn'); return; }
+        S.pulse = p;
+        const ok = PULSE_KEYS.every(k => p[k] === PULSE_NORMAL[k]);
+        if (sh.mode === 'learn') sh.log(ok ? '✔ Pulso rítmico, de amplitud y tensión normales, igual y simétrico: coincide con el hallazgo normal.' : '✘ No coincide: esta persona tiene un pulso rítmico (regular), de amplitud normal, blando (tensión normal), igual y simétrico.', ok ? 'find' : 'warn');
+        else sh.log('Caracteres del pulso registrados.');
+        sh.explored('pulso:caracteres');
         mine(sh);
       });
       this.cl.push(loop((dt, now) => this.tick(now)));
       this.refresh();
     },
-    leave() { (this.cl || []).forEach(f => f()); this.cl = []; },
+    leave() { (this.cl || []).forEach(f => f()); this.cl = []; Sound.stop(); },
     refresh() { if (this.svg) this.svg.querySelectorAll('.hintring').forEach(n => { n.style.display = this.sh.mode === 'learn' ? '' : 'none'; }); },
     setTool(id) {
       if (!this.svg) return;
@@ -437,7 +466,7 @@
       this.svg.querySelector('#plThumb').style.display = id === 'thumb' ? '' : 'none';
       this.sh.hint(id === 'thumb'
         ? 'Técnica incorrecta: el pulgar tiene su propio pulso. Cambia a índice y medio.'
-        : 'Posa los dedos sobre la radial, cuenta los latidos en 15 s (×4) o 30 s (×2) y valora ritmo, amplitud y simetría.');
+        : 'Posa los dedos sobre la radial, cuenta los latidos en 15 s (×4) o 30 s (×2) y valora ritmo, amplitud, tensión, igualdad y simetría.');
       if (id === 'thumb' && this.on) this.sh.log('Con el pulgar puedes contar tu propio pulso digital: usa la yema del índice y del medio.', 'warn');
     },
     setOn(on) {
@@ -446,7 +475,7 @@
       this.q('#plOn').textContent = on ? '✋ Retirar los dedos' : '🖐️ Posar los dedos';
       if (on && this.sh.mode === 'learn') {
         const v = this.sh.case.v;
-        this.sh.log(`Pulso radial: <b>${v.hr} lpm</b>, rítmico, lleno (amplitud normal), simétrico; pared arterial blanda y elástica.`, 'find');
+        this.sh.log(`Pulso radial: <b>${v.hr} lpm</b>, rítmico (regular), de amplitud normal, blando (tensión normal), igual y simétrico; pared arterial lisa y elástica.`, 'find');
       }
     },
     startCount() {
@@ -524,15 +553,15 @@
       </div>
       <div class="vit-ctrl">
         <label>Frecuencia <input type="number" id="rsRr" min="2" max="80" placeholder="rpm"> rpm</label>
-        <label>Patrón <select id="rsPat"><option value="">–</option><option value="eupnea">Eupnea (regular, 12–20 rpm)</option><option value="taquipnea">Taquipnea (&gt; 20 rpm)</option><option value="bradipnea">Bradipnea (&lt; 12 rpm)</option><option value="Cheyne-Stokes">Cheyne-Stokes</option><option value="Kussmaul">Kussmaul</option></select></label>
+        <label>Patrón <select id="rsPat"><option value="">–</option><option value="eupnea">Eupnea (regular, 12–20 rpm)</option><option value="taquipnea">Taquipnea (&gt; 20 rpm)</option><option value="bradipnea">Bradipnea (&lt; 12 rpm)</option><option value="Cheyne-Stokes">Cheyne-Stokes (periódica)</option><option value="Biot">Biot (irregular con pausas)</option><option value="Kussmaul">Kussmaul (amplia y profunda)</option></select></label>
         <button class="btn small" id="rsReg">Registrar FR</button>
         <span class="vit-tag" id="rsRel"></span>
       </div>
       <details class="vit-note" open><summary>Notas de técnica</summary><ul>
         <li>Cuenta la FR <b>sin avisar</b> (p. ej. con los dedos aún sobre la muñeca tras tomar el pulso): la respiración es voluntaria y se altera si la persona se sabe observada.</li>
         <li>Observa el tórax y el abdomen durante <b>30 s (×2)</b>; si hay irregularidad, cuenta un minuto completo. Un ciclo = inspiración + espiración.</li>
-        <li><b>Normal en el adulto en reposo: 12–20 respiraciones/min</b>, regular, con inspiración ≈ 1/3 y espiración ≈ 2/3 del ciclo (I:E ≈ 1:2), sin pausas, sin tiraje ni uso de músculos accesorios.</li>
-        <li><b>Tipo respiratorio:</b> costal superior (más marcado en la mujer joven), abdominal o costodiafragmático (más en el varón) y mixto en el adulto mayor.</li>
+        <li><b>Eupnea del adulto en reposo: 12–20 respiraciones/min</b>, regular, con inspiración ≈ 1/3 y espiración ≈ 2/3 del ciclo (I:E ≈ 1:2), sin pausas, sin tiraje ni uso de músculos accesorios. Menos de 12 = bradipnea; más de 20 = taquipnea.</li>
+        <li><b>Tipo respiratorio:</b> costal superior (predomina en la mujer), costoabdominal (predomina en el varón) y abdominal en el niño pequeño. Se observa también la <b>amplitud</b> (normal; hiperpnea/hipopnea) y el <b>ritmo</b> (regular; patrones de Cheyne-Stokes, Biot, Kussmaul).</li>
         <li><b>Relación frecuencia cardíaca : respiratoria</b> ≈ 4–5 : 1 (aprox. 4 latidos por respiración).</li>
       </ul></details>`;
       const q = s => stage.querySelector(s);
@@ -557,6 +586,7 @@
         if (sh.mode === 'learn') {
           sh.log(`FR registrada: <b>${val}</b> rpm (${cat}) · real ${real} → ${d <= 3 ? '✔ dentro de ±3 rpm' : '✘ difiere ' + d + ' rpm'}.${pat ? (pat === 'eupnea' ? ' Patrón: ✔ eupnea.' : ' Patrón: ✘ en esta persona es eupnea.') : ''}`, d <= 3 ? 'find' : 'warn');
         } else sh.log(`FR registrada: ${val} rpm.`);
+        sh.explored('fr:frecuencia');
         mine(sh);
       });
       const c0 = c.v;
@@ -579,8 +609,9 @@
       const sh = this.sh, c = sh.case, v = c.v, T = 60000 / v.rr;
       const u = ((now - this.t0) % T) / T;
       const b = u < 1 / 3 ? 0.5 - 0.5 * Math.cos(Math.PI * u * 3) : 0.5 + 0.5 * Math.cos(Math.PI * (u - 1 / 3) * 1.5);
-      const fem = c.sex === 'F' && c.age < 60, mixed = c.age >= 60;
-      const ampC = fem ? 1 : mixed ? 0.75 : 0.55, ampA = fem ? 0.45 : mixed ? 0.8 : 1;
+      /* tipo respiratorio: costal superior en la mujer, costoabdominal en el varón (Argente-Álvarez) */
+      const fem = c.sex === 'F';
+      const ampC = fem ? 1 : 0.6, ampA = fem ? 0.45 : 1;
       this.up.setAttribute('transform', `translate(380 190) scale(${(1 + 0.04 * b * ampC).toFixed(4)} ${(1 + 0.025 * b * ampC).toFixed(4)}) translate(-380 -190)`);
       this.ab.setAttribute('transform', `translate(380 268) scale(${(1 + 0.05 * b * ampA).toFixed(4)} ${(1 + 0.08 * b * ampA).toFixed(4)}) translate(-380 -268)`);
       const ph = u < 1 / 3 ? 'Inspiración' : 'Espiración';
@@ -607,7 +638,7 @@
     ],
     enter(stage, sh) {
       this.sh = sh; this.cl = [];
-      Object.assign(this, { site: 'oral', measuring: false, placed: false, okAt: 0, val: null });
+      Object.assign(this, { site: 'axilar', measuring: false, placed: false, okAt: 0, val: null });
       const yOf = T => 300 - (clamp(T, 34, 42) - 34) * 32.5;
       let sc = '';
       for (let t = 34; t <= 42; t += 0.5) {
@@ -626,9 +657,9 @@
         <rect id="thBand" class="hintring" x="148" y="100" width="10" height="40" rx="4" fill="#3aa56b" opacity=".75"/>
         <text id="thBandTxt" class="svg-hint hintring" x="164" y="124">normal</text>
         ${sc}
-        <rect x="210" y="130" width="150" height="74" rx="10" fill="#0b1a1d" stroke="#445" stroke-width="3"/>
-        <text id="thLcd" x="285" y="180" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="32" font-weight="700" fill="#7ff0d5">--,- °C</text>
-        <text id="thSite" x="285" y="228" text-anchor="middle" class="svg-small">Sitio: Oral (sublingual)</text>
+        <rect x="210" y="52" width="150" height="74" rx="10" fill="#0b1a1d" stroke="#445" stroke-width="3"/>
+        <text id="thLcd" x="285" y="102" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="32" font-weight="700" fill="#7ff0d5">--,- °C</text>
+        <text id="thSite" x="285" y="148" text-anchor="middle" class="svg-small">Sitio: Axilar</text>
         <g id="oxFinger"><rect x="520" y="204" width="300" height="46" rx="23" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3"/>
           <rect x="540" y="214" width="26" height="14" rx="6" fill="#f6dcc2" opacity=".8"/></g>
         <rect x="470" y="196" width="260" height="62" rx="12" fill="#cdd5de" stroke="#8a97a6" stroke-width="3"/>
@@ -643,7 +674,7 @@
         <text x="600" y="320" text-anchor="middle" class="svg-hint hintring">Normal: SpO₂ ≥ 95 % (aire ambiente, a nivel del mar)</text>
       </svg>
       <div class="vit-ctrl">
-        <div class="seg" id="thSeg">${Object.keys(SITES).map(k => `<button data-site="${k}"${k === 'oral' ? ' class="active"' : ''}>${SITES[k].short}</button>`).join('')}</div>
+        <div class="seg" id="thSeg">${Object.keys(SITES).map(k => `<button data-site="${k}"${k === 'axilar' ? ' class="active"' : ''}>${SITES[k].short}</button>`).join('')}</div>
         <button class="btn small" id="thMeasure">🌡️ Medir temperatura</button>
         <label>Leí <input type="number" step="0.1" id="thIn" placeholder="°C"> °C</label>
         <button class="btn small" id="thReg">Registrar T°</button>
@@ -656,13 +687,13 @@
       </div>
       <details class="vit-note" open><summary>Rangos normales y técnica</summary>
         <table><tr><th>Sitio</th><th>Rango normal habitual</th></tr>
-          <tr><td>Oral (sublingual)</td><td>36,1 – 37,2 °C</td></tr>
-          <tr><td>Axilar</td><td>35,5 – 36,5 °C (la más baja; ≈ 0,5 °C menos que la oral)</td></tr>
-          <tr><td>Timpánica</td><td>≈ 36,0 – 37,5 °C</td></tr>
-          <tr><td>Rectal</td><td>≈ 36,6 – 37,9 °C (≈ 0,5 °C más que la oral)</td></tr></table>
-        <ul><li>La temperatura tiene ritmo circadiano (mínima de madrugada, máxima por la tarde) y varía con el ejercicio, las comidas y el ciclo menstrual. Fiebre ≈ ≥ 38 °C (oral). En el adulto mayor la respuesta febril puede ser menor.</li>
-          <li><b>Oral:</b> bajo la lengua, boca cerrada, sin haber comido, bebido ni fumado 15–30 min antes. <b>Axilar:</b> piel seca, brazo pegado al tórax, 3–5 min con termómetro de mercurio/electrónico.</li>
-          <li><b>SpO₂ normal ≥ 95 %</b> al aire ambiente a nivel del mar (en el adulto mayor sano 94–98 %; a gran altitud los valores normales son menores). Espera a que la onda sea regular. Pueden dar lecturas falsas: manos frías, mala perfusión, esmalte de uñas, movimiento, luz intensa; no detecta bien la intoxicación por CO.</li></ul></details>`;
+          <tr><td>Axilar (sitio de referencia)</td><td><b>35,8 – 37,0 °C</b></td></tr>
+          <tr><td>Oral (sublingual)</td><td>≈ 0,3 – 0,5 °C mayor que la axilar (≈ 36,2 – 37,4 °C)</td></tr>
+          <tr><td>Rectal</td><td>≈ 0,5 – 0,8 °C mayor que la axilar (≈ 36,4 – 37,6 °C)</td></tr>
+          <tr><td>Timpánica (infrarroja)</td><td>próxima a la oral; según la fuente y el equipo, ≈ 36,2 – 37,4 °C</td></tr></table>
+        <ul><li>Ritmo circadiano (mínima de madrugada, máxima al atardecer, con variación ≈ 0,5 °C); aumenta con el ejercicio, la digestión y en la segunda fase del ciclo menstrual. Por encima del rango del sitio se habla de <b>febrícula</b> (hasta ≈ 37,9 °C) y de <b>fiebre</b> (≥ 38 °C); los límites exactos varían según la fuente. En el adulto mayor la respuesta febril puede ser menor.</li>
+          <li><b>Axilar:</b> piel seca, bulbo en el hueco axilar con el brazo pegado al tórax, 3–5 min (termómetro de columna) o hasta la señal (electrónico). <b>Oral:</b> bajo la lengua, boca cerrada, sin haber comido, bebido ni fumado 15–30 min antes. <b>Rectal:</b> la más cercana a la temperatura central; se reserva para lactantes o cuando las otras no son fiables.</li>
+          <li><b>SpO₂ normal ≥ 95 %</b> al aire ambiente a nivel del mar (a gran altitud los valores normales son menores). Espera a que la onda sea regular. Pueden dar lecturas falsas: manos frías, mala perfusión, esmalte de uñas, movimiento, luz intensa; no detecta la intoxicación por monóxido de carbono.</li></ul></details>`;
       const q = s => stage.querySelector(s);
       this.svg = q('svg'); this.q = q; this.yOf = yOf;
       this.setMercury = T => { const y = yOf(T); q('#thHg').setAttribute('y', y); q('#thHg').setAttribute('height', 322 - y); };
@@ -683,6 +714,7 @@
         const real = siteTemp(sh.case, this.site), d = Math.abs(val - real), s = SITES[this.site];
         if (sh.mode === 'learn') sh.log(`T° ${s.short.toLowerCase()} registrada: <b>${fmt(val)}</b> °C · real ${fmt(real)} → ${d <= 0.25 ? '✔' : '✘'}. Rango normal ${s.short.toLowerCase()}: ${fmt(s.lo)}–${fmt(s.hi)} °C (${val >= s.lo && val <= s.hi ? 'dentro' : 'fuera'} del rango).`, d <= 0.25 ? 'find' : 'warn');
         else sh.log(`Temperatura registrada: ${fmt(val)} °C (${s.short.toLowerCase()}).`);
+        sh.explored('temp:' + this.site);
         mine(sh);
       });
       q('#oxPlace').addEventListener('click', () => this.placeOx(!this.placed));
@@ -693,13 +725,14 @@
         const real = sh.case.v.spo2, d = Math.abs(val - real);
         if (sh.mode === 'learn') sh.log(`SpO₂ registrada: <b>${val} %</b> · real ${real} % → ${d <= 1 ? '✔' : '✘'}. ${val >= 95 ? 'Normal (≥ 95 %).' : 'Por debajo de 95 %: valora la causa.'}`, d <= 1 ? 'find' : 'warn');
         else sh.log(`SpO₂ registrada: ${val} %.`);
+        sh.explored('spo2:lectura');
         mine(sh);
       });
       this.placeOx(false, true);
       this.cl.push(loop((dt, now) => this.tick(now)));
       this.refresh();
     },
-    leave() { (this.cl || []).forEach(f => f()); this.cl = []; },
+    leave() { (this.cl || []).forEach(f => f()); this.cl = []; Sound.stop(); },
     updBand() {
       const s = SITES[this.site];
       const b = this.q('#thBand'), t = this.q('#thBandTxt');
@@ -712,7 +745,7 @@
       if (!this.svg) return;
       this.sh.hint(id === 'oxi'
         ? 'Pulsioxímetro: colócalo en el dedo índice, espera a que se estabilice la onda y lee la SpO₂ (≥ 95 % es normal).'
-        : 'Termómetro: elige el sitio (oral, axilar, timpánico, rectal), mide y compara con el rango normal de ese sitio.');
+        : 'Termómetro: elige el sitio (axilar, oral, rectal, timpánico), mide y compara con el rango normal de ese sitio.');
     },
     measure() {
       if (this.measuring) return;
@@ -802,7 +835,7 @@
       stage.innerHTML = `
       <svg class="scene" viewBox="0 0 820 420">
         <rect width="820" height="420" fill="#e8eef4"/>
-        <text x="410" y="26" text-anchor="middle" class="svg-title">Peso, talla y perímetro abdominal</text>
+        <text x="620" y="26" text-anchor="middle" class="svg-title">Peso, talla y perímetro de cintura</text>
         <rect x="40" y="${FLOOR}" width="740" height="8" rx="4" fill="#cfd8e2"/>
         <rect x="326" y="${FLOOR - 2 * PPM}" width="8" height="${2 * PPM}" fill="#b7c3cf" stroke="#8a97a6"/>
         ${ruler}
@@ -813,8 +846,8 @@
         <g id="anTapeG" style="display:none"><ellipse cx="${FX}" cy="${wy}" rx="${10.8 * s}" ry="${3 * s}" fill="none" stroke="#e8b100" stroke-width="5"/>
           <text id="anTapeTxt" x="${FX + 10.8 * s + 12}" y="${wy + 5}" class="svg-title"></text></g>
         <ellipse class="hintring" cx="${FX}" cy="${wy}" rx="${12.5 * s}" ry="${4 * s}" fill="none" stroke="#0e6a78" stroke-width="2" stroke-dasharray="5 4"/>
-        <text class="svg-hint hintring" x="${FX - 12.5 * s - 8}" y="${wy + 4}" text-anchor="end">Cintura: punto medio entre</text>
-        <text class="svg-hint hintring" x="${FX - 12.5 * s - 8}" y="${wy + 18}" text-anchor="end">última costilla y cresta ilíaca</text>
+        <text class="svg-hint hintring" x="${FX + 12.5 * s + 10}" y="${wy + 24}">Cintura: punto medio entre la</text>
+        <text class="svg-hint hintring" x="${FX + 12.5 * s + 10}" y="${wy + 38}">última costilla y la cresta ilíaca</text>
         <path d="M${FX + 70} ${FLOOR + 6} L 560 372" fill="none" stroke="#8a97a6" stroke-width="3"/>
         <rect x="560" y="300" width="190" height="72" rx="10" fill="#0b1a1d" stroke="#445" stroke-width="3"/>
         <text id="anW" x="655" y="350" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="32" font-weight="700" fill="#7ff0d5">--,- kg</text>
@@ -835,8 +868,8 @@
       <details class="vit-note" open><summary>Notas de técnica y categorías</summary><ul>
         <li><b>Peso:</b> descalzo, ropa ligera, vejiga vacía, preferentemente en ayunas y siempre en la misma báscula; persona quieta en el centro de la plataforma.</li>
         <li><b>Talla:</b> descalzo, talones juntos, espalda, glúteos y occipucio contra el tallímetro, cabeza en el <b>plano de Frankfurt</b> (borde inferior de la órbita y conducto auditivo externo horizontales), inspiración suave; baja la pieza móvil hasta tocar el vértex.</li>
-        <li><b>IMC = peso (kg) / talla² (m²).</b> OMS: &lt; 18,5 bajo peso · 18,5–24,9 normal · 25–29,9 sobrepeso · 30–34,9 obesidad I · 35–39,9 obesidad II · ≥ 40 obesidad III. En el adulto mayor suele aceptarse un IMC algo más alto (≈ 23–28) como óptimo.</li>
-        <li><b>Perímetro abdominal:</b> cinta no elástica horizontal, a mitad de distancia entre la última costilla y la cresta ilíaca, con la persona de pie y al final de una espiración normal. Riesgo cardiometabólico aumentado (OMS/IDF): ≥ 94 cm en varones y ≥ 80 cm en mujeres; sustancialmente aumentado ≥ 102 y ≥ 88 cm. Los puntos de corte varían según la población (IDF Sudamérica: 90 / 80 cm).</li>
+        <li><b>IMC = peso (kg) / talla² (m²).</b> OMS: &lt; 18,5 bajo peso · 18,5–24,9 normal · 25–29,9 sobrepeso · 30–34,9 obesidad grado I · 35–39,9 grado II · ≥ 40 grado III. Según algunas fuentes, en el adulto mayor se tolera un IMC algo más alto (≈ 23–28) por la pérdida de talla y de masa muscular; interprétalo con el perímetro de cintura.</li>
+        <li><b>Perímetro de cintura (abdominal):</b> cinta no elástica horizontal, a mitad de distancia entre la última costilla y la cresta ilíaca, con la persona de pie y al final de una espiración normal. Riesgo cardiometabólico aumentado (OMS/IDF): ≥ 94 cm en varones y ≥ 80 cm en mujeres; sustancialmente aumentado ≥ 102 y ≥ 88 cm. Los puntos de corte varían según la población (IDF para Centro y Sudamérica: 90 / 80 cm).</li>
       </ul></details>`;
       const q = s2 => stage.querySelector(s2);
       this.svg = q('svg'); this.q = q;
@@ -851,7 +884,7 @@
       this.sh.hint({
         scale: 'Báscula: pulsa «Medir» con la persona de pie en el centro de la plataforma y lee el peso.',
         height: 'Tallímetro: se baja la pieza móvil hasta el vértex con la cabeza en el plano de Frankfurt.',
-        tape: 'Cinta métrica: horizontal, a mitad de distancia entre la última costilla y la cresta ilíaca, al final de una espiración normal.'
+        tape: 'Cinta métrica: horizontal, a mitad de distancia entre la última costilla y la cresta ilíaca, al final de una espiración normal (perímetro de cintura).'
       }[id] || '');
       this.q('#anRead').textContent = { scale: 'Instrumento: báscula', height: 'Instrumento: tallímetro', tape: 'Instrumento: cinta métrica' }[id] + ' · pulsa «Medir».';
     },
@@ -867,7 +900,8 @@
           if (!live()) { done(); return; }
           const t = q('#anHtTxt'); t.style.display = ''; t.textContent = `${fmt(v.height, 2)} m`;
           q('#anRead').textContent = `Talla: ${Math.round(v.height * 100)} cm (${fmt(v.height, 2)} m)`;
-          sh.log(`Talla medida: <b>${Math.round(v.height * 100)} cm</b> (${fmt(v.height, 2)} m).`, 'find'); done();
+          sh.log(`Talla medida: <b>${Math.round(v.height * 100)} cm</b> (${fmt(v.height, 2)} m).`, 'find');
+          sh.explored('antro:talla'); done();
         });
       } else if (tool === 'tape') {
         const g2 = q('#anTapeG'); g2.style.display = ''; q('#anTapeTxt').textContent = '';
@@ -876,8 +910,9 @@
         tween(1300, u => el.setAttribute('stroke-dashoffset', (L * (1 - u)).toFixed(1)), () => {
           if (!live()) { done(); return; }
           q('#anTapeTxt').textContent = `${v.waist} cm`;
-          q('#anRead').textContent = `Perímetro abdominal: ${v.waist} cm`;
-          sh.log(`Perímetro abdominal: <b>${v.waist} cm</b>.`, 'find'); done();
+          q('#anRead').textContent = `Perímetro de cintura: ${v.waist} cm`;
+          sh.log(`Perímetro de cintura: <b>${v.waist} cm</b>.`, 'find');
+          sh.explored('antro:cintura'); done();
         });
       } else {
         tween(1600, u => {
@@ -888,7 +923,8 @@
           if (!live()) { done(); return; }
           q('#anW').textContent = fmt(v.weight) + ' kg';
           q('#anRead').textContent = `Peso: ${fmt(v.weight)} kg`;
-          sh.log(`Peso medido: <b>${fmt(v.weight)} kg</b>.`, 'find'); done();
+          sh.log(`Peso medido: <b>${fmt(v.weight)} kg</b>.`, 'find');
+          sh.explored('antro:peso'); done();
         });
       }
     },
@@ -914,36 +950,44 @@
       const dB = Math.abs(S.bmi - bmiOf(c));
       if (sh.mode === 'learn') sh.log(`IMC calculado: <b>${fmt(b)}</b> kg/m² (${BMI_NAMES[cat].toLowerCase()}) · real ${fmt(bmiOf(c))} → ${dB <= 0.5 ? '✔' : '✘ revisa tus lecturas'}.${wa ? ' Cintura real: ' + v.waist + ' cm.' : ''}`, dB <= 0.5 ? 'find' : 'warn');
       else sh.log(`IMC registrado: ${fmt(b)} kg/m².`);
+      sh.explored('antro:imc');
       mine(sh);
     }
   };
 
   /* ====================================================== ESTADO GENERAL Y GLASGOW */
+  /* Escala de coma de Glasgow: apertura Ocular (O 1–4), respuesta Verbal (V 1–5), respuesta Motora (M 1–6). */
   const GCS = {
-    e: [[4, 'Espontánea'], [3, 'Al estímulo verbal (a la voz)'], [2, 'Al dolor'], [1, 'Ninguna']],
+    e: [[4, 'Espontánea'], [3, 'Al estímulo verbal (a la voz)'], [2, 'Al estímulo doloroso'], [1, 'Ninguna']],
     v: [[5, 'Orientado'], [4, 'Confuso'], [3, 'Palabras inapropiadas'], [2, 'Sonidos incomprensibles'], [1, 'Ninguna']],
-    m: [[6, 'Obedece órdenes'], [5, 'Localiza el dolor'], [4, 'Retira (flexión normal)'], [3, 'Flexión anormal (decorticación)'], [2, 'Extensión (descerebración)'], [1, 'Ninguna']]
+    m: [[6, 'Obedece órdenes'], [5, 'Localiza el dolor'], [4, 'Retira al dolor (flexión normal)'], [3, 'Flexión anormal (decorticación)'], [2, 'Extensión anormal (descerebración)'], [1, 'Ninguna']]
   };
   const gcsLevel = t => (t === 15 ? 'normal' : t >= 13 ? 'alteración leve (13–14)' : t >= 9 ? 'moderada (9–12)' : 'grave (≤ 8, coma)');
+  const gcsTxt = g => `${g.t} (O${g.e} V${g.v} M${g.m})`;
 
+  /* Impresión general según Argente-Álvarez: estado de conciencia y aspecto, actitud y decúbito, facies, hábito constitucional,
+     estado de nutrición, estado de hidratación, piel y mucosas, marcha (y aseo). Los id coinciden con GEN_ITEMS. */
   function inspectItems(c) {
-    const v = c.v, b = bmiOf(c), old = c.age >= 65;
+    const v = c.v, b = bmiOf(c), old = c.age >= 65, fem = c.sex === 'F';
+    const oa = fem ? 'a' : 'o';
     return [
-      { id: 'asp', label: 'Aspecto general', text: `Edad aparente concordante con la cronológica (${c.age} años). Buen estado general: vigil, lúcido, colaborador, que responde con coherencia; sin signos de dolor, disnea ni fatiga; ${old ? 'mantiene autonomía en sus actividades' : 'comportamiento adecuado a la situación'}.` },
-      { id: 'fac', label: 'Facies', text: 'Facies normal: expresión tranquila y simétrica, mirada atenta y vivaz, sin tensión, dolor ni rasgos característicos de enfermedad (no cushingoide, mixedematosa, parkinsoniana, etc.).', ring: 'head' },
-      { id: 'act', label: 'Actitud y decúbito', text: 'Actitud activa y libre: se sienta y se mueve espontáneamente, sin posiciones antiálgicas ni forzadas. Decúbito indiferente (se acuesta cómodamente en cualquier posición), sin ortopnea.', ring: 'body' },
+      { id: 'asp', label: 'Aspecto y conciencia', text: `<i>Técnica:</i> observar desde el primer contacto (saludo, cómo entra y se sienta). <i>Hallazgo normal:</i> edad aparente concordante con la cronológica (${c.age} años); vigil, lúcid${oa}, orientad${oa} en tiempo, espacio y persona, colaborador${fem ? 'a' : ''}; sin signos de dolor, disnea ni fatiga; buen estado general.` },
+      { id: 'act', label: 'Actitud y decúbito', text: `<i>Técnica:</i> observar la postura de pie y sentad${oa}, y la posición que adopta acostad${oa}. <i>Hallazgo normal:</i> actitud compuesta y libre, sin posiciones antiálgicas ni forzadas; <b>decúbito activo e indiferente</b> (cambia de posición por sí mism${oa} y se acuesta con comodidad en cualquiera), sin ortopnea.`, ring: 'body' },
+      { id: 'fac', label: 'Facies', text: '<i>Técnica:</i> observar expresión, simetría, mirada, coloración y rasgos. <i>Hallazgo normal:</i> <b>facies compuesta</b> (no característica): expresión tranquila y simétrica, mirada atenta, sin dolor, angustia ni rasgos de enfermedad (no cushingoide, mixedematosa, hipertiroidea, parkinsoniana, acromegálica…).', ring: 'head' },
+      { id: 'hab', label: 'Hábito constitucional', text: `<i>Técnica:</i> apreciar la proporción entre tronco y miembros y la abertura del ángulo epigástrico (xifoideo). <i>Hallazgo normal:</i> <b>hábito normolíneo (mediolíneo)</b>, ángulo epigástrico ≈ 90°; proporciones armónicas. Los extremos son el brevilíneo (tronco ancho, ángulo &gt; 90°) y el longilíneo (tórax largo y estrecho, ángulo &lt; 90°), que también son variantes normales.`, ring: 'chest' },
+      { id: 'nut', label: 'Estado de nutrición', text: `<i>Técnica:</i> inspección del panículo adiposo y de las masas musculares (bolas de Bichat, fosas supraclaviculares, miembros), peso, talla, IMC y cintura. <i>Hallazgo normal:</i> eutrófic${oa}, con panículo adiposo y masa muscular proporcionados, sin caquexia ni obesidad centrípeta. IMC ${fmt(b)} kg/m² (${BMI_NAMES[bmiCat(b)].toLowerCase()}); cintura ${v.waist} cm.${old ? ' Masa muscular conservada para la edad.' : ''}`, ring: 'abd' },
+      { id: 'hid', label: 'Estado de hidratación', text: `<i>Técnica:</i> pellizcar la piel del dorso de la mano o del antebrazo (pliegue cutáneo), observar la humedad de lengua y mucosas, el tono de los globos oculares y el llenado capilar. <i>Hallazgo normal:</i> bien hidratad${oa}: pliegue que se deshace de inmediato${old ? ' (en la persona mayor el pliegue puede ser algo más lento por la menor elasticidad, sin que signifique deshidratación)' : ''}, lengua y mucosas húmedas, globos oculares de tensión normal, llenado capilar &lt; 2 s; sin edemas.`, ring: 'hand' },
+      { id: 'col', label: 'Piel y mucosas', text: `<i>Técnica:</i> observar con luz natural la coloración de piel, conjuntivas, labios, lechos ungueales y escleras. <i>Hallazgo normal:</i> piel y mucosas normocoloreadas, rosadas; sin palidez, cianosis, ictericia (escleras blancas) ni rubicundez; piel tibia, lisa${old ? ', con arrugas y lentigos solares propios de la edad' : ''}; faneras conservadas.` },
       { id: 'mar', label: 'Marcha', text: old
-        ? 'Marcha autónoma, sin ayuda; base de sustentación algo más amplia, pasos algo más cortos y velocidad ligeramente menor (≈ 1 m/s) por el envejecimiento fisiológico, sin claudicación, arrastre ni inestabilidad; balanceo de brazos conservado y giros seguros.'
-        : 'Marcha normal: base de sustentación estrecha (≈ 5–10 cm), pasos simétricos de longitud regular, balanceo asociado de los brazos, talón-punta fluido y giros sin vacilar. Sin claudicación ni cojera.', ring: 'feet', walk: true },
-      { id: 'nut', label: 'Estado nutricional', text: `Eutrófico/a, con panículo adiposo y masa muscular proporcionados, sin caquexia ni obesidad centrípeta evidente. IMC ${fmt(b)} kg/m² (${BMI_NAMES[bmiCat(b)].toLowerCase()}); cintura ${v.waist} cm.${old ? ' Masa muscular conservada para la edad.' : ''}`, ring: 'abd' },
-      { id: 'hig', label: 'Higiene y vestimenta', text: 'Aseado/a, vestimenta limpia, ordenada y apropiada a la edad, el clima y el contexto; cabello y uñas cuidados, sin olores anormales.', ring: 'chest' },
-      { id: 'col', label: 'Coloración e hidratación', text: `Piel y mucosas normocoloreadas y rosadas; sin palidez, cianosis, ictericia (escleras blancas) ni rubicundez. Piel tibia y bien hidratada, turgor y elasticidad normales${old ? ' (menor elasticidad fisiológica, arrugas y lentigos solares propios de la edad)' : ''}; mucosa oral húmeda; llenado capilar &lt; 2 s; sin edemas.`, ring: 'hand' }
+        ? '<i>Técnica:</i> observar a la persona caminar de ida y vuelta, girar y, si es posible, en tándem. <i>Hallazgo normal:</i> marcha autónoma y segura; con el envejecimiento fisiológico la base de sustentación es algo más amplia, los pasos algo más cortos y la velocidad algo menor, sin claudicación, arrastre ni inestabilidad; balanceo de brazos conservado y giros seguros.'
+        : '<i>Técnica:</i> observar a la persona caminar de ida y vuelta, girar y en tándem. <i>Hallazgo normal:</i> marcha eubásica: base de sustentación normal, pasos simétricos de longitud regular, apoyo talón-punta fluido, balanceo asociado de los brazos y giros sin vacilar; sin claudicación ni cojera.', ring: 'feet', walk: true },
+      { id: 'hig', label: 'Aseo y vestimenta', text: `<i>Técnica:</i> observación. <i>Hallazgo normal:</i> asead${oa}, vestimenta limpia, ordenada y apropiada a la edad, el clima y el contexto; cabello y uñas cuidados, sin olores anormales.` }
     ];
   }
 
   const GEN = {
-    label: 'Estado general y Glasgow',
-    hint: 'Inspecciona a la persona (aspecto, facies, actitud, marcha, nutrición, higiene, coloración) y valora la escala de Glasgow.',
+    label: 'Impresión general y Glasgow',
+    hint: 'Impresión general: conciencia y aspecto, actitud y decúbito, facies, hábito constitucional, nutrición, hidratación, piel, marcha y aseo. Después valora la escala de Glasgow (O/V/M).',
     tools: [{ id: 'look', icon: '👁️', label: 'Inspección general' }],
     enter(stage, sh) {
       this.sh = sh; this.cl = []; this.walking = false;
@@ -960,7 +1004,7 @@
       };
       const hot = items.filter(i => i.ring).sort((a, b2) => (b2.ring === 'body') - (a.ring === 'body')).map(i => {
         const shape = rings[i.ring];
-        return `<g class="gh" data-k="${i.id}" style="cursor:pointer"><g fill="transparent">${shape}</g>
+        return `<g class="gh" data-k="${i.id}" style="cursor:pointer" tabindex="0" role="button" aria-label="${esc(i.label)}"><g fill="transparent">${shape}</g>
           <g class="hintring" fill="none" stroke="#0e6a78" stroke-width="2" stroke-dasharray="5 4">${shape}</g></g>`;
       }).join('');
       stage.innerHTML = `
@@ -979,12 +1023,12 @@
       <div class="vit-gcs">
         <h4>Escala de coma de Glasgow</h4>
         <div class="row">
-          <button class="btn small ghost" data-st="e">👁️ Observar apertura ocular</button>
-          <button class="btn small ghost" data-st="v">🗣️ Preguntar nombre, lugar y fecha</button>
-          <button class="btn small ghost" data-st="m">🖐️ Dar una orden sencilla</button>
+          <button class="btn small ghost" data-st="e">👁️ Observar apertura ocular (O)</button>
+          <button class="btn small ghost" data-st="v">🗣️ Preguntar nombre, lugar y fecha (V)</button>
+          <button class="btn small ghost" data-st="m">🖐️ Dar una orden sencilla (M)</button>
         </div>
         <div class="row">
-          <label>Apertura ocular (E) <select id="gcE"><option value="">–</option>${GCS.e.map(o => `<option value="${o[0]}">${o[0]} · ${o[1]}</option>`).join('')}</select></label>
+          <label>Apertura ocular (O) <select id="gcE"><option value="">–</option>${GCS.e.map(o => `<option value="${o[0]}">${o[0]} · ${o[1]}</option>`).join('')}</select></label>
           <label>Respuesta verbal (V) <select id="gcV"><option value="">–</option>${GCS.v.map(o => `<option value="${o[0]}">${o[0]} · ${o[1]}</option>`).join('')}</select></label>
           <label>Respuesta motora (M) <select id="gcM"><option value="">–</option>${GCS.m.map(o => `<option value="${o[0]}">${o[0]} · ${o[1]}</option>`).join('')}</select></label>
         </div>
@@ -993,7 +1037,7 @@
           <button class="btn small" id="gcReg">Registrar Glasgow</button>
           <span class="vit-tag" id="gcLvl"></span>
         </div>
-        <div style="color:var(--muted);font-size:12.5px">Rango 3–15 (mínimo 3 con E1 V1 M1). 15 = normal · 13–14 alteración leve · 9–12 moderada · ≤ 8 grave (indicación de proteger la vía aérea). Se evalúa la <b>mejor respuesta</b>; en pacientes intubados la verbal se anota «T».</div>
+        <div style="color:var(--muted);font-size:12.5px">Puntaje 3–15 (mínimo 3 con O1 V1 M1). 15 = normal (O4 V5 M6) · 13–14 alteración leve · 9–12 moderada · ≤ 8 grave (coma; indicación de proteger la vía aérea). Se anota la <b>mejor respuesta</b> de cada componente y se informa desglosado (p. ej. «15: O4 V5 M6»); en pacientes intubados la verbal se anota «T».</div>
       </div>`;
       const q = s2 => stage.querySelector(s2);
       this.svg = q('svg'); this.q = q;
@@ -1003,10 +1047,15 @@
         q('#gnTxt').style.color = 'var(--ink)';
         stage.querySelectorAll('#gnChips button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
         sh.log(`<b>${it.label}:</b> ${it.text}`, 'find');
+        sh.explored('gen:' + k);
         if (it.walk) this.walk();
       };
       q('#gnChips').addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.k); });
       this.svg.addEventListener('click', e => { const g = e.target.closest('[data-k]'); if (g) show(g.dataset.k); });
+      this.svg.addEventListener('keydown', e => {
+        const g = e.target.closest('[data-k]');
+        if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); show(g.dataset.k); }
+      });
       stage.querySelectorAll('[data-st]').forEach(b => b.addEventListener('click', () => this.stimulus(b.dataset.st)));
       const upd = () => {
         const e = +q('#gcE').value, vv = +q('#gcV').value, m = +q('#gcM').value;
@@ -1019,8 +1068,9 @@
         if (!e || !vv || !m) { sh.log('Elige las tres respuestas (E, V y M) antes de registrar.', 'warn'); return; }
         const t = e + vv + m;
         S.gcs = { e, v: vv, m, t };
-        if (sh.mode === 'learn') sh.log(`Glasgow registrado: <b>${t}</b> (E${e} V${vv} M${m}) → ${t === 15 ? '✔ normal: E4 V5 M6' : '✘ esta persona obtiene 15 (E4 V5 M6)'}. Nivel: ${gcsLevel(t)}.`, t === 15 ? 'find' : 'warn');
-        else sh.log(`Glasgow registrado: ${t} (E${e} V${vv} M${m}).`);
+        if (sh.mode === 'learn') sh.log(`Glasgow registrado: <b>${gcsTxt(S.gcs)}</b> → ${t === 15 ? '✔ normal: O4 V5 M6' : '✘ esta persona obtiene 15 (O4 V5 M6)'}. Nivel: ${gcsLevel(t)}.`, t === 15 ? 'find' : 'warn');
+        else sh.log(`Glasgow registrado: ${gcsTxt(S.gcs)}.`);
+        sh.explored('glasgow:registro');
         mine(sh);
       });
       this.refresh();
@@ -1046,14 +1096,18 @@
       }, () => { [LL, LR, AL, AR].forEach(n => n.removeAttribute('transform')); this.walking = false; });
     },
     stimulus(k) {
-      const sh = this.sh, learn = sh.mode === 'learn';
-      if (k === 'e') sh.log('Al entrar, la persona tiene los ojos abiertos, te mira y sigue la conversación' + (learn ? ' → <b>E4</b> (apertura ocular espontánea).' : '.'), 'patient');
-      else if (k === 'v') {
+      const sh = this.sh, learn = sh.mode === 'learn', fem = sh.case.sex === 'F';
+      if (k === 'e') {
+        sh.log('Al entrar, la persona tiene los ojos abiertos, te mira y sigue la conversación' + (learn ? ' → <b>O4</b> (apertura ocular espontánea).' : '.'), 'patient');
+        sh.explored('glasgow:ocular');
+      } else if (k === 'v') {
         sh.say('Estoy en el consultorio y sé qué día es hoy', 'yes', 2800);
-        sh.log('Responde con frases coherentes, orientado en persona, lugar y tiempo' + (learn ? ' → <b>V5</b>.' : '.'), 'patient');
+        sh.log(`Responde con frases coherentes, orientad${fem ? 'a' : 'o'} en persona, lugar y tiempo` + (learn ? ' → <b>V5</b> (orientado).' : '.'), 'patient');
+        sh.explored('glasgow:verbal');
       } else {
         sh.say('Claro, aquí tiene', 'yes', 2200);
-        sh.log('Obedece de inmediato la orden sencilla («apriete mis dedos», «levante la mano»)' + (learn ? ' → <b>M6</b>.' : '.'), 'patient');
+        sh.log('Obedece de inmediato la orden sencilla («apriete mis dedos», «levante la mano»)' + (learn ? ' → <b>M6</b> (obedece órdenes).' : '.'), 'patient');
+        sh.explored('glasgow:motora');
       }
     }
   };

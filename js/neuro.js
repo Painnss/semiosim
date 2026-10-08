@@ -13,8 +13,8 @@
     ['achilles', 'Aquíleo', 'tendón de Aquiles']
   ];
   const GRADE_TXT = [
-    '0: ausente (arreflexia)', '1+: disminuido (hiporreflexia)', '2+: normal',
-    '3+: vivo (puede ser normal o patológico)', '4+: exaltado, con clonus'
+    '0: abolido (arreflexia)', '1+: disminuido (hiporreflexia)', '2+: normal',
+    '3+: vivo (hiperreflexia; puede ser normal si es simétrico y sin otros signos)', '4+: exaltado, con clonus'
   ];
   const limb = (x1, y1, x2, y2, w) =>
     `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${SKIN_D}" stroke-width="${w + 5}" stroke-linecap="round"/>` +
@@ -35,10 +35,10 @@
 
   const ReflexScene = {
     label: 'Reflejos',
-    hint: 'Martillo: haz clic sobre el tendón. Cambia de lado para comparar. En Aprendizaje verás los puntos de referencia.',
+    hint: 'Martillo: haz clic sobre el tendón (reflejos osteotendinosos). Cambia de lado para comparar. En Aprendizaje verás los puntos de referencia.',
     tools: [
       { id: 'hammer', icon: '🔨', label: 'Martillo de reflejos' },
-      { id: 'clonus', icon: '🦶', label: 'Clonus (dorsiflexión del pie)' }
+      { id: 'clonus', icon: '🦶', label: 'Clonus de pie (dorsiflexión brusca)' }
     ],
     side: 'R',
     busy: false,
@@ -165,8 +165,9 @@
       tween(300, u => { imp.setAttribute('r', 4 + 22 * u); imp.setAttribute('opacity', 1 - u); }, () => imp.setAttribute('r', 0));
 
       const info = REFL.find(r => r[0] === key);
+      sh.explored(`reflex:${key}:${side}`);
       if (sh.mode === 'learn') {
-        sh.log(`<b>${info[1]} ${SIDE_NAME[side]}</b> → ${GRADE_TXT[g]}`, 'find');
+        sh.log(`<b>Reflejo ${info[1].toLowerCase()} ${SIDE_NAME[side]}</b> → ${GRADE_TXT[g]}`, 'find');
       } else {
         sh.log(`Percusión del ${info[2]} ${SIDE_NAME[side]}. Observa la respuesta y regístrala en “Mis hallazgos”.`);
       }
@@ -193,10 +194,11 @@
     clonus() {
       const sh = this.sh, c = sh.case, side = this.side, has = c.clonus[side];
       this.busy = true;
+      sh.explored(`clonus:${side}`);
       if (sh.mode === 'learn') {
         sh.log(has
-          ? `<b>Clonus aquíleo ${SIDE_NAME[side]}</b>: sacudidas rítmicas sostenidas mientras se mantiene la dorsiflexión (patológico).`
-          : `<b>Sin clonus ${SIDE_NAME[side]}</b>: 0-2 sacudidas que se agotan (normal).`, 'find');
+          ? `<b>Clonus de pie ${SIDE_NAME[side]}</b>: sacudidas rítmicas sostenidas (inagotables) mientras se mantiene la dorsiflexión; es patológico (hiperreflexia 4+).`
+          : `<b>Sin clonus ${SIDE_NAME[side]}</b>: ninguna sacudida o 2-3 que se agotan (normal).`, 'find');
       } else {
         sh.log(`Dorsiflexión brusca del pie ${SIDE_NAME[side]}. Observa si aparecen sacudidas rítmicas y si se agotan.`);
       }
@@ -259,9 +261,9 @@
     label: 'Pies',
     hint: 'Elige un instrumento y haz clic sobre un pie (plantas vistas desde los pies de la camilla).',
     tools: [
-      { id: 'stroke', icon: '🪥', label: 'Estímulo plantar (Babinski)' },
-      { id: 'mono', icon: '📍', label: 'Monofilamento (tacto)' },
-      { id: 'fork', icon: '🎵', label: 'Diapasón (vibración)' },
+      { id: 'stroke', icon: '🪥', label: 'Reflejo cutáneo plantar (Babinski)' },
+      { id: 'mono', icon: '📍', label: 'Monofilamento 10 g (tacto)' },
+      { id: 'fork', icon: '🎵', label: 'Diapasón 128 Hz (palestesia)' },
       { id: 'look', icon: '👁️', label: 'Inspección' }
     ],
     busy: false,
@@ -291,10 +293,10 @@
 
     setTool(id) {
       const m = {
-        stroke: 'Estímulo plantar: haz clic sobre un pie; se recorre el borde lateral de la planta y luego se cruza hacia los metatarsianos.',
-        mono: 'Monofilamento: haz clic en distintos puntos; el paciente responde si siente el contacto (sin mirar).',
-        fork: 'Diapasón: aplícalo en el hallux (clic sobre el dedo gordo) y pregunta si siente vibración.',
-        look: 'Inspección: haz clic sobre un pie para observar piel, callosidades, úlceras y deformidades.'
+        stroke: 'Reflejo cutáneo plantar: haz clic sobre un pie; se recorre el borde externo de la planta, del talón hacia los dedos, y se cruza hacia la base del hallux.',
+        mono: 'Monofilamento de 10 g: haz clic en distintos puntos; el paciente responde si siente el contacto (sin mirar).',
+        fork: 'Diapasón de 128 Hz (palestesia): aplícalo sobre el hallux (clic en el dedo gordo) y pregunta si siente la vibración.',
+        look: 'Inspección: haz clic sobre un pie para observar piel, callosidades, úlceras, deformidades y trofismo.'
       };
       this.sh.hint(m[id] || '');
     },
@@ -310,7 +312,7 @@
         if (!pt) { this.sh.log('Toca uno de los puntos de la planta con el monofilamento.', 'warn'); return; }
         this.mono(foot, side, pt.dataset.pt);
       } else if (tool === 'fork') {
-        if (!pt || pt.dataset.pt !== 'hallux') { this.sh.log('El diapasón se aplica sobre el hallux (articulación interfalángica).', 'warn'); return; }
+        if (!pt || pt.dataset.pt !== 'hallux') { this.sh.log('El diapasón se apoya sobre una prominencia ósea: aquí, la articulación interfalángica del hallux.', 'warn'); return; }
         this.fork(foot, side);
       }
     },
@@ -337,10 +339,11 @@
       const sh = this.sh, lost = sh.case.feet.lost[side].includes(pt);
       this.ripple(foot, FPTS[pt].x, FPTS[pt].y, '#0e6a78');
       this.busy = true;
+      sh.explored(`mono:${pt}:${side}`);
       setTimeout(() => {
         this.mark(foot, pt, !lost);
         sh.say(lost ? 'No siento nada' : 'Sí, lo siento', lost ? 'no' : 'yes');
-        sh.log(`Monofilamento, ${FPT_NAME[pt]} ${SIDE_NAME[side]}: “${lost ? 'no lo siento' : 'sí lo siento'}”.`, 'patient');
+        sh.log(`Monofilamento de 10 g, ${FPT_NAME[pt]} ${SIDE_NAME[side]}: “${lost ? 'no lo siento' : 'sí lo siento'}”.`, 'patient');
         this.busy = false;
       }, 380);
     },
@@ -350,15 +353,17 @@
       this.ripple(foot, FPTS.hallux.x, FPTS.hallux.y, '#7a4fc0');
       setTimeout(() => this.ripple(foot, FPTS.hallux.x, FPTS.hallux.y, '#7a4fc0'), 160);
       this.busy = true;
+      sh.explored(`fork:${side}`);
       setTimeout(() => {
         sh.say(lost ? 'No siento vibración' : 'Sí, siento la vibración', lost ? 'no' : 'yes');
-        sh.log(`Diapasón 128 Hz en el hallux ${SIDE_NAME[side]}: ${lost ? '“no siento vibración”' : '“siento la vibración”'}.`, 'patient');
+        sh.log(`Palestesia (diapasón de 128 Hz) en el hallux ${SIDE_NAME[side]}: ${lost ? '“no siento vibración” (apalestesia)' : '“siento la vibración” (conservada)'}.`, 'patient');
         this.busy = false;
       }, 600);
     },
 
     inspect(side) {
-      this.sh.log(`<b>Inspección pie ${SIDE_NAME[side]}:</b> ${esc(this.sh.case.feet.inspection)}`, 'find');
+      this.sh.explored(`look:${side}`);
+      this.sh.log(`<b>Inspección del pie ${SIDE_NAME[side]}:</b> ${esc(this.sh.case.feet.inspection)}`, 'find');
     },
 
     plantar(foot, side) {
@@ -368,8 +373,9 @@
       path.style.display = '';
       path.setAttribute('stroke-dasharray', L);
       this.busy = true;
-      sh.log(sh.mode === 'learn' ? `Estímulo plantar ${SIDE_NAME[side]}…` :
-        `Estímulo plantar ${SIDE_NAME[side]}: observa el movimiento del hallux y de los otros dedos.`);
+      sh.explored(`plantar:${side}`);
+      sh.log(sh.mode === 'learn' ? `Reflejo cutáneo plantar ${SIDE_NAME[side]}…` :
+        `Reflejo cutáneo plantar ${SIDE_NAME[side]}: observa el movimiento del hallux y de los otros dedos.`);
       tween(950, u => path.setAttribute('stroke-dashoffset', L * (1 - u)), () => {
         const toes = [...foot.querySelectorAll('.toe')];
         tween(900, u => {
@@ -391,8 +397,8 @@
         });
         if (sh.mode === 'learn') {
           sh.log(ext
-            ? `<b>Signo de Babinski positivo (${SIDE_NAME[side]})</b>: extensión del hallux con apertura en abanico de los demás dedos.`
-            : `<b>Respuesta plantar flexora (${SIDE_NAME[side]})</b>: los dedos se flexionan. Es lo normal.`, 'find');
+            ? `<b>Signo de Babinski (${SIDE_NAME[side]})</b>: respuesta plantar extensora, con extensión lenta del hallux y apertura en abanico de los demás dedos. Indica lesión de la vía piramidal.`
+            : `<b>Reflejo cutáneo plantar flexor (${SIDE_NAME[side]})</b>: los dedos se flexionan. Es la respuesta normal en el adulto.`, 'find');
         }
       });
     }
@@ -407,13 +413,13 @@
     label: 'Ojos y pupilas',
     hint: '',
     tools: [
-      { id: 'finger', icon: '☝️', label: 'Dedo (seguimiento ocular)' },
-      { id: 'light', icon: '🔦', label: 'Linterna (reflejo pupilar)' }
+      { id: 'finger', icon: '☝️', label: 'Dedo (motilidad ocular: III, IV y VI)' },
+      { id: 'light', icon: '🔦', label: 'Linterna (reflejos fotomotor y consensual)' }
     ],
 
     enter(stage, sh) {
       this.sh = sh; this.alive = true; this.ptr = null; this.demo = null; this.lit = null; this.lastLit = null;
-      this.g = { x: 0, y: 0 }; this.diplo = false;
+      this.g = { x: 0, y: 0 }; this.diplo = false; this.followed = false;
       const e = sh.case.eyes;
       this.pup = { R: e.base.R, L: e.base.L };
       const eyeSvg = side => {
@@ -475,7 +481,8 @@
           this.demo = { t0: performance.now(), dur: 15000 };
           btn.textContent = '■ Detener demostración';
           if (sh.tool !== 'finger') sh.selectTool('finger');
-          sh.log('Demostración del patrón en H: sigue los ojos y compáralos entre sí.');
+          sh.explored('follow');
+          sh.log('Demostración del patrón en H: sigue los ojos y compáralos entre sí (motilidad ocular extrínseca).');
         }
       });
       this.btn = btn;
@@ -489,8 +496,8 @@
     setTool(id) {
       this.svg.classList.add('nocursor');
       this.sh.hint(id === 'finger'
-        ? 'Dedo: mueve el cursor sobre el rostro; el paciente sigue la punta del dedo. Traza una H (derecha, arriba, abajo; izquierda, arriba, abajo).'
-        : 'Linterna: pasa el cursor sobre cada ojo. Observa el reflejo directo y el consensual; alterna entre los ojos (linterna oscilante).');
+        ? 'Dedo: mueve el cursor sobre el rostro; el paciente sigue la punta del dedo. Traza una H (derecha, arriba, abajo; izquierda, arriba, abajo) y pregunta si ve doble.'
+        : 'Linterna: pasa el cursor sobre cada ojo. Observa el reflejo fotomotor (directo) y el consensual; alterna entre los ojos (prueba de la linterna oscilante).');
       this.lit = null;
     },
 
@@ -499,7 +506,7 @@
     describeLight(E) {
       const c = this.sh.case.eyes, O = E === 'R' ? 'L' : 'R';
       const direct = c.aff[E] * c.eff[E], cons = c.aff[E] * c.eff[O];
-      let msg = `<b>Luz en ojo ${E === 'R' ? 'derecho' : 'izquierdo'}:</b> reflejo directo ${level(direct)}, consensual ${level(cons)}.`;
+      let msg = `<b>Luz en ojo ${E === 'R' ? 'derecho' : 'izquierdo'}:</b> reflejo fotomotor (directo) ${level(direct)}, consensual (en el otro ojo) ${level(cons)}.`;
       if (this.lastLit && this.lastLit !== E && c.aff[E] + 0.2 < c.aff[this.lastLit]) {
         msg += ' Al pasar la luz del otro ojo a este, ambas pupilas <b>se dilatan</b> (defecto pupilar aferente relativo).';
       }
@@ -521,6 +528,7 @@
       } else if (finger && this.ptr) {
         tx = clamp((this.ptr.x - 400) / 320, -1, 1); ty = clamp((this.ptr.y - 210) / 170, -1, 1);
         fx = this.ptr.x; fy = this.ptr.y;
+        if (!this.followed && Math.abs(tx) > 0.6) { this.followed = true; sh.explored('follow'); }
       }
       if (fx !== null) { this.fingerEl.setAttribute('visibility', 'visible'); this.fingerEl.setAttribute('transform', `translate(${fx} ${fy})`); }
       else this.fingerEl.setAttribute('visibility', 'hidden');
@@ -538,6 +546,7 @@
       if (lit !== this.lit) {
         this.lit = lit;
         if (lit) {
+          sh.explored(`light:${lit}`);
           if (sh.mode === 'learn') sh.log(this.describeLight(lit), 'find');
           else sh.log(`Luz sobre el ojo ${lit === 'R' ? 'derecho' : 'izquierdo'}. Observa ambas pupilas.`);
           this.lastLit = lit;
@@ -582,7 +591,7 @@
           this.diplo = true;
           const dir = this.g.x < -0.3 ? 'a la derecha del paciente' : this.g.x > 0.3 ? 'a la izquierda del paciente' : this.g.y < -0.3 ? 'hacia arriba' : this.g.y > 0.3 ? 'hacia abajo' : 'en la posición primaria';
           sh.say('Doctor, veo doble', 'no', 2600);
-          sh.log(`Diplopía al mirar ${dir}: los ojos no se mueven de forma conjugada.`, 'patient');
+          sh.log(`Diplopía al mirar ${dir}: los ojos no se mueven de forma conjugada (paresia de la motilidad ocular extrínseca).`, 'patient');
         }
       } else if (mis < 0.15 || fx === null) {
         this.diplo = false;
@@ -597,52 +606,66 @@
     const rows = REFL.map(r => `<tr><td>${r[1]}</td>
       <td>${sel(`data-r="${r[0]}" data-s="R"`, grades)}</td><td>${sel(`data-r="${r[0]}" data-s="L"`, grades)}</td></tr>`).join('');
     const yn = [[1, 'Sí'], [0, 'No']];
-    const pl = [['flex', 'Flexora'], ['ext', 'Extensora']];
+    const pl = [['flex', 'Flexora'], ['ext', 'Extensora (Babinski)']];
     return `<table class="rec"><tr><th>Reflejo</th><th>Der.</th><th>Izq.</th></tr>${rows}
-      <tr><td>Clonus</td><td>${sel('data-k="clonus" data-s="R"', yn)}</td><td>${sel('data-k="clonus" data-s="L"', yn)}</td></tr>
-      <tr><td>Plantar</td><td>${sel('data-k="plantar" data-s="R"', pl)}</td><td>${sel('data-k="plantar" data-s="L"', pl)}</td></tr></table>`;
+      <tr><td>Clonus de pie</td><td>${sel('data-k="clonus" data-s="R"', yn)}</td><td>${sel('data-k="clonus" data-s="L"', yn)}</td></tr>
+      <tr><td>Cutáneo plantar</td><td>${sel('data-k="plantar" data-s="R"', pl)}</td><td>${sel('data-k="plantar" data-s="L"', pl)}</td></tr></table>`;
   }
 
   function evaluate(c, rec) {
     const val = (attr, s) => rec.querySelector(`select[${attr}][data-s="${s}"]`).value;
     let ok = 0, near = 0, tot = 0;
-    const mark = (mine, real, text) => {
+    /* graded = true solo para los reflejos (0-4+): un grado de diferencia cuenta como aproximado. */
+    const mark = (mine, real, text, graded) => {
       tot++;
       if (mine === '') return `<span class="m-bad">–</span>`;
       if (String(mine) === String(real)) { ok++; return `<span class="m-ok">✔ ${text}</span>`; }
-      if (typeof real === 'number' && Math.abs(Number(mine) - real) === 1) { near++; return `<span class="m-near">≈ ${text}</span>`; }
+      if (graded && Math.abs(Number(mine) - real) === 1) { near++; return `<span class="m-near">≈ ${text}</span>`; }
       return `<span class="m-bad">✘ ${text}</span>`;
     };
     const g = n => ['0', '1+', '2+', '3+', '4+'][n];
     let rows = REFL.map(r => {
       const cells = ['R', 'L'].map(s => {
         const real = c.reflexes[s][r[0]], mine = val(`data-r="${r[0]}"`, s);
-        return `<td>${mark(mine, real, mine === '' ? '' : g(+mine))} <small>(real ${g(real)})</small></td>`;
+        return `<td>${mark(mine, real, mine === '' ? '' : g(+mine), true)} <small>(real ${g(real)})</small></td>`;
       }).join('');
       return `<tr><td>${r[1]}</td>${cells}</tr>`;
     }).join('');
-    rows += `<tr><td>Clonus</td>${['R', 'L'].map(s => {
+    rows += `<tr><td>Clonus de pie</td>${['R', 'L'].map(s => {
       const real = c.clonus[s] ? 1 : 0, mine = val('data-k="clonus"', s);
       return `<td>${mark(mine, real, mine === '' ? '' : (mine === '1' ? 'Sí' : 'No'))} <small>(real ${real ? 'sí' : 'no'})</small></td>`;
     }).join('')}</tr>`;
-    rows += `<tr><td>Plantar</td>${['R', 'L'].map(s => {
+    rows += `<tr><td>Cutáneo plantar</td>${['R', 'L'].map(s => {
       const real = c.babinski[s] ? 'ext' : 'flex', mine = val('data-k="plantar"', s);
       return `<td>${mark(mine, real, mine === '' ? '' : (mine === 'ext' ? 'Ext.' : 'Flex.'))} <small>(real ${real === 'ext' ? 'ext.' : 'flex.'})</small></td>`;
     }).join('')}</tr>`;
-    return `<h4>Comparación con el caso</h4>
+    const html = `<h4>Comparación con el caso</h4>
       <table class="res"><tr><th></th><th>Der.</th><th>Izq.</th></tr>${rows}</table>
       <p><b>${ok}</b> exactos de ${tot}${near ? ` · <span class="m-near">${near} a un grado de diferencia</span>` : ''}.</p>
-      <p style="font-size:12px;color:var(--muted)">Los hallazgos de pies y ojos (sensibilidad, pupilas, movimientos oculares) se revisan en “Hallazgos clave”.</p>`;
+      <p style="font-size:12px;color:var(--muted)">Los hallazgos de pies y ojos (sensibilidad, pupilas, motilidad ocular) se revisan en “Hallazgos clave”.</p>`;
+    return { html, ok, total: tot };
   }
+
+  const NEURO_REFS = [
+    'Argente HA, Álvarez ME. <i>Semiología Médica</i> (Panamericana) — Examen neurológico: reflejos osteotendinosos y cutáneos, sensibilidad superficial y profunda (palestesia), signo de Babinski y clonus.',
+    'Argente HA, Álvarez ME. <i>Semiología Médica</i> — Pares craneales: nervio óptico (II) y reflejos pupilares; motor ocular común (III), patético (IV) y motor ocular externo (VI).',
+    'Argente HA, Álvarez ME. <i>Semiología Médica</i> — Síndromes: piramidal (neurona motora superior), de neurona motora inferior y radicular, polineuropatía; síndrome de Horner.'
+  ];
+  /* Claves explorables: 5 reflejos × 2 lados, clonus × 2, plantar × 2, monofilamento 8 puntos × 2, diapasón × 2,
+     inspección × 2, luz × 2 ojos, seguimiento ocular. */
+  const NEURO_TOTAL = REFL.length * 2 + 2 + 2 + Object.keys(FPTS).length * 2 + 2 + 2 + 2 + 1;
 
   window.NeuroModule = {
     mount(root) {
       const sh = new Shell(root, {
+        id: 'neuro',
+        progressTotal: NEURO_TOTAL,
         cases: window.NEURO_CASES,
         scenes: { reflex: ReflexScene, feet: FeetScene, eyes: EyesScene },
         order: ['reflex', 'feet', 'eyes'],
         record: recordHTML,
-        evaluate
+        evaluate,
+        refs: NEURO_REFS
       });
       sh.start();
       return sh;
@@ -652,7 +675,8 @@
   registerModule({
     id: 'neuro', title: 'Neurología: reflejos, pies y ojos', icon: '🧠', group: 'Casos clínicos',
     desc: 'Exploración neurológica con pacientes virtuales (9 casos).',
-    bullets: ['Reflejos con martillo (0 a 4+) y clonus', 'Babinski, monofilamento, diapasón', 'Seguimiento del dedo, pares craneales y reflejo pupilar'],
+    bullets: ['Reflejos osteotendinosos (0 a 4+) y clonus', 'Signo de Babinski, monofilamento, palestesia', 'Motilidad ocular (III, IV, VI) y reflejos pupilares'],
+    refs: NEURO_REFS,
     mount: root => window.NeuroModule.mount(root)
   });
 })();

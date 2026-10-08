@@ -12,34 +12,43 @@
   const P1 = 222, P2 = 312;          // plano subcostal y plano intertubercular
   const PX = 9;                      // píxeles por cm
 
-  /* Datos normales por persona (clave = edad) */
+  /* Datos normales por persona (clave = id de NormalEngine.people; hay valor por defecto según sexo).
+     span = hepatimetría en la LMC (cm): 6–12 cm; ≈ 10–12 en el varón adulto y menor en la mujer (Argente-Álvarez). */
   const PD = {
-    28: {
-      form: 'plano', bulge: 0, span: 7, aorta: '2,0', liver: 1,
-      formTxt: 'abdomen plano, de contorno suave (el plano de la pared abdominal queda a la altura del pubis y la parrilla costal)',
+    p1: {   // 28 F, delgada
+      form: 'plano', bulge: 0, span: 8, aorta: '2,0', liver: 1,
+      formTxt: 'abdomen plano, de contorno suave (la pared abdominal queda al nivel del plano que une el apéndice xifoides con el pubis)',
       skin: 'piel lisa, elástica y de color uniforme; sin estrías, cicatrices ni lesiones; vello púbico de distribución ginecoide (triángulo de base superior)',
-      resp: 'predominio costal (torácico) propio de la mujer, con discreto movimiento abdominal',
-      amp: 0.012, pulse: 'se aprecia una pulsación aórtica epigástrica discreta (frecuente en personas delgadas), no expansiva',
+      resp: 'predominio costal superior, propio de la mujer, con discreto movimiento abdominal',
+      amp: 0.012, pulse: 'se aprecia un latido aórtico epigástrico discreto (frecuente en personas delgadas), no expansivo',
       bw: { csd: 10, csi: 10, cid: 20, cii: 10 }, kidney: true
     },
-    45: {
-      form: 'plano-globoso', bulge: 6, span: 10, aorta: '2,2', liver: 0,
+    p2: {   // 45 M
+      form: 'plano-globoso', bulge: 6, span: 11, aorta: '2,2', liver: 0,
       formTxt: 'abdomen plano a ligeramente globoso por panículo adiposo fisiológico, simétrico y sin distensión',
-      skin: 'piel íntegra, de color uniforme, con vello abdominal escaso distribuido normalmente; sin estrías, cicatrices ni lesiones; vello púbico de distribución androide (en rombo)',
-      resp: 'predominio abdominal (diafragmático), propio del varón',
-      amp: 0.03, pulse: 'no se ven pulsaciones ni peristaltismo',
+      skin: 'piel íntegra, de color uniforme, con vello abdominal escaso de distribución normal; sin estrías, cicatrices ni lesiones; vello púbico de distribución androide (en rombo, hacia el ombligo)',
+      resp: 'predominio costoabdominal (diafragmático), propio del varón',
+      amp: 0.03, pulse: 'no se ven latidos ni movimientos peristálticos',
       bw: { csd: 10, csi: 10, cid: 20, cii: 10 }, kidney: false
     },
-    72: {
-      form: 'globoso fisiológico', bulge: 14, span: 8, aorta: '2,6', liver: 0,
-      formTxt: 'abdomen globoso fisiológico (aumento del panículo adiposo y laxitud de la pared); es simétrico, blando y no hay distensión',
+    p3: {   // 72 M, cintura 94 cm
+      form: 'globoso', bulge: 14, span: 10, aorta: '2,6', liver: 0,
+      formTxt: 'abdomen globoso por aumento del panículo adiposo y menor tono de la pared (cintura 94 cm, en el límite de riesgo cardiometabólico); es simétrico, blando y sin distensión',
       skin: 'piel más fina y seca, con pérdida fisiológica de elasticidad; algún angioma rubí aislado y lentigos solares (benignos, propios de la edad); sin cicatrices ni circulación colateral',
-      resp: 'predominio abdominal (diafragmático), propio del varón',
-      amp: 0.026, pulse: 'no se ven pulsaciones ni peristaltismo',
+      resp: 'predominio costoabdominal (diafragmático), propio del varón',
+      amp: 0.026, pulse: 'no se ven latidos ni movimientos peristálticos',
       bw: { csd: 10, csi: 10, cid: 10, cii: 10 }, kidney: false
+    },
+    p4: {   // 60 F, posmenopáusica, IMC 23,8, cintura 82 cm
+      form: 'plano-globoso', bulge: 6, span: 9, aorta: '2,2', liver: 0,
+      formTxt: 'abdomen plano a ligeramente globoso por panículo adiposo fisiológico (cintura 82 cm, por encima del umbral de 80 cm de la OMS para la mujer, sin otros datos de riesgo), simétrico y sin distensión',
+      skin: 'piel íntegra, de color uniforme, con discreta pérdida de elasticidad propia de la edad; sin estrías activas, cicatrices ni lesiones; vello púbico de distribución ginecoide, más ralo tras la menopausia',
+      resp: 'predominio costal superior, propio de la mujer, con discreto movimiento abdominal',
+      amp: 0.016, pulse: 'no se ven latidos ni movimientos peristálticos',
+      bw: { csd: 10, csi: 10, cid: 15, cii: 10 }, kidney: false
     }
   };
-  const pd = c => PD[c.age] || PD[45];
+  const pd = c => PD[c.id] || (c.sex === 'F' ? PD.p4 : PD.p2);
   const y5of = c => LMCY - pd(c).span * PX;
   const isF = c => c.sex === 'F';
 
@@ -116,14 +125,14 @@
       /* etiquetas de referencia */
       if (o.refs !== false) {
         s += `<g class="hintring">` +
-          `<text x="100" y="128" class="svg-hint">Reborde costal</text>` +
+          `<text x="94" y="234" class="svg-hint" text-anchor="end">Reborde costal</text>` +
           `<text x="218" y="98" class="svg-hint">Apéndice xifoides</text>` +
-          `<text x="226" y="${UMB + 4}" class="svg-hint">Ombligo</text>` +
-          `<text x="92" y="${ASY + 24}" class="svg-hint" text-anchor="end">EIAS</text><text x="328" y="${ASY + 24}" class="svg-hint">EIAS</text>` +
-          `<text x="210" y="416" class="svg-hint" text-anchor="middle">Sínfisis del pubis</text>` +
-          `<text x="${LX}" y="424" class="svg-hint" text-anchor="middle">LMC D</text><text x="${RX}" y="424" class="svg-hint" text-anchor="middle">LMC I</text>` +
-          `<text x="214" y="440" class="svg-hint">Línea media</text></g>`;
-        s += `<g class="hintring" fill="none" stroke="${TEAL}" stroke-width="1.4" stroke-dasharray="2 4" opacity=".6"><path d="M${LX},130 V420 M${RX},130 V420"/></g>`;
+          `<text x="216" y="56" class="svg-hint">Línea media</text>` +
+          `<text x="226" y="${UMB + 16}" class="svg-hint">Ombligo</text>` +
+          `<text x="94" y="${ASY - 10}" class="svg-hint" text-anchor="end">EIAS</text><text x="326" y="${ASY - 10}" class="svg-hint">EIAS</text>` +
+          `<text x="210" y="418" class="svg-hint" text-anchor="middle">Sínfisis del pubis</text>` +
+          `<text x="${LX}" y="438" class="svg-hint" text-anchor="middle">LMC D</text><text x="${RX}" y="438" class="svg-hint" text-anchor="middle">LMC I</text></g>`;
+        s += `<g class="hintring" fill="none" stroke="${TEAL}" stroke-width="1.4" stroke-dasharray="2 4" opacity=".6"><path d="M${LX},130 V424 M${RX},130 V424"/></g>`;
       }
       /* vísceras de referencia */
       if (o.liver) {
@@ -131,7 +140,7 @@
         s += `<g class="hintring">` +
           `<path d="M90,${y5v + 20} C108,${y5v + 4} 160,${y5v - 4} 205,${y5v + 8} C240,${y5v + 16} 262,${y5v + 38} 258,${y5v + 62} L210,118 C170,128 140,${LMCY - 6} 118,${LMCY + 16} L98,214 Z" fill="#b5651d" opacity=".22" stroke="#8a4b12" stroke-width="1.5"/>` +
           `<circle cx="${LX}" cy="${y5v}" r="4" fill="#d9534f"/><circle cx="${LX}" cy="${LMCY}" r="4" fill="#d9534f"/>` +
-          `<text x="${LX - 10}" y="${y5v - 6}" class="svg-hint" text-anchor="end">5.º EIC (LMC)</text>` +
+          `<text x="${LX - 26}" y="${y5v - 6}" class="svg-hint" text-anchor="end">5.º EIC (LMC)</text>` +
           `<path d="M${LX - 16},${y5v} V${LMCY}" stroke="#d9534f" stroke-width="2"/>` +
           `<text x="${LX - 22}" y="${(y5v + LMCY) / 2 + 4}" class="svg-hint" text-anchor="end">${p.span} cm</text></g>`;
       }
@@ -142,9 +151,10 @@
           `<ellipse cx="172" cy="238" rx="9" ry="22" fill="#c0504d" opacity=".2"/><ellipse cx="248" cy="238" rx="9" ry="22" fill="#c0504d" opacity=".2"/>` +
           `<path d="M210,150 V${UMB} L192,326 M210,${UMB} L228,326" stroke="#c0392b" stroke-width="5" opacity=".25" fill="none"/></g>`;
       }
-      if (o.bladder && st(c).bladder) {
-        s += `<g class="hintring"><ellipse cx="210" cy="386" rx="36" ry="24" fill="#e8cd5a" opacity=".45" stroke="#b79a1a" stroke-width="1.5"/>` +
-             `<text x="210" y="372" class="svg-hint" text-anchor="middle">Vejiga llena</text></g>`;
+      if (o.bladder) {
+        const full = st(c).bladder;
+        if (full) s += `<g class="hintring"><ellipse cx="210" cy="386" rx="36" ry="24" fill="#e8cd5a" opacity=".45" stroke="#b79a1a" stroke-width="1.5"/></g>`;
+        s += `<text x="210" y="348" class="svg-hint hintring" text-anchor="middle">${full ? 'Vejiga llena (≈ 400 mL)' : 'Vejiga'}</text>`;
       }
       return s;
     };
@@ -271,21 +281,21 @@
         }
       },
       {
-        id: 'omb', label: 'Ombligo', short: 'Ombligo', cx: 210, cy: UMB, r: 15, lx: 246, ly: UMB - 2, anchor: 'start',
+        id: 'omb', label: 'Ombligo', short: '', cx: 210, cy: UMB, r: 15,
         tools: {
           ojo: () => 'Ombligo en la línea media, deprimido (invertido), de forma ovalada con piel normal; sin secreción, eritema, equimosis periumbilical ni nódulos; sin protrusión (anillo umbilical cerrado).',
           luz: () => 'Cicatriz umbilical sin abultamiento; no se ve protrusión al esfuerzo en reposo.'
         }
       },
       {
-        id: 'ing', label: 'Regiones inguinales', short: 'Ingles', cx: 160, cy: 378, r: 18, lx: 160, ly: 354,
+        id: 'ing', label: 'Región inguinal derecha', short: 'Ingle D', cx: 160, cy: 378, r: 18, lx: 160, ly: 354,
         tools: {
-          ojo: () => 'Regiones inguinales y crurales simétricas, sin abultamientos en reposo (las hernias se buscan en bipedestación y con Valsalva en la palpación).',
+          ojo: () => 'Regiones inguinal y crural derechas sin abultamientos en reposo, simétricas con las izquierdas (las hernias se buscan de pie y con Valsalva en la palpación).',
           luz: () => 'Sin masas inguinales visibles en reposo.'
         }
       },
       {
-        id: 'ing2', label: 'Región inguinal izquierda', short: 'Ingles', cx: 260, cy: 378, r: 18, lx: 260, ly: 354,
+        id: 'ing2', label: 'Región inguinal izquierda', short: 'Ingle I', cx: 260, cy: 378, r: 18, lx: 260, ly: 354,
         tools: {
           ojo: () => 'Región inguinal izquierda simétrica con la derecha, sin abultamientos en reposo.',
           luz: () => 'Sin masas inguinales visibles en reposo.'
@@ -306,7 +316,7 @@
           const e = (1 - Math.cos(u * cyc * Math.PI * 2)) / 2;
           g.setAttribute('transform', `translate(210 ${UMB}) scale(${1 + p.amp * 0.9 * e} ${1 + p.amp * e}) translate(-210 -${UMB})`);
         }, () => { g.removeAttribute('transform'); RT.breath = null; });
-        sh.log(`<b>Movimientos respiratorios:</b> el abdomen se eleva en la inspiración y desciende en la espiración, de forma simétrica y sincrónica (FR ${c.v.rr}/min); ${p.resp}. Sin movimiento paradójico ni inmovilidad localizada.`, 'find');
+        sh.log(`<b>Movimientos respiratorios:</b> el abdomen se eleva en la inspiración y desciende en la espiración, de forma simétrica y sincrónica (FR ${c.v.rr}/min); ${p.resp}. Sin respiración paradójica ni inmovilidad localizada (el abdomen que no se mueve con la respiración sugiere peritonitis).`, 'find');
       });
     },
     onLeave: clearRT
@@ -318,8 +328,8 @@
   const QN = {
     csd: ['Cuadrante superior derecho', 'hígado, vesícula y ángulo hepático del colon', 'Sin roce hepático.'],
     csi: ['Cuadrante superior izquierdo', 'estómago, bazo y ángulo esplénico del colon', 'Sin roce esplénico.'],
-    cid: ['Cuadrante inferior derecho', 'ciego, íleon terminal (válvula ileocecal)', 'La válvula ileocecal es una zona de ruidos algo más frecuentes.'],
-    cii: ['Cuadrante inferior izquierdo', 'colon descendente y sigmoides', 'Ruidos algo más espaciados.']
+    cid: ['Cuadrante inferior derecho', 'ciego, íleon terminal (válvula ileocecal)', 'Sobre la válvula ileocecal los RHA suelen ser algo más frecuentes.'],
+    cii: ['Cuadrante inferior izquierdo', 'colon descendente y sigmoides', 'RHA algo más espaciados.']
   };
   function setStatus(ctx, title, sub) {
     const a = ctx.sh.$('#abdWT'), b = ctx.sh.$('#abdWS');
@@ -329,7 +339,7 @@
   const quadTool = id => (c, ctx) => {
     const rate = pd(c).bw[id], n10 = Math.round(rate / 6), q = QN[id];
     return {
-      html: `ruidos hidroaéreos presentes, ≈ ${rate}/min (normal 5–30/min; ≈ ${n10} en 10 s), de tono medio, intensidad moderada e irregulares (“borborigmos”); sin ruidos metálicos ni silencio. Zona: ${q[1]}. ${q[2]}`,
+      html: `<b>ruidos hidroaéreos (RHA)</b> presentes, ≈ ${rate}/min (normal 5–30/min; ≈ ${n10} en 10 s), de tono medio e intensidad moderada, irregulares; sin RHA aumentados ni de timbre metálico, sin borborigmos (RHA audibles a distancia) y sin silencio abdominal. Zona: ${q[1]}. ${q[2]}`,
       run: cx => { Sound.bowel(rate, 0.9); RT.act = { rate, label: q[0] }; setStatus(cx, q[0], `≈ ${rate} ruidos/min · escuchando`); }
     };
   };
@@ -342,18 +352,18 @@
   const ausSvg = abdSVG({ grid: 'quad' });
   const auscultacion = {
     id: 'aus', label: 'Auscultación', viewBox: '0 0 420 520',
-    hint: 'Se ausculta ANTES de percutir y palpar. Diafragma tibio en los 4 cuadrantes; escucha al menos 1 minuto en cada uno antes de dar los ruidos por ausentes.',
+    hint: 'Se ausculta ANTES de percutir y palpar (la palpación modifica el peristaltismo). Diafragma tibio en los 4 cuadrantes; los RHA se dan por ausentes solo tras escuchar varios minutos (2–5 min según la fuente).',
     svg: ausSvg,
-    tools: [{ id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma', hint: 'Haz clic en un cuadrante (ruidos hidroaéreos) o en un punto vascular (soplos). “Contar 10 s” ayuda a estimar la frecuencia.' }],
+    tools: [{ id: 'steth', icon: '🩺', label: 'Estetoscopio · diafragma', hint: 'Haz clic en un cuadrante (ruidos hidroaéreos) o en un punto vascular (soplos). “Contar 10 s” ayuda a estimar la frecuencia.' }],
     regions: [
       { id: 'csd', label: 'Cuadrante superior derecho', short: 'CSD', x: 90, y: 130, w: 118, h: 136, lx: 150, ly: 152, tools: { steth: quadTool('csd') } },
       { id: 'csi', label: 'Cuadrante superior izquierdo', short: 'CSI', x: 212, y: 130, w: 118, h: 136, lx: 270, ly: 152, tools: { steth: quadTool('csi') } },
-      { id: 'cid', label: 'Cuadrante inferior derecho', short: 'CID', x: 90, y: 270, w: 118, h: 130, lx: 150, ly: 292, tools: { steth: quadTool('cid') } },
-      { id: 'cii', label: 'Cuadrante inferior izquierdo', short: 'CII', x: 212, y: 270, w: 118, h: 130, lx: 270, ly: 292, tools: { steth: quadTool('cii') } },
+      { id: 'cid', label: 'Cuadrante inferior derecho', short: 'CID', x: 90, y: 270, w: 118, h: 130, lx: 150, ly: 306, tools: { steth: quadTool('cid') } },
+      { id: 'cii', label: 'Cuadrante inferior izquierdo', short: 'CII', x: 212, y: 270, w: 118, h: 130, lx: 270, ly: 306, tools: { steth: quadTool('cii') } },
       { id: 'ao', label: 'Aorta abdominal (epigastrio)', short: 'Aorta', cx: 210, cy: 214, r: 12, lx: 210, ly: 192,
-        tools: { steth: bruit('Aorta abdominal', 'sin soplo sistólico en el epigastrio (ruido vascular ausente); sin roce.', rateTop) } },
+        tools: { steth: bruit('Aorta abdominal', 'sin soplo sistólico en el epigastrio ni sobre la línea media supraumbilical; sin roce.', rateTop) } },
       { id: 'rd', label: 'Arteria renal derecha', short: 'Renal D', cx: 178, cy: 238, r: 11, lx: 164, ly: 244, anchor: 'end',
-        tools: { steth: bruit('Arteria renal derecha', 'sin soplo renal (se ausculta 2-3 cm por encima del ombligo y 2-3 cm lateral a la línea media); sin roce.', rateTop) } },
+        tools: { steth: bruit('Arteria renal derecha', 'sin soplo renal (se ausculta 2–3 cm por encima del ombligo y 2–3 cm por fuera de la línea media); sin roce.', rateTop) } },
       { id: 'ri', label: 'Arteria renal izquierda', short: 'Renal I', cx: 242, cy: 238, r: 11, lx: 256, ly: 244, anchor: 'start',
         tools: { steth: bruit('Arteria renal izquierda', 'sin soplo renal; sin roce.', rateTop) } },
       { id: 'id', label: 'Arteria ilíaca derecha', short: 'Ilíaca D', cx: 174, cy: 328, r: 11, lx: 160, ly: 334, anchor: 'end',
@@ -389,7 +399,7 @@
           clearInterval(RT.timer); RT.timer = null;
           const n = Math.round(a.rate / 6);
           setStatus({ sh }, a.label, `≈ ${n} ruidos en 10 s`);
-          sh.log(`<b>${a.label}:</b> en 10 s se cuentan ≈ ${n} ruidos hidroaéreos (≈ ${a.rate}/min; regla práctica: ~3 ruidos en 10 s ≈ 18/min). Normal: 5–30/min.`, 'find');
+          sh.log(`<b>${a.label}:</b> en 10 s se cuentan ≈ ${n} RHA (≈ ${a.rate}/min; regla práctica: ~3 ruidos en 10 s ≈ 18/min). Normal: 5–30/min.`, 'find');
         }, 1000);
       });
     },
@@ -401,13 +411,13 @@
      ===================================================================== */
   const tymp = (txt) => ({ html: txt, run: () => Sound.percuss('hyper') });
   const dullT = (txt) => ({ html: txt, run: () => Sound.percuss('dull') });
-  const TYM = 'timpanismo (sonido de tono alto, intensidad fuerte y duración larga, “de tambor”) por el gas intraluminal';
+  const TYM = 'timpanismo (sonido de tono alto, intenso y de duración larga, “de tambor”) por el gas intraluminal';
   function percNine(id) {
     return (c) => {
       const full = st(c).bladder;
       switch (id) {
-        case 'hd': return dullT(`matidez hepática (sonido mate, de tono bajo y corta duración) en la zona en que el hígado contacta con la pared; la altura se mide en la franja LMC D. Por debajo del reborde costal pasa a timpanismo.`);
-        case 'ep': return tymp(`${TYM}, correspondiente a la cámara gástrica; matidez ligera solo en la zona alta bajo el xifoides (lóbulo izquierdo hepático).`);
+        case 'hd': return dullT(`<b>matidez hepática</b> (sonido mate: tono bajo, poco intenso y de corta duración) donde el hígado contacta con la pared; la hepatimetría se mide en la franja LMC D. Por debajo del reborde costal pasa a timpanismo.`);
+        case 'ep': return tymp(`${TYM}, correspondiente a la cámara gástrica; submatidez solo en la zona alta bajo el xifoides (lóbulo izquierdo del hígado).`);
         case 'hi': return tymp(`${TYM}: cámara gástrica y ángulo esplénico del colon.`);
         case 'fd': return tymp(`${TYM} (colon ascendente); sin matidez en el flanco.`);
         case 'mes': return tymp(`${TYM}: asas de intestino delgado y colon transverso.`);
@@ -416,17 +426,17 @@
         case 'fii': return tymp(`${TYM} (sigmoides).`);
         default:
           return full
-            ? dullT('matidez suprapúbica de borde superior convexo hacia arriba (vejiga distendida, ≈ 400 mL), que no sobrepasa 2–3 cm sobre la sínfisis. Al orinar desaparece: es un hallazgo fisiológico.')
+            ? dullT('<b>matidez suprapúbica</b> de límite superior convexo hacia arriba (vejiga distendida, ≈ 400 mL), que no sobrepasa 2–3 cm sobre la sínfisis. Desaparece al orinar: es un hallazgo fisiológico.')
             : tymp(`${TYM}: sin matidez suprapúbica (vejiga vacía).`);
       }
     };
   }
   const dispTool = (c) => ({
-    html: 'matidez desplazable <b>negativa</b>: en decúbito supino los flancos son timpánicos; al girar al paciente a decúbito lateral el flanco declive sigue timpánico y la nota no cambia (no hay líquido libre; la maniobra detecta aprox. > 500 mL).',
+    html: '<b>matidez desplazable negativa</b>: en decúbito dorsal los flancos son timpánicos; al girar al paciente al decúbito lateral el flanco declive sigue timpánico y el límite de la nota no cambia (no hay líquido libre en la cavidad; la maniobra necesita un volumen apreciable de líquido, del orden de 1 L según la fuente).',
     run: () => Sound.percuss('hyper')
   });
   const waveTool = () => ({
-    html: 'signo de la onda ascítica <b>negativo</b>: con el borde cubital de la mano de un ayudante sobre la línea media, un golpecito en un flanco no transmite onda líquida a la mano apoyada en el flanco opuesto.',
+    html: '<b>onda ascítica negativa</b>: con el borde cubital de la mano de un ayudante apoyado en la línea media (para bloquear la onda de la pared), un golpe seco en un flanco no transmite ninguna onda líquida a la mano apoyada en el flanco opuesto.',
     run: ctx => note(ctx, 'golpe → sin onda')
   });
   const percNineRegs = nine(id => {
@@ -436,36 +446,37 @@
   });
   const percSvg = abdSVG({ grid: 'nine', liver: true, organs: true, bladder: true });
   const lmcStrip = {
-    id: 'lmc', label: 'Franja LMC derecha (altura hepática)', short: 'LMC D: percute de arriba abajo', x: LX - 22, y: 8, w: 44, h: 214, rx: 8, lx: LX, ly: 16,
+    id: 'lmc', label: 'Franja LMC derecha (hepatimetría)', short: 'Franja LMC D', x: LX - 22, y: 8, w: 44, h: 214, rx: 8, lx: LX, ly: 20,
     tools: {
       perc: (c, ctx) => {
         const p = pd(c), y5 = y5of(c), y = ctx.point.y, alt = p.span;
-        if (y < y5 - 8) return { html: 'sonoridad pulmonar: <b>resonante</b> (tono bajo, intensidad fuerte).', run: () => Sound.percuss('resonant') };
-        if (y < y5 + 4) return { html: `<b>borde superior de la matidez hepática</b> en el 5.º espacio intercostal (LMC): el sonido pasa de resonante a mate. Altura hepática hasta el reborde costal ≈ <b>${alt} cm</b> (normal 6–12 cm; típico 7–10).`, run: () => Sound.percuss('dull') };
-        if (y < LMCY - 4) return { html: `<b>matidez hepática</b> (sonido mate). Altura hepática en la LMC ≈ ${alt} cm (normal 6–12 cm).`, run: () => Sound.percuss('dull') };
-        if (y < LMCY + 6) return { html: `<b>borde inferior de la matidez hepática</b> a nivel del reborde costal. Altura hepática en la LMC = <b>${alt} cm</b> (normal 6–12 cm; varía con el sexo y la talla: menor en mujeres).`, run: () => Sound.percuss('dull') };
-        return { html: 'por debajo del reborde costal: <b>timpanismo</b> (asas con gas); no hay matidez hepática.', run: () => Sound.percuss('hyper') };
+        const NORM = `(normal 6–12 cm; ≈ 10–12 cm en el varón adulto y menor en la mujer)`;
+        if (y < y5 - 8) return { html: '<b>sonoridad pulmonar</b> (sonido claro: tono bajo, intenso y prolongado) sobre la base del pulmón derecho.', run: () => Sound.percuss('resonant') };
+        if (y < y5 + 4) return { html: `<b>límite superior de la matidez hepática</b> en el 5.º espacio intercostal (LMC): la sonoridad pulmonar pasa a matidez. Hepatimetría hasta el reborde costal ≈ <b>${alt} cm</b> ${NORM}.`, run: () => Sound.percuss('dull') };
+        if (y < LMCY - 4) return { html: `<b>matidez hepática</b> (sonido mate). Hepatimetría en la LMC ≈ ${alt} cm ${NORM}.`, run: () => Sound.percuss('dull') };
+        if (y < LMCY + 6) return { html: `<b>límite inferior de la matidez hepática</b> a nivel del reborde costal (se percute de abajo arriba, desde el timpanismo). Hepatimetría en la LMC = <b>${alt} cm</b> ${NORM}.`, run: () => Sound.percuss('dull') };
+        return { html: 'por debajo del reborde costal: <b>timpanismo</b> (asas con gas); el hígado normal no sobrepasa el reborde.', run: () => Sound.percuss('hyper') };
       }
     }
   };
   const percusion = {
     id: 'perc', label: 'Percusión', viewBox: '0 0 420 520',
-    hint: 'Percute con el dedo medio sobre el dedo plesímetro. Recorre los cuadrantes en espiral buscando el patrón de timpanismo y mide la matidez hepática en la LMC.',
+    hint: 'Percusión dígito-digital: el dedo medio percute sobre el dedo plesímetro apoyado en la pared. Recorre las regiones buscando el patrón normal de timpanismo y mide la matidez hepática (hepatimetría) en la LMC.',
     svg: percSvg,
     tools: [
-      { id: 'perc', icon: '🖐️', label: 'Percusión digitodigital', hint: 'Percute las regiones y percute la franja LMC D de arriba abajo para hallar el borde superior e inferior del hígado.' },
-      { id: 'desp', icon: '↔️', label: 'Matidez desplazable', hint: 'Haz clic en un flanco: se compara la nota en supino y en decúbito lateral.' },
-      { id: 'onda', icon: '〰️', label: 'Signo de la onda', hint: 'Haz clic en un flanco: golpeteo lateral con la mano de un ayudante en la línea media.' }
+      { id: 'perc', icon: '🖐️', label: 'Percusión dígito-digital', hint: 'Percute las regiones y recorre la franja LMC D de arriba abajo para hallar los límites superior e inferior de la matidez hepática.' },
+      { id: 'desp', icon: '↔️', label: 'Matidez desplazable', hint: 'Haz clic en un flanco: se compara la nota en decúbito dorsal y en decúbito lateral.' },
+      { id: 'onda', icon: '〰️', label: 'Onda ascítica', hint: 'Haz clic en un flanco: golpe en un flanco con la mano de un ayudante en la línea media.' }
     ],
     regions: percNineRegs.concat([
       lmcStrip,
       {
-        id: 'traube', label: 'Espacio de Traube', short: 'Traube', cx: 268, cy: 128, r: 19, lx: 268, ly: 100,
-        tools: { perc: () => tymp('<b>espacio de Traube timpánico</b> (hemitórax izquierdo inferior, sobre la cámara gástrica; limitado por el 6.º espacio intercostal, el reborde costal izquierdo y el bazo). La matidez en esta zona no es normal.') }
+        id: 'traube', label: 'Espacio de Traube', short: '', cx: 268, cy: 128, r: 19,
+        tools: { perc: () => tymp('<b>espacio de Traube timpánico</b> (semiluna en la base del hemitórax izquierdo, sobre la cámara gástrica; limitado por el 6.º cartílago costal, el reborde costal izquierdo y la línea axilar anterior). La matidez en esta zona no es normal (esplenomegalia, derrame pleural izquierdo).') }
       },
       {
-        id: 'castell', label: 'Punto de Castell', short: 'Castell', cx: 326, cy: 200, r: 13, lx: 336, ly: 232, anchor: 'start',
-        tools: { perc: () => tymp('<b>signo de Castell negativo</b>: en el último espacio intercostal en la línea axilar anterior izquierda la nota es timpánica en inspiración y espiración (no hay matidez esplénica). El bazo normal no se palpa ni se percute fuera de su zona.') }
+        id: 'castell', label: 'Área esplénica (línea axilar media izquierda)', short: 'Área esplénica', cx: 326, cy: 200, r: 13, lx: 336, ly: 232, anchor: 'start',
+        tools: { perc: () => tymp('<b>matidez esplénica normal</b>: pequeña franja de matidez entre la 9.ª y la 11.ª costilla sobre la línea axilar media izquierda, que no sobrepasa la línea axilar anterior ni el reborde costal (espacio de Traube timpánico). Al percutir el último espacio intercostal en la línea axilar anterior la nota sigue timpánica en inspiración y espiración (signo de Castell negativo, según la fuente).') }
       },
       {
         id: 'vej', label: 'Región suprapúbica', short: '', cx: 210, cy: 372, r: 22,
