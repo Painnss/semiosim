@@ -1,6 +1,6 @@
 /* Service worker: permite usar SemioSim sin conexión una vez visitado.
-   Estrategia: red primero para el HTML (para recibir actualizaciones), caché primero para el resto. */
-const VERSION = 'semiosim-v2';
+   Estrategia: red primero (siempre la versión más reciente cuando hay conexión) y caché como respaldo. */
+const VERSION = 'semiosim-v3';
 const CORE = ['./', 'index.html', 'css/style.css', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
@@ -12,14 +12,10 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
-  const isHTML = req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html');
-  if (isHTML) {
-    e.respondWith(fetch(req).then(r => { caches.open(VERSION).then(c => c.put(req, r.clone())); return r; })
-      .catch(() => caches.match(req).then(r => r || caches.match('index.html'))));
-    return;
-  }
-  e.respondWith(caches.match(req).then(hit => {
-    const net = fetch(req).then(r => { if (r.ok) caches.open(VERSION).then(c => c.put(req, r.clone())); return r; }).catch(() => hit);
-    return hit || net;
-  }));
+  e.respondWith(
+    fetch(req).then(r => {
+      if (r && r.ok) caches.open(VERSION).then(c => c.put(req, r.clone()));
+      return r;
+    }).catch(() => caches.match(req, { ignoreSearch: true }).then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
+  );
 });
