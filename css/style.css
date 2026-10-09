@@ -210,9 +210,11 @@ table.res td,table.res th{border-bottom:1px solid var(--line);padding:5px 4px;te
 .m-bad{color:var(--bad);font-weight:600}
 
 /* Capa anatómica */
-.anat-ctl{position:absolute;right:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--ink-2);box-shadow:var(--shadow)}
+.anat-ctl{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:600;color:var(--ink-2);box-shadow:var(--shadow)}
 .anat-ctl input{width:110px;accent-color:var(--brand)}
-@media (max-width:600px){.anat-ctl{right:6px;bottom:6px;padding:4px 9px}.anat-ctl input{width:80px}}
+.anat-ctl b{min-width:34px;text-align:right;color:var(--brand-2)}
+.prog{flex-wrap:wrap}
+@media (max-width:600px){.anat-ctl{padding:4px 9px}.anat-ctl input{width:80px}}
 
 /* Tórax: fonocardiograma */
 .wave{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)}

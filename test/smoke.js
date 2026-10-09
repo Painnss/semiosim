@@ -41,7 +41,8 @@ w.HTMLElement.prototype.scrollIntoView = noop;
 w.scrollTo = noop;
 w.confirm = () => true;
 if (!w.PointerEvent) w.PointerEvent = w.MouseEvent;
-w.addEventListener('error', e => errors.push('window.error: ' + (e.error && e.error.stack || e.message)));
+let currentModule = '';
+w.addEventListener('error', e => errors.push(`window.error [${currentModule}]: ` + (e.error && e.error.stack || e.message)));
 
 for (const src of scripts) {
   const code = fs.readFileSync(path.join(ROOT, src), 'utf8');
@@ -59,6 +60,7 @@ const click = el => { el.dispatchEvent(new w.MouseEvent('click', { bubbles: true
   if (!w.MODULES || !w.MODULES.length) errors.push('No se registró ningún módulo.');
   for (const m of (w.MODULES || [])) {
     const entry = { id: m.id, scenes: 0, clicks: 0, people: 0 };
+    currentModule = m.id;
     const t0 = Date.now();
     try {
       click($(`#nav button[data-view="${m.id}"]`)); await wait(30);

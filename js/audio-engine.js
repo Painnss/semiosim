@@ -237,7 +237,7 @@
     /* opts: { heart:{rate,s1,s2,s3,s4,snap,murmur}, heartGain, lung:{type,adv}, lungGain, mode:'diaphragm'|'bell' } */
     listen(opts) {
       ensure(); setMode(opts.mode);
-      this.stop();
+      this.stop(); if (!opts.quiet) this.contact();
       const g = ctx.createGain();
       g.gain.value = 0;
       g.connect(hpf);
@@ -289,6 +289,15 @@
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.12));
       o.connect(g); g.connect(master); o.start(); o.stop(ctx.currentTime + (dur || 0.12) + 0.02);
     },
+    /* Roce breve de colocación del estetoscopio sobre la piel: confirma que se está auscultando. */
+    contact() {
+      ensure();
+      const n = Math.floor(0.22 * SR), o = new Float32Array(n), nz = lp(noise(n), 900);
+      for (let i = 0; i < n; i++) { const t = i / SR; o[i] = nz[i] * Math.sin(Math.PI * Math.min(1, t / 0.22)) * Math.exp(-t / 0.09) * 1.6; }
+      const b = ctx.createBuffer(1, n, SR); b.copyToChannel(o, 0);
+      const src = ctx.createBufferSource(); src.buffer = b;
+      const g = ctx.createGain(); g.gain.value = 0.35; src.connect(g); g.connect(master); src.start();
+    },
     /* Un latido tipo Korotkoff (golpe sordo con "tic"). vol 0-1 */
     korotkoff(vol) {
       ensure();
@@ -305,9 +314,9 @@
     },
     /* Ruidos hidroaéreos (borborigmos) en bucle. perMin = eventos por minuto (normal 5-30). */
     bowel(perMin, gain) {
-      ensure(); setMode('diaphragm'); this.stop();
+      ensure(); setMode('diaphragm'); this.stop(); this.contact();
       const T = 6, N = T * SR, out = new Float32Array(N);
-      const events = Math.max(1, Math.round(perMin * T / 60));
+      const events = Math.max(2, Math.round(perMin * T / 60));
       for (let k = 0; k < events; k++) {
         const t0 = 0.2 + Math.random() * (T - 0.9), dur = 0.05 + Math.random() * 0.12;
         const f0 = 180 + Math.random() * 350, i0 = Math.floor(t0 * SR), n = Math.floor(dur * SR);
@@ -323,7 +332,7 @@
         }
       }
       const bg = band(noise(N), 80, 500);
-      for (let i = 0; i < N; i++) out[i] = Math.tanh(out[i] + bg[i] * 0.03);
+      for (let i = 0; i < N; i++) out[i] = Math.tanh(out[i] + bg[i] * 0.09);
       const b = ctx.createBuffer(1, N, SR); b.copyToChannel(out, 0);
       const s = ctx.createBufferSource(); s.buffer = b; s.loop = true;
       const g = ctx.createGain(); g.gain.value = 0; g.gain.linearRampToValueAtTime(gain == null ? 0.9 : gain, ctx.currentTime + 0.1);

@@ -229,16 +229,18 @@
        se añade un control deslizante que regula su opacidad. El valor se recuerda entre escenas. */
     anatomyControl(stage) {
       const layers = stage.querySelectorAll('#anat, .anat');
-      if (!layers.length) return;
+      const old = this.$('.anat-ctl');
+      if (!layers.length) { if (old) old.remove(); return; }
       let v = Progress.pref('anatomy');
       if (typeof v !== 'number') v = this.mode === 'exam' ? 0 : 55;
       const apply = x => layers.forEach(l => { l.style.opacity = x / 100; l.style.pointerEvents = 'none'; });
       apply(v);
+      if (old) { old.querySelector('input').oninput = e => { apply(+e.target.value); old.querySelector('b').textContent = e.target.value + ' %'; Progress.pref('anatomy', +e.target.value); }; return; }
       const ctl = document.createElement('div');
       ctl.className = 'anat-ctl';
-      ctl.innerHTML = `<span>🫀 Anatomía</span><input type="range" min="0" max="100" value="${v}" aria-label="Transparencia de la capa anatómica">`;
-      ctl.querySelector('input').addEventListener('input', e => { apply(+e.target.value); Progress.pref('anatomy', +e.target.value); });
-      stage.appendChild(ctl);
+      ctl.innerHTML = `<span>🫀 Anatomía</span><input type="range" min="0" max="100" value="${v}" aria-label="Transparencia de la capa anatómica"><b>${v} %</b>`;
+      ctl.querySelector('input').oninput = e => { apply(+e.target.value); ctl.querySelector('b').textContent = e.target.value + ' %'; Progress.pref('anatomy', +e.target.value); };
+      (this.$('#prog') || stage).appendChild(ctl);
     }
 
     setTools(list) {
