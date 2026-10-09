@@ -18,7 +18,7 @@
 
   function buildNav() {
     nav.innerHTML = '<button data-view="home">Inicio</button>' + groups().map(g =>
-      `<details class="dd"><summary>${g.name} ▾</summary><div class="menu">` +
+      `<details class="dd"><summary>${g.name}</summary><div class="menu">` +
       g.mods.map(m => `<button data-view="${m.id}">${m.icon} ${m.title}</button>`).join('') +
       '</div></details>').join('') +
       `<div class="vol" title="Volumen de los sonidos">
@@ -53,24 +53,43 @@
     const all = Progress.summary();
     const done = all.filter(x => x.total && x.explored >= x.total).length;
     const started = all.filter(x => x.explored > 0).length;
+    const nMods = window.MODULES.filter(m => m.group !== 'Referencia').length;
+    const nTerms = (window.SEMIO_GLOSSARY || []).length;
+    const next = MOD_ORDER.find(id => { const p = Progress.get(id); return window.MODULES.some(m => m.id === id && m.group !== 'Referencia') && (!p.total || p.explored < p.total); }) || 'history';
     return `<div class="home">
-      <h1>Practica la exploración física, sin esperar al paciente adecuado</h1>
-      <p class="lead">Simulaciones interactivas de semiología para estudiantes de medicina. Primero el examen físico <b>normal</b> de cada aparato y sistema; después los casos clínicos con hallazgos patológicos. Nomenclatura y técnica según <i>Argente-Álvarez, Semiología Médica</i>.</p>
+      <section class="hero">
+        <span class="kicker">⚕ Semiología médica · nomenclatura Argente-Álvarez</span>
+        <h1>Practica la exploración física sin esperar al paciente adecuado</h1>
+        <p class="lead">Pacientes virtuales que se examinan con martillo, estetoscopio, linterna o goniómetro. Primero el examen normal de cada aparato y sistema; después, los casos clínicos. Sin registro: tu progreso se guarda en este navegador.</p>
+        <div class="cta">
+          <button class="btn" data-go="${next}">${started ? 'Continuar donde lo dejé' : 'Empezar por la anamnesis'}</button>
+          <button class="btn ghost" data-go="glossary">Glosario</button>
+        </div>
+        <div class="stats">
+          <div><b>${nMods}</b><span>módulos interactivos</span></div>
+          <div><b>4</b><span>personas sanas de referencia</span></div>
+          <div><b>20</b><span>casos clínicos</span></div>
+          <div><b>${nTerms}</b><span>términos en el glosario</span></div>
+        </div>
+      </section>
       <section class="howto">
-        <div><b>1 · Elige una persona y un instrumento</b><span>Cada módulo tiene 4 personas sanas de distinta edad y sexo. Los valores cambian con cada una.</span></div>
-        <div><b>2 · Explora haciendo clic sobre el cuerpo</b><span>En modo <i>Aprendizaje</i> ves los puntos de referencia y la explicación; en <i>Examen</i> no hay pistas.</span></div>
-        <div><b>3 · Registra y comprueba</b><span>Anota tus hallazgos, responde el cuestionario y compara con la solución. El progreso se guarda en este navegador.</span></div>
+        <div data-n="1"><b>Elige persona e instrumento</b><span>Cuatro personas sanas de distinta edad y sexo. Los valores cambian con cada una.</span></div>
+        <div data-n="2"><b>Explora sobre el cuerpo</b><span>En <i>Aprendizaje</i> ves los puntos de referencia y la explicación; en <i>Examen</i>, sin pistas.</span></div>
+        <div data-n="3"><b>Registra y comprueba</b><span>Anota los hallazgos, responde el cuestionario y compara con la solución.</span></div>
       </section>
       ${started ? `<p class="stat">Progreso: <b>${started}</b> módulos empezados · <b>${done}</b> completados. <button class="link" id="resetProg">Reiniciar progreso</button></p>` : ''}
       ${groups().map(g => `<h2 class="gh">${g.name}</h2><div class="cards">${g.mods.map(card).join('')}</div>`).join('')}
       <section class="roadmap">
         <h2 class="gh">Hoja de ruta</h2>
         <ul>
-          <li><b>Siguiente:</b> hallazgos patológicos por aparato (síndromes de Argente-Álvarez) reutilizando las mismas escenas.</li>
+          <li><b>Siguiente:</b> hallazgos patológicos por aparato (síndromes de Argente-Álvarez) sobre las mismas escenas.</li>
           <li>Grabaciones reales de auscultación con licencia abierta en lugar de sonido sintetizado.</li>
           <li>Más casos clínicos integrados por sistema, con evaluación del razonamiento.</li>
           <li>Revisión clínica por docentes antes de uso formal en cursos.</li>
         </ul>
+      </section>
+      <section class="sponsor" id="sponsor" hidden>
+        <span><b>Con el apoyo de</b> · espacio reservado para un patrocinador educativo (sin rastreo ni scripts externos).</span>
       </section>
     </div>`;
   }
@@ -96,6 +115,7 @@
   }
 
   buildNav();
+  document.querySelector('.brand').addEventListener('click', e => { e.preventDefault(); show('home'); });
   nav.addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) show(b.dataset.view); });
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) nav.querySelectorAll('details').forEach(d => { d.open = false; }); });
   nav.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => {
