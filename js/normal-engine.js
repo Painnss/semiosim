@@ -41,7 +41,15 @@
       v: { hr: 72, sbp: 128, dbp: 78, rr: 15, temp: 36.5, spo2: 97, height: 1.60, weight: 61, waist: 82 } }
   ];
 
+  const DEFS = {};
   function build(def) {
+    /* Herencia: def.base = id de otro módulo ya construido → reutiliza sus escenas (dibujo, regiones, instrumentos). */
+    if (def.base) {
+      const b = DEFS[def.base];
+      if (!b) throw new Error('NormalEngine: módulo base no encontrado: ' + def.base);
+      def = Object.assign({}, b, def, { scenes: def.scenes || b.scenes, quiz: def.quiz !== undefined ? def.quiz : b.quiz, teaching: def.teaching || b.teaching, refs: def.refs || b.refs });
+    }
+    DEFS[def.id] = def;
     const people = def.people || PEOPLE;
     const quizFor = c => (typeof def.quiz === 'function' ? def.quiz(c) : def.quiz) || [];
 
@@ -71,7 +79,7 @@
           }).join('');
           stage.innerHTML = `<svg class="scene point" viewBox="${sc.viewBox || '0 0 800 520'}" style="max-height:660px;margin:0 auto">
             <rect width="100%" height="100%" fill="#e8eef4"/>
-            <g id="bg">${sc.svg ? sc.svg(learn, c) : ''}</g>
+            <g id="bg">${sc.svg ? sc.svg(learn, c) : ''}${c.overlay && c.overlay[sc.id] ? c.overlay[sc.id] : ''}</g>
             ${sc.anatomy ? `<g id="anat" style="opacity:0">${sc.anatomy(learn, c)}</g>` : ''}
             <g id="hits">${hit}</g><g id="flash"></g></svg>`;
           this.svg = stage.querySelector('svg');
@@ -102,7 +110,14 @@
           const point = e.clientX != null ? svgPoint(this.svg, e)
             : { x: reg.cx != null ? reg.cx : (reg.x || 0) + (reg.w || 0) / 2, y: reg.cy != null ? reg.cy : (reg.y || 0) + (reg.h || 0) / 2 };
           const ctx = { sh, c: sh.case, region: reg, tool, svg: this.svg, scene: this, point };
-          let f = reg.tools && reg.tools[tool];
+          /* Pacientes patológicos: c.path = { 'escena:region:instrumento' | 'escena:region' | 'region:instrumento' | 'region': hallazgo }
+             tiene prioridad sobre el hallazgo normal de la escena. */
+          let f = null;
+          if (ctx.c.path) {
+            const P = ctx.c.path;
+            f = P[`${sc.id}:${reg.id}:${tool}`] ?? P[`${sc.id}:${reg.id}`] ?? P[`${reg.id}:${tool}`] ?? P[reg.id] ?? null;
+          }
+          if (f == null) f = reg.tools && reg.tools[tool];
           if (f == null) { sh.log(`Esta maniobra no aporta información en: ${esc(reg.label)}.`, 'warn'); return; }
           if (typeof f === 'function') f = f(ctx.c, ctx);
           let html = f, run = null;
@@ -153,9 +168,10 @@
     const mod = {
       mount(root) {
         const sh = new Shell(root, {
-          id: def.id, cases: people, scenes, order, hideDx: true, refs: def.refs || [], progressTotal,
-          checkLabel: 'Comprobar mis respuestas', recordTitle: 'Cuestionario', patientTitle: 'Persona examinada',
-          caseLabel: (c, i) => `Persona ${i + 1} · ${c.age} años, ${c.sex}`,
+          id: def.id, cases: people, scenes, order, hideDx: def.hideDx !== undefined ? def.hideDx : true, refs: def.refs || [], progressTotal,
+          checkLabel: def.hideDx === false ? 'Comprobar y ver solución' : 'Comprobar mis respuestas', recordTitle: 'Cuestionario',
+          patientTitle: def.hideDx === false ? 'Paciente' : 'Persona examinada',
+          caseLabel: (c, i) => def.hideDx === false ? `Paciente ${i + 1} · ${c.age} años, ${c.sex}` : `Persona ${i + 1} · ${c.age} años, ${c.sex}`,
           record: recordHTML, evaluate, teaching: def.teaching || []
         });
         sh.start();
@@ -169,5 +185,5 @@
     return mod;
   }
 
-  window.NormalEngine = { build, people: PEOPLE };
+  window.NormalEngine = { build, people: PEOPLE, defs: DEFS };
 })();

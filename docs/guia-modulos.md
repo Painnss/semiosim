@@ -79,3 +79,12 @@ deslizante «Anatomía» que regula su opacidad (0 = oculta; el usuario lo recue
 En `NormalEngine.build` basta con declarar `anatomy: (learn, c) => '<g>…</g>'` en la escena. Reglas de dibujo: colores anatómicos
 discretos (hueso `#f1e9dc`, pulmón `#d9a1a1`, corazón `#c0504d`, hígado `#9e4b3a`, tendón `#f5f0e6`, nervio `#f2d35b`), trazo fino,
 rótulos con `class="svg-small"`, y nunca tapar los rótulos de los puntos. Debe verse bien a opacidad 30–70 %.
+
+## Módulos patológicos (`mod-pat-*.js`)
+
+Un módulo patológico **hereda las escenas** de un módulo normal con `NormalEngine.build({ base: 'abdomen', id: 'pat-abdomen', hideDx: false, people: PACIENTES, … })`.
+Cada paciente es un caso: `{ id, age, sex, diag, complaint, vitals, v:{…}, findings:[…], teaching:[…], path:{…}, overlay:{…} }`.
+- `path`: hallazgos que **sustituyen** al normal, por clave `'escena:region:instrumento'` (o más genérica: `'escena:region'`, `'region:instrumento'`, `'region'`).
+  El valor es html, una función `(c, ctx) => html` o `{ html, run(ctx) }` (p. ej. `run: () => Sound.listen({...})` para un soplo). Las regiones no listadas devuelven el hallazgo normal.
+- `overlay`: por escena, SVG extra que se añade al fondo (p. ej. abdomen distendido, ictericia, edema): `{ inspeccion: '<g>…</g>' }`.
+- `diag` alimenta el desplegable de diagnóstico (`hideDx:false`); `findings` y `teaching` se muestran al comprobar. Todo con nomenclatura de Argente-Álvarez (síndromes).

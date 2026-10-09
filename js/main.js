@@ -5,7 +5,7 @@
   const nav = document.getElementById('nav');
   const GROUP_ORDER = ['Exploración normal', 'Exploración patológica', 'Casos clínicos', 'Referencia'];
   // Orden didáctico (sigue el orden del examen físico en Argente-Álvarez)
-  const MOD_ORDER = ['history', 'vitals', 'skin', 'headneck', 'cranial', 'resp', 'cardio', 'abdomen', 'gu', 'msk', 'sounds', 'neuro', 'chest', 'glossary', 'biblio'];
+  const MOD_ORDER = ['history', 'vitals', 'skin', 'headneck', 'cranial', 'resp', 'cardio', 'abdomen', 'gu', 'msk', 'sounds', 'pat-skin', 'pat-headneck', 'pat-cranial', 'pat-resp', 'pat-cardio', 'pat-abdomen', 'pat-gu', 'pat-msk', 'neuro', 'chest', 'glossary', 'biblio'];
   let active = null;
 
   const rank = id => { const i = MOD_ORDER.indexOf(id); return i < 0 ? 99 : i; };
