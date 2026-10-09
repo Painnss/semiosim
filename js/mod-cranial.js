@@ -80,6 +80,20 @@
     `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fill || SKIN}" stroke-width="${w}" stroke-linecap="round"/>`;
   const mirror = x => 600 - x;
 
+  /* ---------------------------------------------------------------- capa anatómica translúcida (control «Anatomía» del Shell)
+     Cada escena declara `anatomy: (learn, c) => '<g>…</g>'`; NormalEngine la envuelve en <g id="anat"> sobre la piel y bajo los puntos. */
+  const BONE = '#f1e9dc', BONE_D = '#b9a98f', MUSC = '#b85c55', MUSC_D = '#8d3f3a', NERV = '#f2d35b', NERV_D = '#b89a2c';
+  const DERM = ['#6fb1e0', '#f0a35a', '#8fcf7a', '#e07aa8', '#b58ad8'];
+  const aLab = (x, y, lines, anchor, size) => `<text class="svg-small" x="${x}" y="${y}" text-anchor="${anchor || 'start'}" style="font-size:${size || 10.5}px;paint-order:stroke;stroke:#e8eef4;stroke-width:3px">${
+    (Array.isArray(lines) ? lines : [lines]).map((l, i) => `<tspan x="${x}" dy="${i ? 12 : 0}">${l}</tspan>`).join('')}</text>`;
+  const musc = (cx, cy, rx, ry, rot) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rot || 0} ${cx} ${cy})" fill="${MUSC}" fill-opacity=".6" stroke="${MUSC_D}" stroke-width="1.2"/>`;
+  const nerve = (pts, w) => {
+    const d = 'M' + pts.map(p => p.join(' ')).join(' L'), ww = w || 2;
+    return `<path d="${d}" fill="none" stroke="${NERV_D}" stroke-width="${ww + 1.4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${NERV}" stroke-width="${ww}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  };
+  const band = (pts, w, col) => `<path d="${'M' + pts.map(p => p.join(' ')).join(' L')}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`;
+  const leader = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8a97a6" stroke-width="1"/>`;
+
   /* figura frontal de pie (centro x = 300) usada en las escenas de motor y sensibilidad */
   function bodyFront(c) {
     const hair = hairOf(c), F = c.sex === 'F';
@@ -289,6 +303,31 @@
     ${cards}`;
   }
 
+  /* capa anatómica: territorio sensitivo del V (V1-V3) en la hemicara izquierda y ramas motoras del VII en la derecha */
+  function nervesAnat() {
+    let s = '';
+    s += `<path d="M272 122 L335 126 L378 170 L394 250 L350 270 L300 280 L270 300 Z" fill="${DERM[0]}" fill-opacity=".42" stroke="${DERM[0]}" stroke-width="1"/>`;
+    s += `<path d="M270 300 L300 280 L350 270 L394 250 L395 300 L380 360 L330 392 L270 398 Z" fill="${DERM[1]}" fill-opacity=".42" stroke="${DERM[1]}" stroke-width="1"/>`;
+    s += `<path d="M270 398 L330 392 L380 360 L372 420 L330 452 L270 460 Z" fill="${DERM[2]}" fill-opacity=".42" stroke="${DERM[2]}" stroke-width="1"/>`;
+    s += `<ellipse cx="362" cy="258" rx="10" ry="7" fill="${NERV}" stroke="${NERV_D}" stroke-width="1.4"/>`;
+    s += nerve([[362, 258], [345, 230], [322, 212]]) + nerve([[362, 258], [356, 300], [344, 334]]) + nerve([[362, 258], [376, 330], [362, 390], [354, 412]]);
+    [[322, 212], [344, 334], [354, 412]].forEach(p => { s += `<circle cx="${p[0]}" cy="${p[1]}" r="3.2" fill="${NERV_D}"/>`; });
+    s += aLab(404, 196, ['V1 · oftálmica', 'frente, párpado sup.', 'y córnea']) + aLab(404, 334, ['V2 · maxilar', 'mejilla, labio sup.']) + aLab(404, 418, ['V3 · mandibular', 'mentón, labio inf.']);
+    s += aLab(376, 246, ['ganglio', 'de Gasser'], 'start', 9.5);
+    /* VII: sale por el agujero estilomastoideo, atraviesa la parótida y da 5 ramas */
+    s += `<circle cx="150" cy="322" r="3.4" fill="${NERV_D}"/>`;
+    s += nerve([[150, 322], [175, 345]], 2.6);
+    s += nerve([[175, 345], [165, 300], [185, 236], [206, 202]]) + nerve([[175, 345], [190, 300], [212, 272]]) + nerve([[175, 345], [208, 360], [238, 374]]);
+    s += nerve([[175, 345], [190, 395], [232, 410]]) + nerve([[175, 345], [178, 420], [196, 470]]);
+    s += aLab(24, 330, 'N. facial (VII)') + leader(100, 326, 148, 322);
+    s += aLab(24, 222, 'r. temporal (frontal)') + leader(118, 218, 185, 236);
+    s += aLab(24, 246, 'r. cigomática (orbicular)') + leader(130, 242, 190, 300);
+    s += aLab(24, 362, 'r. bucal (mejilla, labio sup.)') + leader(150, 358, 208, 360);
+    s += aLab(24, 402, 'r. marginal mandibular') + leader(134, 398, 190, 395);
+    s += aLab(24, 440, 'r. cervical (platisma)') + leader(126, 436, 178, 420);
+    return s;
+  }
+
   /* regiones: cada par aparece en la cara y/o como tarjeta */
   function nerveTools(list, run, extra) {
     const head = list.map(n => `<b>${n.rn} · ${n.name}</b> (${n.kind.toLowerCase()})`).join(' · ');
@@ -385,6 +424,29 @@
     <text x="670" y="440" text-anchor="middle" class="svg-small">Motilidad activa y fuerza (5/5), tono</text>
     <text x="670" y="458" text-anchor="middle" class="svg-small">(motilidad pasiva) y trofismo:</text>
     <text x="670" y="476" text-anchor="middle" class="svg-small">compara siempre ambos lados.</text>`;
+  }
+  /* capa anatómica: músculos explorados (vientre fusiforme), plexos y nervios; rótulos con raíz y nervio en el hemicuerpo izquierdo */
+  function motorAnat() {
+    let s = '';
+    [0, 1].forEach(i => {
+      const X = x => (i ? mirror(x) : x), R = i ? -1 : 1;
+      s += nerve([[X(292), 140], [X(252), 168]], 2.6);                                 // plexo braquial
+      s += nerve([[X(252), 168], [X(240), 162]]) + nerve([[X(252), 168], [X(228), 210]]);  // axilar, musculocutáneo
+      s += nerve([[X(250), 170], [X(214), 236], [X(200), 296]]);                       // radial
+      s += nerve([[X(252), 172], [X(218), 250], [X(204), 320], [X(190), 358]]);        // mediano y cubital
+      s += nerve([[X(300), 330], [X(288), 350], [X(278), 406]]);                       // femoral
+      s += nerve([[X(296), 342], [X(278), 400], [X(268), 470], [X(262), 500]], 2.6);   // ciático → tibial
+      s += nerve([[X(268), 470], [X(278), 514]]);                                      // peroneo
+      s += musc(X(238), 166, 13, 20, R * 20) + musc(X(224), 222, 9, 28, R * 18) + musc(X(207), 240, 8, 22, R * 18);
+      s += musc(X(198), 300, 7, 30, R * 10) + musc(X(206), 314, 6, 26, R * 10);
+      s += musc(X(284), 352, 8, 18, R * -12) + musc(X(277), 410, 13, 42, R * 4) + musc(X(261), 500, 7, 30, R * 3) + musc(X(277), 515, 6, 36, R * 3);
+    });
+    s += aLab(330, 132, 'plexo braquial (C5-T1)');
+    s += aLab(386, 160, ['Deltoides · C5', 'n. axilar']) + aLab(392, 210, ['Bíceps · C5-C6', 'n. musculocutáneo']) + aLab(408, 248, ['Tríceps · C6-C8', 'n. radial']);
+    s += aLab(418, 300, ['Ext. muñeca · C6-C7', 'n. radial']) + aLab(418, 340, ['Flexores · C7-T1', 'n. mediano y cubital']);
+    s += aLab(336, 348, ['Iliopsoas · L1-L3', 'n. femoral']) + aLab(342, 406, ['Cuádriceps · L2-L4', 'n. femoral']);
+    s += aLab(352, 486, ['Gastrocnemio · S1-S2', 'n. tibial']) + aLab(338, 530, ['Tibial anterior · L4-L5', 'n. peroneo profundo']);
+    return s;
   }
   const strengthRun = m => ctx => {
     popText(ctx.svg, ctx.point, '5/5');
@@ -708,6 +770,40 @@
       ${[['C6', 'pulgar'], ['C7', 'dedo medio'], ['C8', 'meñique'], ['T4', 'nivel del pezón'], ['T10', 'nivel del ombligo'], ['L1', 'ingle'], ['L4', 'rodilla y maléolo medial'], ['L5', 'dorso del pie y hallux'], ['S1', 'borde lateral del pie y talón']].map((r, i) => `<text x="560" y="${166 + i * 24}" class="svg-small"><tspan font-weight="700" fill="#0e6a78">${r[0]}</tspan>  ${r[1]}</text>`).join('')}` :
       '<text x="560" y="60" class="svg-small">Compara siempre zonas homólogas</text><text x="560" y="78" class="svg-small">con los ojos cerrados.</text>'}`;
   }
+  /* capa anatómica: dermatomas principales (hemicuerpo izquierdo y tronco) y nervios periféricos (hemicuerpo derecho) */
+  function sensAnat() {
+    const X = x => mirror(x);
+    let s = '';
+    /* niveles del tronco (línea a lo ancho del tórax/abdomen con rótulo en la línea media) */
+    [[146, 'C4'], [160, 'T2'], [190, 'T4'], [215, 'T6'], [240, 'T8'], [270, 'T10'], [300, 'T12'], [334, 'L1']].forEach(([y, t]) => {
+      const hw = y <= 302 ? 68 - (y - 146) * 14 / 156 : 52;
+      s += `<line x1="${300 - hw}" y1="${y}" x2="${300 + hw}" y2="${y}" stroke="#55677a" stroke-width="1.2" stroke-dasharray="4 3"/>` + aLab(300, y - 3, t, 'middle', 10);
+    });
+    /* cara: V1, V2, V3 */
+    [[54, 30, 0], [77, 33, 1], [100, 25, 2]].forEach(([y, hw, k]) => { s += band([[300 - hw, y], [300 + hw, y]], 18, DERM[k]); });
+    s += aLab(342, 58, 'V1') + aLab(342, 81, 'V2') + aLab(336, 104, 'V3');
+    /* miembro superior izquierdo */
+    s += band([[X(231), 150], [X(215), 200], [X(206), 232]], 10, DERM[0]) + band([[X(249), 162], [X(233), 200], [X(222), 240]], 10, DERM[4]);
+    s += band([[X(204), 250], [X(197), 256], [X(183), 346], [X(178), 372]], 10, DERM[1]) + band([[X(219), 250], [X(215), 256], [X(201), 346], [X(198), 376]], 10, DERM[3]);
+    s += band([[X(192), 346], [X(187), 384]], 8, DERM[2]);
+    s += aLab(412, 212, 'C5') + aLab(362, 266, 'T1') + aLab(436, 372, 'C6') + aLab(413, 404, 'C7', 'middle') + aLab(392, 372, 'C8', 'end');
+    /* miembro inferior izquierdo */
+    s += band([[X(262), 366], [X(298), 386]], 14, DERM[0]) + band([[X(258), 408], [X(296), 428]], 14, DERM[1]);
+    s += band([[X(282), 470], [X(277), 560]], 10, DERM[2]) + band([[X(262), 470], [X(257), 560], [X(258), 592]], 10, DERM[3]) + band([[X(236), 590], [X(246), 604]], 8, DERM[4]);
+    s += aLab(350, 378, 'L2') + aLab(350, 420, 'L3') + aLab(300, 476, 'L4', 'middle') + aLab(352, 522, 'L5') + aLab(372, 602, 'S1');
+    /* nervios periféricos del hemicuerpo derecho (rótulos a la izquierda con línea guía) */
+    s += nerve([[292, 140], [252, 168]], 2.6);
+    s += nerve([[252, 168], [228, 212], [210, 262], [197, 330], [190, 362]]) + nerve([[257, 170], [236, 206], [218, 260], [204, 332], [200, 374]]);
+    s += nerve([[248, 172], [226, 216], [204, 252], [190, 300], [183, 340]]);
+    s += nerve([[296, 342], [278, 400], [268, 460]], 2.6) + nerve([[268, 460], [264, 520], [263, 575]]) + nerve([[268, 460], [256, 476], [260, 520], [262, 560], [258, 590]]);
+    s += aLab(24, 232, 'n. radial (C5-T1)') + leader(110, 228, 204, 252);
+    s += aLab(24, 268, 'n. mediano (C6-T1)') + leader(118, 264, 210, 262);
+    s += aLab(24, 312, 'n. cubital (C8-T1)') + leader(112, 308, 204, 332);
+    s += aLab(24, 410, 'n. ciático (L4-S3)') + leader(112, 406, 278, 396);
+    s += aLab(24, 470, 'n. peroneo común (L4-S1)') + leader(150, 466, 256, 476);
+    s += aLab(24, 556, 'n. tibial (L4-S3)') + leader(104, 552, 262, 548);
+    return s;
+  }
   const sensRegions = (() => {
     const R = [];
     SENS.forEach(z => {
@@ -741,6 +837,28 @@
     ['crMLegO', 'crMLegF'].forEach(id => { const e = $q(svg, id); if (e) e.setAttribute('d', p); });
     const ft = $q(svg, 'crMFoot'); if (ft) { ft.setAttribute('x1', L.an.x); ft.setAttribute('y1', L.an.y); ft.setAttribute('x2', L.ft.x); ft.setAttribute('y2', L.ft.y); }
     const hd = $q(svg, 'crMHand'); if (hd) hd.setAttribute('transform', `translate(${L.an.x.toFixed(1)} ${L.an.y.toFixed(1)})`);
+    /* capa anatómica: el nervio ciático sigue la cara posterior del muslo y de la pierna */
+    const nv = $q(svg, 'crMNerve');
+    if (nv) {
+      const unit = (a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1; return { x: -dy / l, y: dx / l }; };
+      const n1 = unit(M_H, L.kn), n2 = unit(L.kn, L.an);
+      nv.setAttribute('d', pathOf([{ x: 396, y: 418 }, { x: M_H.x + n1.x * 12, y: M_H.y + n1.y * 12 }, { x: L.kn.x + (n1.x + n2.x) * 5, y: L.kn.y + (n1.y + n2.y) * 5 }, { x: L.an.x + n2.x * 8, y: L.an.y + n2.y * 8 }]));
+    }
+  }
+  /* capa anatómica: columna lumbosacra con cuerpos y discos (anterior = arriba), conducto raquídeo con meninges,
+     cono medular, cola de caballo y nervio ciático (id crMNerve, se actualiza con la pierna) */
+  function meningAnat() {
+    let s = '';
+    for (let x = 182; x <= 366; x += 24) s += `<rect x="${x}" y="392" width="18" height="16" rx="3" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.2"/><rect x="${x + 18}" y="394" width="6" height="12" rx="2" fill="#d8c48f"/>`;
+    s += `<path d="M386 392 L406 396 L404 420 L386 414 Z" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.2"/>`;
+    s += `<rect x="178" y="408" width="222" height="12" rx="5" fill="#9fb4c4" fill-opacity=".55" stroke="#5b7cc4" stroke-width="1.4"/>`;
+    s += nerve([[180, 414], [330, 414]], 4);
+    s += nerve([[330, 414], [396, 411]], 1.2) + nerve([[330, 414], [396, 415]], 1.2) + nerve([[330, 414], [396, 419]], 1.2);
+    s += `<path id="crMNerve" d="" fill="none" stroke="${NERV}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += aLab(230, 386, 'cuerpos vertebrales y discos', 'middle');
+    s += aLab(172, 446, 'meninges (duramadre, aracnoides, piamadre)', 'middle') + aLab(400, 446, 'cono medular L1-L2 y cola de caballo', 'middle');
+    s += aLab(420, 377, 'n. ciático');
+    return s;
   }
   function setHeadM(svg, ang) {
     const g = $q(svg, 'crMHead'); if (g) g.setAttribute('transform', `rotate(${ang.toFixed(1)} 178 372)`);
@@ -1024,7 +1142,7 @@
         onLeave: stopAnim },
       { id: 'nerves', label: 'Pares craneales I-XII', viewBox: '0 0 820 620', redrawOnMode: false,
         hint: 'Haz clic en la zona de la cara o en la tarjeta de cada par. Usa "Función" o "Técnica y hallazgo normal".',
-        svg: nervesSvg, regions: nervRegions,
+        svg: nervesSvg, regions: nervRegions, anatomy: nervesAnat,
         tools: [
           { id: 'info', icon: '📖', label: 'Función y trayecto', hint: 'Función del par craneal que elijas (cara o tarjeta).' },
           { id: 'exam', icon: '🩺', label: 'Técnica y hallazgo normal', hint: 'Cómo se explora y qué se espera encontrar (algunas maniobras se animan).' }
@@ -1032,7 +1150,7 @@
         onLeave: stopAnim },
       { id: 'motor', label: 'Motilidad: fuerza, tono y trofismo', viewBox: '0 0 820 620', redrawOnMode: false,
         hint: 'Motilidad activa y fuerza contra resistencia (0-5), tono (motilidad pasiva) y trofismo de nueve grupos musculares, en ambos lados.',
-        svg: motorSvg, regions: motorRegions,
+        svg: motorSvg, regions: motorRegions, anatomy: motorAnat,
         tools: [
           { id: 'strength', icon: '💪', label: 'Fuerza (motilidad activa contra resistencia)', hint: 'Fuerza: haz clic en el grupo muscular y compara con el lado contrario.' },
           { id: 'tone', icon: '🤲', label: 'Tono (motilidad pasiva)', hint: 'Tono: movilización pasiva del miembro relajado.' },
@@ -1049,7 +1167,7 @@
         onLeave: stopAnim },
       { id: 'sens', label: 'Sensibilidad', viewBox: '0 0 820 620', redrawOnMode: true,
         hint: 'Elige el estímulo y haz clic en cada zona (compara ambos lados con los ojos cerrados).',
-        svg: sensSvg, regions: sensRegions,
+        svg: sensSvg, regions: sensRegions, anatomy: sensAnat,
         tools: [
           { id: 'touch', icon: '🪶', label: 'Táctil (algodón)', hint: 'Sensibilidad táctil con algodón.' },
           { id: 'pain', icon: '📍', label: 'Dolorosa (alfiler)', hint: 'Sensibilidad dolorosa con alfiler (punzante / romo).' },
@@ -1073,7 +1191,7 @@
         onLeave: stopAnim },
       { id: 'mening', label: 'Signos meníngeos', viewBox: '0 100 820 420', redrawOnMode: false,
         hint: 'Flexión pasiva del cuello (rigidez de nuca y Brudzinski) y signo de Kernig en decúbito.',
-        svg: meningSvg, regions: meningRegions, after: meningAfter,
+        svg: meningSvg, regions: meningRegions, after: meningAfter, anatomy: meningAnat,
         tools: [
           { id: 'neck', icon: '🙆', label: 'Flexión pasiva del cuello', hint: 'Haz clic en la cabeza: rigidez de nuca y Brudzinski.' },
           { id: 'kernig', icon: '🦵', label: 'Kernig', hint: 'Haz clic en la pierna: cadera y rodilla a 90° y extensión de la rodilla.' },

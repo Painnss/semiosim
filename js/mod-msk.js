@@ -46,6 +46,142 @@
       `<polygon points="${h.map(p => p.join(',')).join(' ')}" fill="${color}"/>`;
   };
 
+  /* ------------------------------------------------- CAPA ANATÓMICA TRANSLÚCIDA (<g class="anat">)
+     El Shell añade el control «Anatomía» y regula la opacidad de los grupos .anat que encuentra al entrar en la escena.
+     Como estas escenas redibujan el SVG (cada movimiento, maniobra o prueba), tras cada dibujo se reaplica el valor
+     del control (anatSync) y en mount() se escucha el control por delegación para los grupos nuevos. */
+  const BONE = '#f1e9dc', BONE_D = '#b9a98f', TEND = '#f5f0e6', TEND_D = '#c9b89a', LIG = '#c9ad6a', MEN = '#cfd8e2', MEN_D = '#7fa3ba';
+  const MUSC = '#c86f66', MUSC_D = '#8d3f3a', NERV = '#f2d35b', NERV_D = '#b89a2c';
+  const bone = (x1, y1, x2, y2, w) =>
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${BONE_D}" stroke-width="${w + 3}" stroke-linecap="round"/>` +
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${BONE}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const boneA = (x, y, a, l, w) => { const q = P(x, y, a, l); return bone(x, y, q[0], q[1], w); };
+  const bc = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${BONE}" stroke="${BONE_D}" stroke-width="2"/>`;
+  const bpath = d => `<path d="${d}" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  const brect = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2.5" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.4"/>`;
+  const disc = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${LIG}"/>`;
+  const lig = (d, w, col) => `<path d="${d}" fill="none" stroke="${col || LIG}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const nerve = (d, w) => `<path d="${d}" fill="none" stroke="${NERV_D}" stroke-width="${(w || 2.4) + 1.4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${NERV}" stroke-width="${w || 2.4}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const menisc = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${MEN}" stroke="${MEN_D}" stroke-width="1.2"/>`;
+  /* rótulo pequeño; dentro del grupo móvil (clase al) se mantiene derecho al rotar */
+  const al = (x, y, t, anchor) => `<text class="svg-small al" x="${x}" y="${y}" text-anchor="${anchor || 'start'}" style="font-size:10.5px;paint-order:stroke;stroke:#e8eef4;stroke-width:3px">${esc(t)}</text>`;
+  function applyAnat(host, v) { host.querySelectorAll('.anat').forEach(g => { g.style.opacity = v / 100; g.style.pointerEvents = 'none'; }); }
+  function anatSync(host) {
+    const stage = host.closest ? host.closest('.stage') : null;
+    const inp = stage && stage.querySelector('.anat-ctl input');
+    applyAnat(host, inp ? +inp.value : 0);     // sin control todavía (primer dibujo): oculta; el Shell aplica luego su valor
+  }
+  /* huesos, tendones y ligamentos por movimiento del catálogo: af = grupo fijo, am = dentro del segmento móvil */
+  const ANAT = {};
+  const shLat = {
+    af: bpath('M232 190 L248 190 L244 300 L236 300 Z') + brect(238, 181, 26, 10) + bone(262, 186, 290, 180, 5) + lig('M236 198 Q250 178 262 190', 4.5, TEND_D) +
+      al(228, 250, 'escápula', 'end') + al(292, 178, 'clavícula') + al(236, 174, 'acromion', 'end'),
+    am: bc(250, 198, 13) + bone(250, 210, 250, 358, 12) + al(236, 330, 'húmero', 'end')
+  };
+  ANAT['sh.flex'] = shLat; ANAT['sh.ext'] = shLat;
+  ANAT['sh.abd'] = {
+    af: bone(252, 176, 312, 184, 5) + bone(248, 176, 188, 184, 5) + bpath('M272 200 L304 196 L298 290 L274 286 Z') + `<ellipse cx="312" cy="186" rx="9" ry="5" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` +
+      lig('M284 202 Q302 180 318 190', 4.5, TEND_D) + bc(190, 198, 13) + bone(190, 210, 190, 352, 12) +
+      al(270, 170, 'clavícula', 'middle') + al(288, 252, 'escápula', 'middle'),
+    am: bc(310, 198, 13) + bone(310, 210, 310, 358, 12) + al(326, 332, 'húmero')
+  };
+  const shTop = {
+    af: bpath('M210 244 L292 240 L292 250 L210 256 Z') + bone(160, 196, 294, 216, 5) + bc(300, 230, 12) + al(226, 268, 'escápula (posterior)', 'middle') + al(230, 190, 'clavícula', 'middle'),
+    am: bone(294, 222, 294, 88, 5) + bone(306, 222, 306, 88, 4) + al(318, 112, 'radio y cúbito')
+  };
+  ANAT['sh.er'] = shTop; ANAT['sh.ir'] = shTop;
+  ANAT['el.flex'] = {
+    af: bone(112, 200, 290, 200, 12) + bc(100, 200, 14) + bc(298, 200, 9) + al(160, 186, 'húmero', 'middle') + al(296, 182, 'epicóndilo lateral', 'end'),
+    am: bone(292, 206, 448, 206, 6) + bc(290, 207, 7) + bone(306, 194, 448, 194, 5) + al(330, 186, 'radio') + al(330, 224, 'cúbito')
+  };
+  const elRot = { af: bc(258, 226, 11) + bc(302, 226, 10) + al(258, 250, 'radio', 'middle') + al(302, 250, 'cúbito', 'middle') + al(280, 266, 'corte: el radio gira sobre el cúbito', 'middle'), am: '' };
+  ANAT['el.pro'] = elRot; ANAT['el.sup'] = elRot;
+  const carpus = () => {
+    let s = '';
+    [292, 306].forEach(x => [186, 195, 204, 213].forEach(y => { s += bc(x, y, 4.2); }));
+    [190, 198, 206, 214].forEach(y => { s += bone(314, y, 372, y, 3.6); });
+    [192, 200, 208].forEach(y => { s += bone(378, y, 448, y, 3.2); });
+    return s;
+  };
+  const wr = {
+    af: bone(90, 190, 276, 190, 8) + bone(90, 210, 276, 210, 7) + al(180, 203, 'radio', 'middle') + al(120, 224, 'cúbito', 'end'),
+    am: carpus() + al(304, 236, 'carpo', 'middle') + al(356, 250, 'metacarpianos', 'middle')
+  };
+  ANAT['wr.flex'] = wr; ANAT['wr.ext'] = wr;
+  const wrD = { af: wr.af, am: wr.am + boneA(318, 184, -38, 56, 4) };
+  ANAT['wr.rad'] = wrD; ANAT['wr.uln'] = wrD;
+  const hiLat = (bent) => ({
+    af: bpath('M204 56 Q230 46 256 58 L254 110 Q244 130 230 130 Q214 128 206 108 Z') + al(262, 96, 'pelvis (acetábulo)'),
+    am: bc(230, 124, 12) + bone(234, 138, 232, 232, 12) + bc(231, 240, 10) + al(212, 206, 'fémur', 'end') +
+      (bent ? bone(222, 246, 122, 246, 8) + al(170, 262, 'tibia', 'middle') : bone(230, 252, 230, 348, 8) + al(246, 300, 'tibia'))
+  });
+  ANAT['hi.flex'] = hiLat(true); ANAT['hi.ext'] = hiLat(false);
+  const hiFront = {
+    af: bpath('M190 52 Q250 32 310 52 L302 112 Q250 140 198 112 Z') + bc(196, 96, 3) + bc(304, 96, 3) + bc(205, 124, 11) + bone(205, 138, 205, 236, 12) + bone(205, 248, 205, 345, 8) + al(250, 106, 'pelvis (EIAS)', 'middle'),
+    am: bc(295, 124, 11) + bone(300, 138, 296, 236, 12) + bone(296, 248, 296, 345, 8) + al(268, 210, 'fémur', 'end') + al(268, 300, 'tibia', 'end')
+  };
+  ANAT['hi.abd'] = hiFront; ANAT['hi.add'] = hiFront;
+  const hiTop = {
+    af: `<ellipse cx="320" cy="118" rx="12" ry="7" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` + al(342, 116, 'rótula'),
+    am: bone(320, 142, 320, 318, 10) + bone(331, 152, 331, 318, 4) + al(304, 262, 'tibia', 'end') + al(338, 262, 'peroné')
+  };
+  ANAT['hi.er'] = hiTop; ANAT['hi.ir'] = hiTop;
+  const knLat = {
+    af: bone(250, 22, 250, 154, 14) + bc(250, 162, 14) + `<ellipse cx="268" cy="164" rx="6" ry="11" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` +
+      lig('M244 158 L256 182') + lig('M256 158 L244 182', 3, '#b8955a') + menisc(241, 174, 5, 2.5) + menisc(259, 174, 5, 2.5) +
+      al(226, 100, 'fémur', 'end') + al(280, 150, 'rótula'),
+    am: brect(238, 176, 24, 6) + bone(250, 184, 250, 316, 12) + bone(260, 188, 260, 314, 4) + lig('M268 176 L260 196', 3, TEND_D) + al(234, 250, 'tibia', 'end') + al(268, 300, 'peroné')
+  };
+  ANAT['kn.flex'] = knLat; ANAT['kn.ext'] = knLat;
+  ANAT['kn.var'] = {
+    af: bone(280, 30, 280, 160, 14) + bc(268, 170, 10) + bc(292, 170, 10) + `<ellipse cx="280" cy="164" rx="9" ry="12" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` +
+      lig('M266 158 L266 208') + lig('M296 158 L300 208') + menisc(270, 181, 7, 3) + menisc(290, 181, 7, 3) +
+      al(252, 196, 'LCM', 'end') + al(308, 196, 'LCL') + al(316, 184, 'meniscos'),
+    am: brect(262, 186, 36, 6) + bone(280, 192, 280, 340, 13) + bone(298, 200, 298, 338, 4) + al(264, 300, 'tibia', 'end')
+  };
+  const an = {
+    af: bone(250, 30, 250, 194, 14) + bone(240, 42, 240, 202, 5) + lig('M236 100 L236 214', 5, TEND_D) + al(232, 110, 'tibia', 'end') + al(226, 160, 'peroné', 'end'),
+    am: `<ellipse cx="252" cy="228" rx="12" ry="8" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/><ellipse cx="222" cy="246" rx="16" ry="9" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` +
+      bone(262, 236, 332, 238, 4) + bone(262, 244, 332, 246, 4) + lig('M236 214 L218 242', 5, TEND_D) + al(214, 270, 'calcáneo', 'middle') + al(296, 262, 'metatarsianos', 'middle')
+  };
+  ANAT['an.dorsi'] = an; ANAT['an.plantar'] = an;
+  const neck = {
+    af: [0, 1, 2].map(i => brect(241, 276 + i * 14, 18, 11)).join('') + al(232, 300, 'T1-T3', 'end'),
+    am: [0, 1, 2, 3, 4, 5, 6].map(i => brect(242, 254 - i * 9, 16, 7)).join('') + al(236, 236, 'C1-C7', 'end')
+  };
+  ANAT['ne.flex'] = neck; ANAT['ne.ext'] = neck; ANAT['ne.lat'] = neck;
+  const lumbar = {
+    af: `<ellipse cx="250" cy="292" rx="34" ry="26" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` + bpath('M240 254 L260 254 L254 290 L246 290 Z') + al(292, 290, 'pelvis y sacro'),
+    am: [0, 1, 2, 3, 4].map(i => brect(240, 230 - i * 18, 20, 14) + disc(241, 226 - i * 18, 18, 4)).join('') +
+      [0, 1, 2, 3].map(j => brect(241, 144 - j * 14, 18, 10)).join('') + al(228, 200, 'L1-L5 y discos', 'end')
+  };
+  ANAT['lu.flex'] = lumbar; ANAT['lu.ext'] = lumbar; ANAT['lu.lat'] = lumbar;
+  ANAT.las = {
+    af: [96, 116, 136, 156, 176, 196, 216].map(x => brect(x, 266, 16, 14) + disc(x + 16, 268, 4, 10)).join('') + bpath('M238 262 L256 268 L254 290 L240 286 Z') +
+      `<rect x="92" y="280" width="150" height="8" rx="4" fill="#9fb4c4" fill-opacity=".6" stroke="#5b7cc4" stroke-width="1.2"/>` + nerve('M100 284 L200 284', 3) +
+      nerve('M200 284 L246 282', 1.2) + nerve('M200 284 L246 286', 1.2) + nerve('M200 284 L246 290', 1.2) +
+      al(150, 232, 'cuerpos vertebrales y discos', 'middle') + al(214, 298, 'raíces L4-S1 (cola de caballo)', 'end'),
+    am: nerve('M252 270 L460 268 L474 262', 2.6) + al(330, 250, 'n. ciático (L4-S3)')
+  };
+  /* estructuras que explora cada maniobra especial (se suman a las del movimiento base) */
+  const MAN_ANAT = {
+    neer: { af: `<ellipse cx="250" cy="186" rx="10" ry="4" fill="#dbeefc" stroke="${MEN_D}" stroke-width="1"/>` + al(228, 206, 'supraespinoso y bolsa bajo el acromion', 'end') },
+    hawkins: { af: lig('M284 224 A18 18 0 0 1 316 224', 5) + al(318, 256, 'manguito rotador (supraespinoso)') },
+    jobe: { af: al(324, 166, 'supraespinoso (manguito rotador)') },
+    speed: { af: lig('M300 186 Q310 200 312 216', 3, TEND_D) + al(324, 224, 'tendón del bíceps (corredera bicipital)') },
+    cozen: { af: bc(84, 200, 8) + lig('M88 194 L270 190', 4, TEND_D) + al(96, 186, 'epicóndilo lateral · tendón extensor común') },
+    phalen: { af: nerve('M100 214 L278 214') + al(236, 226, 'n. mediano', 'end') + al(272, 250, 'túnel carpiano (retináculo flexor)', 'end'), am: `<rect x="288" y="216" width="32" height="6" rx="2" fill="${LIG}"/>` + nerve('M280 214 L322 214 L372 210 L446 206') },
+    finkel: { af: lig('M200 186 L276 186', 3, TEND_D), am: lig('M280 186 L318 184 L354 146', 3, TEND_D) + al(300, 150, 'APL y EPB (1.er compartimento)', 'middle') },
+    drawA: { af: al(282, 196, 'LCA (ligamento cruzado anterior)') },
+    drawP: { af: al(282, 196, 'LCP (ligamento cruzado posterior)') },
+    lachman: { af: al(282, 196, 'LCA (ligamento cruzado anterior)') },
+    mcm: { af: al(282, 196, 'meniscos medial y lateral') },
+    pelot: { af: `<ellipse cx="266" cy="140" rx="6" ry="14" fill="#dbeefc" stroke="${MEN_D}" stroke-width="1"/>` + al(282, 196, 'rótula y bolsa suprarrotuliana') },
+    ankDraw: { af: lig('M240 206 L256 226', 3) + al(268, 216, 'lig. peroneoastragalino anterior') },
+    thompson: { af: `<ellipse cx="236" cy="96" rx="11" ry="44" fill="${MUSC}" fill-opacity=".6" stroke="${MUSC_D}" stroke-width="1.2"/>` + al(222, 70, 'gemelos y sóleo', 'end') + al(226, 200, 'tendón de Aquiles', 'end') }
+  };
+  MAN_ANAT.tinel = MAN_ANAT.phalen;
+
   /* ---------------------------------------------------------------- ESTILOS */
   function injectCSS() {
     if (document.getElementById('msk-style')) return;
@@ -306,7 +442,7 @@
       '<div class="msk-stat"></div>';
     const svg = host.querySelector('svg'), rng = host.querySelector('input'), stat = host.querySelector('.msk-stat'), mxl = host.querySelector('.msk-mx');
     let m = null, th = 0, sx = 0, sy = 0, dragging = false, lastLimited = false, running = false, raf = 0, title = '';
-    let mv = null, arc = null, ovl = null, rd = null, lbl = null, mvl = null, wedgeOn = true;
+    let mv = null, arc = null, ovl = null, rd = null, lbl = null, mvl = null, wedgeOn = true, anatLbl = [];
 
     function load(mm, opts) {
       opts = opts || {};
@@ -314,11 +450,12 @@
       title = opts.title || m.n;
       wedgeOn = opts.wedge !== false && o.learn();
       const ref = P(m.px, m.py, m.na, 140);
+      const A = ANAT[m.id] || {}, X = opts.anat || {};
       svg.innerHTML = `<rect width="560" height="400" fill="#e8eef4"/>${m.bgx || ''}
-        <g>${m.fixed}</g><g id="wedge"></g>
+        <g>${m.fixed}</g><g class="anat">${A.af || ''}${X.af || ''}</g><g id="wedge"></g>
         <line x1="${m.px}" y1="${m.py}" x2="${ref[0]}" y2="${ref[1]}" stroke="#7f8c9a" stroke-width="2" stroke-dasharray="6 5"/>
         <path id="arc" fill="rgba(224,160,48,.28)" stroke="#e0a030" stroke-width="2" d=""/>
-        <g id="mv">${m.moving}
+        <g id="mv">${m.moving}<g class="anat">${A.am || ''}${X.am || ''}</g>
           <line x1="${m.px}" y1="${m.py}" x2="${ref[0]}" y2="${ref[1]}" stroke="#e0a030" stroke-width="3.5" stroke-linecap="round"/>
           <circle class="msk-grip" cx="${ref[0]}" cy="${ref[1]}" r="9" fill="#e0a030" stroke="#fff" stroke-width="2"/>
           ${m.mlab ? `<text id="mvl" x="${m.mlab[0]}" y="${m.mlab[1]}" class="svg-small" style="paint-order:stroke;stroke:#e8eef4;stroke-width:3px">${esc(m.mlab[2])}</text>` : ''}</g>
@@ -330,6 +467,8 @@
         <text id="lbl" x="280" y="388" text-anchor="middle" style="font:600 13px system-ui,sans-serif;fill:#38495a"></text>`;
       mv = svg.querySelector('#mv'); arc = svg.querySelector('#arc'); ovl = svg.querySelector('#ovl'); mvl = svg.querySelector('#mvl');
       rd = svg.querySelector('#rd'); lbl = svg.querySelector('#lbl');
+      anatLbl = [...mv.querySelectorAll('text.al')];
+      anatSync(svg);
       if (wedgeOn && !m.hidden) drawWedge();
       rng.max = m.smax; rng.value = 0; rng.disabled = false;
       mxl.textContent = m.smax + '°';
@@ -359,6 +498,7 @@
       th = t; sx = x || 0; sy = y || 0;
       mv.setAttribute('transform', `rotate(${m.dir * th} ${m.px} ${m.py})` + (sx || sy ? ` translate(${sx} ${sy})` : ''));
       if (mvl) mvl.setAttribute('transform', `rotate(${-m.dir * th} ${m.mlab[0]} ${m.mlab[1]})`);   // el rótulo del segmento móvil se mantiene derecho
+      anatLbl.forEach(t => t.setAttribute('transform', `rotate(${-m.dir * th} ${t.getAttribute('x')} ${t.getAttribute('y')})`));   // ídem rótulos anatómicos
       if (Math.abs(th) > 0.4) {
         const R = 95, s = P(m.px, m.py, m.na, R), e = P(m.px, m.py, m.na + m.dir * th, R);
         arc.setAttribute('d', `M ${m.px} ${m.py} L ${s[0]} ${s[1]} A ${R} ${R} 0 ${Math.abs(th) > 180 ? 1 : 0} ${m.dir * th > 0 ? 1 : 0} ${e[0]} ${e[1]} Z`);
@@ -448,7 +588,7 @@
     function stop() { running = false; cancelAnimationFrame(raf); }
     function play(spec, speed, done) {
       stop();
-      load(MOT[spec.motion], { title: spec.title, wedge: false });
+      load(MOT[spec.motion], { title: spec.title, wedge: false, anat: spec.anat });
       rng.disabled = true;
       let idx = 0, t0 = performance.now();
       running = true;
@@ -764,6 +904,30 @@
     S2: ' (a la altura de las espinas ilíacas posterosuperiores: hoyuelos de Venus)'
   };
   const SPINE_PTS = [[268, 82], [276, 118], [272, 150], [262, 182], [248, 214], [240, 250], [238, 290], [246, 332], [262, 362], [272, 390], [264, 418], [246, 446], [252, 482]];
+  /* capa anatómica de «Columna y postura»: cuerpos vertebrales y discos siguiendo la curva (lateral), vértebras y pelvis (posterior) */
+  function postureAnat() {
+    let s = '';
+    for (let i = 0; i < SPINE_PTS.length - 1; i++) {
+      const a = SPINE_PTS[i], b = SPINE_PTS[i + 1], cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2, ang = deg(Math.atan2(b[1] - a[1], b[0] - a[0]));
+      s += `<g transform="translate(${cx} ${cy}) rotate(${ang.toFixed(1)})">${brect(-11, -7, 22, 14)}${disc(11, -5, 6, 10)}</g>`;
+    }
+    s += `<ellipse cx="266" cy="286" rx="18" ry="26" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` + al(300, 262, 'cuerpos vertebrales y discos') + al(300, 322, 'pelvis');
+    for (let i = 0; i < LEVELS.length; i++) s += brect(558, 96 + 10 * i, 24, 7);
+    s += `<ellipse cx="540" cy="272" rx="22" ry="20" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/><ellipse cx="600" cy="272" rx="22" ry="20" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>` +
+      bpath('M556 262 L584 262 L570 300 Z') + al(606, 322, 'sacro y pelvis');
+    return s;
+  }
+  function schoberAnat() {
+    const mx = x => 480 - x;
+    let s = nerve('M240 70 L240 420', 4);
+    [401, 353, 305, 257, 209, 161, 113].forEach((c, i) => {
+      s += brect(218, c - 17, 44, 34) + (i ? disc(222, c + 19, 36, 10) : '') + nerve(`M240 ${c - 6} L214 ${c + 8}`, 1.6) + nerve(`M240 ${c - 6} L266 ${c + 8}`, 1.6);
+      if (i < 5) s += al(296, c + 4, 'L' + (5 - i));
+    });
+    s += bpath('M200 428 L280 428 L250 472 L230 472 Z') + bpath('M150 352 Q140 400 170 470 L205 470 Q196 410 212 356 Z') + bpath(`M${mx(150)} 352 Q${mx(140)} 400 ${mx(170)} 470 L${mx(205)} 470 Q${mx(196)} 410 ${mx(212)} 356 Z`);
+    s += al(296, 452, 'sacro') + al(300, 92, 'médula y raíces nerviosas');
+    return s;
+  }
 
   function makeColScene() {
     const sc = {
@@ -845,7 +1009,7 @@
           <rect width="780" height="560" fill="#e8eef4"/>
           <text x="190" y="18" text-anchor="middle" class="svg-title">Vista lateral</text><line x1="390" y1="10" x2="390" y2="550" stroke="#cfd8e2" stroke-width="2"/>
           <text x="570" y="0" class="svg-small"></text>
-          ${lat}${back}${guides}${labels}
+          ${lat}${back}<g class="anat">${postureAnat()}</g>${guides}${labels}
           <g id="hits">
             <rect data-r="cerv" x="238" y="75" width="80" height="85" fill="transparent"/>
             <rect data-r="dors" x="195" y="165" width="80" height="150" fill="transparent"/>
@@ -861,6 +1025,7 @@
             <rect data-r="venus" x="530" y="282" width="80" height="20" fill="transparent"/>
             <rect data-r="pl_post" x="563" y="310" width="14" height="40" fill="transparent"/>
           </g></svg>`;
+        anatSync(W);
         const svg = W.querySelector('#cS');
         const TX = {
           cerv: 'Lordosis cervical conservada (≈ 20-40°): la cabeza se alinea sobre los hombros, sin proyección anterior del cuello.',
@@ -907,6 +1072,7 @@
         const W = this.stage.querySelector('#cW');
         W.innerHTML = `<svg class="scene" viewBox="0 0 560 480" id="sS" style="cursor:pointer"><rect width="560" height="480" fill="#e8eef4"/>
           ${cap(240, 60, 240, 470, 190, SK2)}${cap(240, 60, 240, 440, 3, '#7a4a2a')}
+          <g class="anat">${schoberAnat()}</g>
           <text x="16" y="26" class="svg-title" style="paint-order:stroke;stroke:#e8eef4;stroke-width:4px">Prueba de Schober · vista posterior de la región lumbar</text>
           ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle cx="240" cy="${425 - i * 48}" r="3" fill="#7a4a2a"/>`).join('')}
           <circle cx="205" cy="425" r="5" fill="#38495a"/><circle cx="275" cy="425" r="5" fill="#38495a"/>
@@ -918,6 +1084,7 @@
           <div class="msk-ctl"><span>Flexión del tronco</span><input type="range" id="sSl" min="0" max="100" value="0" disabled><span id="sPct">0 %</span></div>
           <div class="msk-stat" id="sSt"></div>`;
         const svg = W.querySelector('#sS'), sl = W.querySelector('#sSl'), st = W.querySelector('#sSt');
+        anatSync(W);
         let placed = false, u = 0;
         const Y1 = 425, PX = 15;
         const redraw = () => {
@@ -1293,7 +1460,8 @@
       speed: 1,
       enter(stage, sh) {
         this.sh = sh; this.stage = stage; this.j = 'sh'; this.cur = null; this.seen = this.seen || {};
-        stage.innerHTML = '<div class="msk-wrap"><div class="msk-row" id="nJ"></div><div class="msk-row" id="nM"></div><div id="nV"></div><div id="nI"></div></div>';
+        /* el <i class="anat"> vacío hace que el Shell cree el control «Anatomía» aunque aún no haya ninguna maniobra dibujada */
+        stage.innerHTML = '<div class="msk-wrap"><div class="msk-row" id="nJ"></div><div class="msk-row" id="nM"></div><div id="nV"></div><div id="nI"></div><i class="anat" style="display:none" aria-hidden="true"></i></div>';
         this.view = null; this.trend = null;
         stage.addEventListener('click', this._h = e => {
           const j = e.target.closest('[data-j]'), m = e.target.closest('[data-m]');
@@ -1334,7 +1502,7 @@
         }
         this.view = romView(V, { learn: () => sh.mode === 'learn', interactive: false, slider: false, cap: mm => mm.smax, status: null });
         I.innerHTML = '';
-        this.view.play({ motion: m.motion, title: m.n, steps: m.steps, marks: m.marks, arrows: m.arrows, start: m.start }, this.speed, done);
+        this.view.play({ motion: m.motion, title: m.n, steps: m.steps, marks: m.marks, arrows: m.arrows, start: m.start, anat: MAN_ANAT[m.id] }, this.speed, done);
       }
     };
     return sc;
@@ -1606,6 +1774,9 @@
       ]
     });
     sh.start();
+    /* capa anatómica: los dibujos se regeneran, por lo que el control del Shell se escucha por delegación */
+    const stage = sh.$('#stage');
+    if (stage) stage.addEventListener('input', e => { if (e.target.closest('.anat-ctl')) applyAnat(stage, +e.target.value); });
     return sh;
   }
 

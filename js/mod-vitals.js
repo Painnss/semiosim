@@ -83,6 +83,30 @@
     `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${SKIN_D}" stroke-width="${w + 5}" stroke-linecap="round"/>` +
     `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${SKIN}" stroke-width="${w}" stroke-linecap="round"/>`;
 
+  /* Capa anatómica translúcida (<g id="anat">, sobre la piel y bajo los instrumentos): el Shell añade el control «Anatomía». */
+  const BONE = '#f1e9dc', BONE_D = '#b9a98f', TEND = '#f5f0e6', TEND_D = '#c9b89a', ART = '#c0392b';
+  const bone = (x1, y1, x2, y2, w) =>
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${BONE_D}" stroke-width="${w + 3}" stroke-linecap="round"/>` +
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${BONE}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const aLab = (x, y, t, anchor) => `<text class="svg-small" x="${x}" y="${y}" text-anchor="${anchor || 'start'}" style="font-size:10.5px;paint-order:stroke;stroke:#e8eef4;stroke-width:3px">${t}</text>`;
+  /* brazo de la escena de presión arterial: húmero, radio y cúbito; arteria braquial bajo el manguito y su bifurcación en radial y cubital */
+  const bpAnat = () => `<g id="anat">
+    ${bone(62, 300, 288, 300, 16)}<circle cx="300" cy="300" r="12" fill="${BONE}" stroke="${BONE_D}" stroke-width="2"/>
+    ${bone(316, 296, 556, 306, 9)}${bone(316, 316, 556, 328, 8)}
+    <path d="M62 290 Q180 288 296 306 L318 310" fill="none" stroke="${ART}" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M318 310 Q400 300 548 302" fill="none" stroke="${ART}" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M318 310 Q400 326 560 330" fill="none" stroke="${ART}" stroke-width="3" stroke-linecap="round"/>
+    ${aLab(80, 284, 'húmero')}${aLab(175, 250, 'a. braquial (bajo el manguito, cara medial del brazo)', 'middle')}
+    ${aLab(330, 332, 'bifurcación', 'end')}${aLab(380, 286, 'radio', 'middle')}${aLab(470, 294, 'a. radial', 'middle')}
+    ${aLab(380, 347, 'cúbito', 'middle')}${aLab(480, 347, 'a. cubital', 'middle')}</g>`;
+  /* antebrazo de la escena del pulso: radio (lado del pulgar) y cúbito, estiloides radial y tendón del flexor radial del carpo */
+  const pulseAnat = () => `<g id="anat">
+    ${bone(50, 172, 468, 180, 12)}<circle cx="476" cy="180" r="8" fill="${BONE}" stroke="${BONE_D}" stroke-width="2"/>
+    ${bone(50, 212, 468, 226, 10)}
+    <path d="M300 190 Q400 192 482 198" fill="none" stroke="${TEND_D}" stroke-width="8" stroke-linecap="round"/><path d="M300 190 Q400 192 482 198" fill="none" stroke="${TEND}" stroke-width="5" stroke-linecap="round"/>
+    ${aLab(120, 168, 'radio')}${aLab(120, 237, 'cúbito')}${aLab(470, 246, 'estiloides radial', 'middle')}
+    ${aLab(300, 214, 'tendón del flexor radial del carpo (la arteria queda lateral a él)')}</g>`;
+
   function injectStyle() {
     if (document.getElementById('vit-style')) return;
     const s = document.createElement('style');
@@ -184,6 +208,7 @@
         <path d="M210 338 C230 455 480 462 654 414" fill="none" stroke="#555" stroke-width="5" stroke-linecap="round"/>
         <g id="bpCuff"><rect id="bpCuffR" x="100" y="262" width="150" height="76" rx="8" fill="#2f6f9f" stroke="#1f4b6f" stroke-width="3"/>
           <path d="M115 262 V338 M235 262 V338" stroke="#3f86bd" stroke-width="3"/></g>
+        ${bpAnat()}
         <text x="175" y="354" text-anchor="middle" class="svg-small" id="bpCuffLbl">Manguito</text>
         <g id="bpSteth" style="display:none"><circle cx="296" cy="304" r="11" fill="#8a97a6" stroke="#4a5560" stroke-width="3"/>
           <path d="M296 315 Q300 400 240 420" fill="none" stroke="#4a5560" stroke-width="4"/>
@@ -383,6 +408,7 @@
         ${[0, 1, 2, 3].map(i => `<rect x="630" y="${172 + i * 22}" width="${108 - (i === 3 ? 18 : 0)}" height="19" rx="9.5" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5"/>`).join('')}
         <rect x="520" y="128" width="74" height="26" rx="13" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5" transform="rotate(-24 520 142)"/>
         <path d="M470 166 Q477 205 470 248" fill="none" stroke="${SKIN_D}" stroke-width="2"/>
+        ${pulseAnat()}
         <path id="plArt" d="M320 170 L462 178" fill="none" stroke="#c0392b" stroke-width="5" stroke-linecap="round" opacity=".5"/>
         <text x="250" y="152" text-anchor="middle" class="svg-hint hintring">Arteria radial (lado del pulgar)</text>
         <circle id="plRing" cx="445" cy="177" r="0" fill="none" stroke="#c0392b" stroke-width="3"/>

@@ -134,27 +134,76 @@
           `<text x="${LX}" y="438" class="svg-hint" text-anchor="middle">LMC D</text><text x="${RX}" y="438" class="svg-hint" text-anchor="middle">LMC I</text></g>`;
         s += `<g class="hintring" fill="none" stroke="${TEAL}" stroke-width="1.4" stroke-dasharray="2 4" opacity=".6"><path d="M${LX},130 V424 M${RX},130 V424"/></g>`;
       }
-      /* vísceras de referencia */
+      /* marcas de la hepatimetría (los órganos se dibujan en la capa anatómica) */
       if (o.liver) {
         const y5v = y5;
         s += `<g class="hintring">` +
-          `<path d="M90,${y5v + 20} C108,${y5v + 4} 160,${y5v - 4} 205,${y5v + 8} C240,${y5v + 16} 262,${y5v + 38} 258,${y5v + 62} L210,118 C170,128 140,${LMCY - 6} 118,${LMCY + 16} L98,214 Z" fill="#b5651d" opacity=".22" stroke="#8a4b12" stroke-width="1.5"/>` +
           `<circle cx="${LX}" cy="${y5v}" r="4" fill="#d9534f"/><circle cx="${LX}" cy="${LMCY}" r="4" fill="#d9534f"/>` +
           `<text x="${LX - 26}" y="${y5v - 6}" class="svg-hint" text-anchor="end">5.º EIC (LMC)</text>` +
           `<path d="M${LX - 16},${y5v} V${LMCY}" stroke="#d9534f" stroke-width="2"/>` +
           `<text x="${LX - 22}" y="${(y5v + LMCY) / 2 + 4}" class="svg-hint" text-anchor="end">${p.span} cm</text></g>`;
       }
-      if (o.organs) {
-        s += `<g class="hintring">` +
-          `<ellipse cx="268" cy="126" rx="24" ry="14" fill="#7ec3d9" opacity=".4"/><text x="268" y="130" class="svg-hint" text-anchor="middle">Traube</text>` +
-          `<ellipse cx="322" cy="176" rx="9" ry="26" transform="rotate(-8 322 176)" fill="#8e5a9b" opacity=".28"/>` +
-          `<ellipse cx="172" cy="238" rx="9" ry="22" fill="#c0504d" opacity=".2"/><ellipse cx="248" cy="238" rx="9" ry="22" fill="#c0504d" opacity=".2"/>` +
-          `<path d="M210,150 V${UMB} L192,326 M210,${UMB} L228,326" stroke="#c0392b" stroke-width="5" opacity=".25" fill="none"/></g>`;
-      }
       if (o.bladder) {
-        const full = st(c).bladder;
-        if (full) s += `<g class="hintring"><ellipse cx="210" cy="386" rx="36" ry="24" fill="#e8cd5a" opacity=".45" stroke="#b79a1a" stroke-width="1.5"/></g>`;
-        s += `<text x="210" y="348" class="svg-hint hintring" text-anchor="middle">${full ? 'Vejiga llena (≈ 400 mL)' : 'Vejiga'}</text>`;
+        s += `<text x="210" y="348" class="svg-hint hintring" text-anchor="middle">${st(c).bladder ? 'Vejiga llena (≈ 400 mL)' : 'Vejiga'}</text>`;
+      }
+      return s;
+    };
+  }
+
+  /* ---------- capa anatómica translúcida (#anat): vísceras bajo la piel ----------
+     Depende de la persona: límite superior del hígado (hepatimetría), sexo (útero) y estado de la vejiga.
+     Colores: hígado #9e4b3a, estómago #e9c48a, bazo #8e5a9b, riñón #c0504d, colon #e2b48a, aorta #c0392b, vejiga #e8cd5a. */
+  const al = (txt, x, y, anchor) => `<text class="svg-small" x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" style="paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round">${txt}</text>`;
+  function anatAbd(opts) {
+    return function (learn, c) {
+      const o = opts || {}, y5 = y5of(c), full = st(c).bladder;
+      let s = '';
+      /* riñones (retroperitoneales: contorno discontinuo; el izquierdo más alto) y arterias renales */
+      s += `<ellipse cx="150" cy="238" rx="15" ry="30" transform="rotate(12 150 238)" fill="#c0504d" fill-opacity=".5" stroke="#8a3a3a" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+      s += `<ellipse cx="268" cy="226" rx="15" ry="30" transform="rotate(-12 268 226)" fill="#c0504d" fill-opacity=".5" stroke="#8a3a3a" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+      /* vena cava inferior y aorta con su bifurcación (L4, a la altura del ombligo) e ilíacas */
+      s += `<path d="M198,140 V266 M198,266 L170,318 M198,266 L236,318" fill="none" stroke="#4a6fa5" stroke-width="7" stroke-linecap="round" opacity=".6"/>`;
+      s += `<path d="M212,214 L166,232 M212,214 L258,222" stroke="#c0392b" stroke-width="3" fill="none"/>`;
+      s += `<path d="M212,140 V${UMB}" stroke="#c0392b" stroke-width="8" stroke-linecap="round"/>`;
+      s += `<path d="M212,${UMB} L178,322 L152,382 M212,${UMB} L246,322 L270,382" fill="none" stroke="#c0392b" stroke-width="5" stroke-linecap="round"/>`;
+      /* intestino delgado esbozado */
+      s += `<path d="M150,236 C180,230 200,250 170,262 C140,274 150,300 186,296 C220,292 230,320 196,332 C160,344 184,372 214,360 C244,350 262,318 236,300 C214,286 226,256 256,262 C280,268 272,300 268,330" fill="none" stroke="#cfa781" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += `<path d="M150,236 C180,230 200,250 170,262 C140,274 150,300 186,296 C220,292 230,320 196,332 C160,344 184,372 214,360 C244,350 262,318 236,300 C214,286 226,256 256,262 C280,268 272,300 268,330" fill="none" stroke="#f3dcc0" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
+      /* colon: ciego, ascendente, transverso, descendente y sigmoides */
+      const colon = 'M112,350 C100,340 100,320 102,300 L104,210 C106,196 120,188 136,186 L170,190 C200,240 260,236 300,190 L316,186 C330,184 330,196 328,210 L324,330 C322,350 300,362 282,370 C262,378 236,376 226,392';
+      s += `<path d="${colon}" fill="none" stroke="#b98a63" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += `<path d="${colon}" fill="none" stroke="#e2b48a" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += `<path d="${colon}" fill="none" stroke="#c9a283" stroke-width="16" stroke-dasharray="2 10" opacity=".45"/>`;
+      s += `<circle cx="112" cy="346" r="14" fill="#e2b48a" stroke="#b98a63" stroke-width="1.5"/><path d="M114,358 C108,372 98,380 92,392" fill="none" stroke="#b98a63" stroke-width="3" stroke-linecap="round"/>`;
+      /* bazo (bajo las costillas 9.ª–11.ª, línea axilar media izquierda) y estómago con la cámara gástrica */
+      s += `<ellipse cx="318" cy="170" rx="11" ry="28" transform="rotate(-15 318 170)" fill="#8e5a9b" fill-opacity=".85" stroke="#5e3a68" stroke-width="1.2"/>`;
+      s += `<path d="M250,118 C256,92 294,86 310,108 C324,130 318,164 300,190 C286,210 258,218 236,210 C218,204 214,188 226,180 C240,176 250,186 254,172 C258,152 248,136 250,118 Z" fill="#e9c48a" fill-opacity=".9" stroke="#c99a55" stroke-width="1.5"/>`;
+      s += `<ellipse cx="282" cy="118" rx="17" ry="13" fill="#f8ecd2" stroke="#c99a55" stroke-width="1" stroke-dasharray="3 2"/>`;
+      /* páncreas esbozado (retrogástrico: cabeza en el marco duodenal, cola hacia el bazo) */
+      s += `<path d="M190,200 C182,214 196,228 212,222 C250,210 274,196 300,176 C296,170 290,168 284,172 C256,190 236,204 212,206 C204,206 198,196 190,200 Z" fill="#efd8b0" fill-opacity=".7" stroke="#b89a6a" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+      /* hígado: borde superior en el 5.º EIC (según la hepatimetría de la persona) e inferior en el reborde costal; vesícula en el punto cístico */
+      s += `<path d="M${LX - 40},${y5 + 40} C${LX - 30},${y5 + 6} ${LX + 10},${y5 - 8} ${LX + 50},${y5 + 4} C${LX + 95},${y5 + 14} ${LX + 125},${y5 + 46} ${LX + 118},${y5 + 76} C${LX + 100},${y5 + 96} ${LX + 60},${LMCY - 12} ${LX + 10},${LMCY + 2} C${LX - 16},${LMCY + 14} ${LX - 36},${LMCY + 36} ${LX - 38},${LMCY + 50} C${LX - 50},${LMCY + 20} ${LX - 50},${y5 + 70} ${LX - 40},${y5 + 40} Z" fill="#9e4b3a" fill-opacity=".85" stroke="#6e3326" stroke-width="1.5"/>`;
+      s += `<ellipse cx="150" cy="152" rx="8" ry="13" transform="rotate(-25 150 152)" fill="#7fa36b" stroke="#4f7a3b" stroke-width="1.2"/>`;
+      /* útero (mujer) detrás de la vejiga; vejiga vacía tras el pubis o llena por encima de la sínfisis */
+      if (isF(c)) {
+        s += `<path d="M196,346 C180,338 170,342 166,352 M224,346 C240,338 250,342 254,352" fill="none" stroke="#a35a6c" stroke-width="2"/>` +
+             `<ellipse cx="164" cy="356" rx="6" ry="8" fill="#e8d27a" stroke="#a35a6c" stroke-width="1"/><ellipse cx="256" cy="356" rx="6" ry="8" fill="#e8d27a" stroke="#a35a6c" stroke-width="1"/>` +
+             `<path d="M210,340 C224,340 230,354 226,370 C222,384 198,384 194,370 C190,354 196,340 210,340 Z" fill="#d98fa0" fill-opacity=".9" stroke="#a35a6c" stroke-width="1.5"/>`;
+      }
+      s += full
+        ? `<ellipse cx="210" cy="378" rx="36" ry="26" fill="#e8cd5a" fill-opacity=".85" stroke="#b79a1a" stroke-width="1.5"/>`
+        : `<ellipse cx="210" cy="394" rx="22" ry="11" fill="#e8cd5a" fill-opacity=".85" stroke="#b79a1a" stroke-width="1.5"/>`;
+      /* rótulos */
+      s += al('Hígado', 160, 98, 'start') + al('Estómago', 304, 114, 'start') + al('Traube', 282, 122) + al('Bazo', 334, 172, 'start');
+      s += al('Páncreas', 236, 224, 'start') + al('Riñón D', 110, 243, 'end') + al('Riñón I', 298, 222, 'start') + al('Aorta', 194, 164, 'end') + al('Bifurcación L4', 222, 257, 'start');
+      s += al('Colon transverso', 156, 256, 'end') + al('Colon asc.', 100, 316) + al('Colon desc.', 324, 298) + al('Intestino delgado', 248, 322, 'start');
+      if (isF(c)) s += al('Útero', 238, 366, 'start');
+      /* vista posterior (maniobras): riñones bajo la 12.ª costilla */
+      if (o.back) {
+        s += `<g transform="translate(440 0)">` +
+          `<ellipse cx="138" cy="182" rx="16" ry="34" transform="rotate(-8 138 182)" fill="#c0504d" fill-opacity=".6" stroke="#8a3a3a" stroke-width="1.2"/>` +
+          `<ellipse cx="62" cy="170" rx="16" ry="34" transform="rotate(8 62 170)" fill="#c0504d" fill-opacity=".6" stroke="#8a3a3a" stroke-width="1.2"/>` +
+          al('Riñón D', 138, 236) + al('Riñón I', 62, 224) + '</g>';
       }
       return s;
     };
@@ -219,7 +268,10 @@
   }
 
   const redraw = (ctx, sc) => {
-    ctx.svg.querySelector('#bg').innerHTML = sc.svg(ctx.sh.mode === 'learn', ctx.c);
+    const learn = ctx.sh.mode === 'learn';
+    ctx.svg.querySelector('#bg').innerHTML = sc.svg(learn, ctx.c);
+    const an = ctx.svg.querySelector('#anat');
+    if (an && sc.anatomy) an.innerHTML = sc.anatomy(learn, ctx.c);
     ctx.scene.refresh();
   };
 
@@ -354,6 +406,7 @@
     id: 'aus', label: 'Auscultación', viewBox: '0 0 420 520',
     hint: 'Se ausculta ANTES de percutir y palpar (la palpación modifica el peristaltismo). Diafragma tibio en los 4 cuadrantes; los RHA se dan por ausentes solo tras escuchar varios minutos (2–5 min según la fuente).',
     svg: ausSvg,
+    anatomy: anatAbd(),
     tools: [{ id: 'steth', icon: '🩺', label: 'Estetoscopio · diafragma', hint: 'Haz clic en un cuadrante (ruidos hidroaéreos) o en un punto vascular (soplos). “Contar 10 s” ayuda a estimar la frecuencia.' }],
     regions: [
       { id: 'csd', label: 'Cuadrante superior derecho', short: 'CSD', x: 90, y: 130, w: 118, h: 136, lx: 150, ly: 152, tools: { steth: quadTool('csd') } },
@@ -444,7 +497,7 @@
     if (id === 'fd' || id === 'fi') { t.desp = dispTool; t.onda = waveTool; }
     return t;
   });
-  const percSvg = abdSVG({ grid: 'nine', liver: true, organs: true, bladder: true });
+  const percSvg = abdSVG({ grid: 'nine', liver: true, bladder: true });
   const lmcStrip = {
     id: 'lmc', label: 'Franja LMC derecha (hepatimetría)', short: 'Franja LMC D', x: LX - 22, y: 8, w: 44, h: 214, rx: 8, lx: LX, ly: 20,
     tools: {
@@ -463,6 +516,7 @@
     id: 'perc', label: 'Percusión', viewBox: '0 0 420 520',
     hint: 'Percusión dígito-digital: el dedo medio percute sobre el dedo plesímetro apoyado en la pared. Recorre las regiones buscando el patrón normal de timpanismo y mide la matidez hepática (hepatimetría) en la LMC.',
     svg: percSvg,
+    anatomy: anatAbd(),
     tools: [
       { id: 'perc', icon: '🖐️', label: 'Percusión dígito-digital', hint: 'Percute las regiones y recorre la franja LMC D de arriba abajo para hallar los límites superior e inferior de la matidez hepática.' },
       { id: 'desp', icon: '↔️', label: 'Matidez desplazable', hint: 'Haz clic en un flanco: se compara la nota en decúbito dorsal y en decúbito lateral.' },
@@ -549,11 +603,12 @@
     { id: 'lin', label: 'Línea alba', short: 'Línea alba', x: 200, y: 126, w: 20, h: 60, rx: 6, lx: 226, ly: 150, anchor: 'start',
       tools: { vals: () => T('<b>sin diástasis de los rectos ni hernia epigástrica</b>: al elevar la cabeza (Valsalva) la línea alba no se abomba ni se palpa defecto aponeurótico.', false, false) } }
   ];
-  const palpSvg = abdSVG({ grid: 'nine', liver: true, organs: true, bladder: true });
+  const palpSvg = abdSVG({ grid: 'nine', liver: true, bladder: true });
   const palpacion = {
     id: 'palp', label: 'Palpación', viewBox: '0 0 420 520',
     hint: 'Manos tibias, uñas cortas, paciente relajado en decúbito dorsal con las rodillas semiflexionadas. Empieza lejos de cualquier zona dolorosa; primero superficial, luego profunda.',
     svg: palpSvg,
+    anatomy: anatAbd(),
     tools: [
       { id: 'sup', icon: '✋', label: 'Palpación superficial', hint: 'Presión suave (1–2 cm) con la palma y los dedos juntos: busca defensa, dolor, masas superficiales y hernias.' },
       { id: 'prof', icon: '🤲', label: 'Profunda / bimanual', hint: 'Presión profunda para vísceras y masas: hígado, vesícula, bazo, riñones, aorta, ciego, sigmoides. Aprovecha la inspiración profunda.' },
@@ -586,6 +641,7 @@
     id: 'man', label: 'Maniobras', viewBox: '0 0 660 520',
     hint: 'Puntos dolorosos, signos de irritación peritoneal y maniobras clásicas. En esta persona sana todos son negativos.',
     svg: manSvg,
+    anatomy: anatAbd({ back: true }),
     tools: [
       { id: 'murphy', icon: '🫗', label: 'Murphy (punto cístico)', hint: 'Presiona bajo el reborde costal derecho (borde externo del recto) y pide inspirar profundamente.' },
       { id: 'mcburney', icon: '📍', label: 'McBurney', hint: 'Presiona el punto de McBurney: unión del tercio externo con los dos tercios internos de la línea que une la EIAS derecha con el ombligo.' },

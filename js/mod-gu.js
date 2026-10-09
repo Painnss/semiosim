@@ -84,6 +84,88 @@
 
   const panelTitle = (x, y, t) => `<text x="${x}" y="${y}" class="svg-title" text-anchor="middle">${t}</text>`;
 
+  /* ---------- capa anatómica translúcida (#anat) ----------
+     Diagramas esquemáticos: riñón #c0504d, vejiga #e8cd5a, glándula/ovario #e8d27a, hueso #f1e9dc, tendón #f5f0e6, ganglio #cfe0b0. */
+  const al = (txt, x, y, anchor) => `<text class="svg-small" x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" style="paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round">${txt}</text>`;
+  const kidney = (cx, cy, rot, hil) => `<ellipse cx="${cx}" cy="${cy}" rx="15" ry="32" transform="rotate(${rot} ${cx} ${cy})" fill="#c0504d" fill-opacity=".8" stroke="#8a3a3a" stroke-width="1.2"/>` +
+    (hil ? `<ellipse cx="${cx + hil}" cy="${cy}" rx="5" ry="10" fill="#f2d6c6" fill-opacity=".9" stroke="#8a3a3a" stroke-width=".8"/>` : '');
+  const bladder = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#e8cd5a" fill-opacity=".85" stroke="#b79a1a" stroke-width="1.5"/>`;
+  const uterusSm = (cx, cy) => `<path d="M${cx - 13},${cy + 6} C${cx - 27},${cy - 2} ${cx - 37},${cy + 4} ${cx - 39},${cy + 14} M${cx + 13},${cy + 6} C${cx + 27},${cy - 2} ${cx + 37},${cy + 4} ${cx + 39},${cy + 14}" fill="none" stroke="#a35a6c" stroke-width="2"/>` +
+    `<ellipse cx="${cx - 41}" cy="${cy + 18}" rx="5" ry="7" fill="#e8d27a" stroke="#a35a6c" stroke-width="1"/><ellipse cx="${cx + 41}" cy="${cy + 18}" rx="5" ry="7" fill="#e8d27a" stroke="#a35a6c" stroke-width="1"/>` +
+    `<path d="M${cx},${cy} C${cx + 13},${cy} ${cx + 19},${cy + 14} ${cx + 15},${cy + 28} C${cx + 11},${cy + 40} ${cx - 11},${cy + 40} ${cx - 15},${cy + 28} C${cx - 19},${cy + 14} ${cx - 13},${cy} ${cx},${cy} Z" fill="#d98fa0" fill-opacity=".9" stroke="#a35a6c" stroke-width="1.5"/>`;
+
+  function anatRin(learn, c) {
+    let s = '';
+    /* vista posterior: riñones bajo la 12.ª costilla (el izquierdo más alto; a la izquierda de la pantalla) */
+    s += kidney(96, 160, 8) + kidney(164, 172, -8);
+    /* vista anterior: riñones, pelvis renal, uréteres, vejiga y próstata o útero según el sexo */
+    s += kidney(338, 225, 10, 6) + kidney(432, 213, -10, -6);
+    s += `<path d="M344,256 C346,300 356,350 370,396 M426,244 C424,300 414,350 400,396" fill="none" stroke="#c9a23a" stroke-width="3.5"/>`;
+    if (isF(c)) s += uterusSm(385, 362);
+    s += bladder(385, 402, 30, 18);
+    if (!isF(c)) s += `<circle cx="385" cy="424" r="9" fill="#f2d6c6" stroke="#9a7b8a" stroke-width="1.5"/>`;
+    s += al('Riñón I', 96, 214) + al('Riñón D', 164, 226) + al('Riñón D', 338, 186) + al('Riñón I', 432, 174) + al('Uréter D', 356, 318, 'start') + al('Vejiga', 385, 406);
+    s += isF(c) ? al('Útero', 402, 372, 'start') : al('Próstata', 398, 428, 'start');
+    return s;
+  }
+
+  function anatMasc() {
+    let s = '';
+    /* esquema frontal: conducto inguinal (del anillo profundo al superficial), conducto deferente, vasos femorales y ganglios */
+    [[452, 500, 448, 460, 476, -1], [668, 620, 672, 660, 644, 1]].forEach(([dx, sx, ax, vx, ex, d]) => {
+      s += `<path d="M${dx},104 L${sx},130" stroke="#d9d0bd" stroke-width="16" stroke-linecap="round"/><path d="M${dx},104 L${sx},130" stroke="#f5f0e6" stroke-width="12" stroke-linecap="round"/>`;
+      s += `<circle cx="${dx}" cy="104" r="7" fill="none" stroke="#9a7b5a" stroke-width="1.5" stroke-dasharray="3 2"/>`;
+      s += `<path d="M${ax},120 L${ax},190" stroke="#c0392b" stroke-width="5" stroke-linecap="round"/><path d="M${vx},122 L${vx},192" stroke="#4a6fa5" stroke-width="5" stroke-linecap="round"/>`;
+      [[-24, 20], [-6, 30], [14, 38]].forEach(([ox, oy]) => { s += `<ellipse cx="${dx + d * -ox}" cy="${104 + oy}" rx="6" ry="4" transform="rotate(${-d * 17} ${dx + d * -ox} ${104 + oy})" fill="#cfe0b0" stroke="#7f9a5a" stroke-width="1"/>`; });
+      s += `<path d="M${ex},300 C${ex + d * 16},260 ${sx},190 ${sx},140 L${dx},104 C${dx - d * 12},92 ${dx - d * 32},96 ${dx - d * 42},110" fill="none" stroke="#8a6a4a" stroke-width="2"/>`;
+    });
+    s += al('Anillo profundo', 444, 90, 'end') + al('Conducto inguinal', 512, 112, 'start') + al('Vasos femorales', 446, 196, 'end') + al('Conducto deferente', 508, 238, 'start');
+    return s;
+  }
+
+  function anatFem() {
+    let s = '';
+    /* mapa vulvar: bulbos vestibulares, glándulas de Bartolino (4 y 8 h) y de Skene */
+    s += `<ellipse cx="${VX - 27}" cy="226" rx="7" ry="28" fill="#c98ea0" fill-opacity=".6" stroke="#9a5a6c" stroke-width="1"/><ellipse cx="${VX + 27}" cy="226" rx="7" ry="28" fill="#c98ea0" fill-opacity=".6" stroke="#9a5a6c" stroke-width="1"/>`;
+    s += `<ellipse cx="${VX - 24}" cy="264" rx="7" ry="9" fill="#e8d27a" stroke="#a08a3a" stroke-width="1"/><ellipse cx="${VX + 24}" cy="264" rx="7" ry="9" fill="#e8d27a" stroke="#a08a3a" stroke-width="1"/>`;
+    s += `<circle cx="${VX - 7}" cy="186" r="3" fill="#e8d27a" stroke="#a08a3a" stroke-width=".8"/><circle cx="${VX + 7}" cy="186" r="3" fill="#e8d27a" stroke="#a08a3a" stroke-width=".8"/>`;
+    /* corte sagital: sacro, trompa y ovario (anexo) */
+    s += `<path d="M548,86 C574,160 566,250 540,330" fill="none" stroke="#c9b99a" stroke-width="16" stroke-linecap="round"/><path d="M548,86 C574,160 566,250 540,330" fill="none" stroke="#f1e9dc" stroke-width="12" stroke-linecap="round"/>`;
+    s += `<path d="M380,122 C408,100 438,112 452,132" fill="none" stroke="#a35a6c" stroke-width="2.5"/><ellipse cx="456" cy="148" rx="8" ry="12" fill="#e8d27a" stroke="#a35a6c" stroke-width="1"/>`;
+    s += al('Bulbo vestibular', VX - 36, 196, 'end') + al('Gl. de Skene', VX + 14, 170, 'start') + al('Trompa', 414, 100) + al('Sacro', 556, 72);
+    return s;
+  }
+
+  function anatMama(learn, c) {
+    let s = '';
+    ['R', 'L'].forEach(k => {
+      const { cx, cy } = BR[k], dir = k === 'R' ? -1 : 1;
+      /* pectoral mayor (plano profundo) esbozado */
+      s += `<ellipse cx="${cx + dir * 10}" cy="${cy - 24}" rx="116" ry="92" fill="none" stroke="#e6c7a8" stroke-width="2" stroke-dasharray="6 5"/>`;
+      if (isF(c)) {
+        /* lóbulos glandulares en torno al pezón con sus conductos; prolongación axilar (cola de Spence) */
+        for (let i = 0; i < 12; i++) {
+          const a = i * 30, r = a * Math.PI / 180, lx = cx + 58 * Math.cos(r), ly = cy + 58 * Math.sin(r);
+          s += `<ellipse cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" rx="26" ry="12" transform="rotate(${a} ${lx.toFixed(1)} ${ly.toFixed(1)})" fill="#f0c8b4" fill-opacity=".85" stroke="#c9927c" stroke-width="1"/>`;
+          s += `<path d="M${lx.toFixed(1)},${ly.toFixed(1)} L${cx},${cy}" stroke="#c9927c" stroke-width="1.3"/>`;
+        }
+        const tx = cx + dir * 98, ty = cy - 94;
+        s += `<ellipse cx="${tx}" cy="${ty}" rx="24" ry="10" transform="rotate(${dir === -1 ? -138 : -42} ${tx} ${ty})" fill="#f0c8b4" fill-opacity=".85" stroke="#c9927c" stroke-width="1"/>`;
+        s += `<path d="M${tx},${ty} L${cx + dir * 42},${cy - 42}" stroke="#c9927c" stroke-width="1.3"/>`;
+      } else {
+        s += `<circle cx="${cx}" cy="${cy}" r="12" fill="#f0c8b4" fill-opacity=".85" stroke="#c9927c" stroke-width="1" stroke-dasharray="3 2"/>`;
+      }
+      s += al(isF(c) ? 'Lóbulos glandulares' : 'Disco retroareolar (< 2 cm)', cx, cy - 36) + al(isF(c) ? 'Conductos galactóforos' : 'Pectoral mayor', cx, cy + 66) + (isF(c) ? al('Pectoral mayor', cx, cy + 110) : '');
+    });
+    /* axila: ganglios (centrales, pectorales, subescapulares, laterales, apicales y supraclaviculares) y vías linfáticas */
+    s += `<path d="M655,336 L655,238 L655,150 L655,84 M606,206 L655,238 M706,206 L655,238 M704,288 L655,238" fill="none" stroke="#7f9a5a" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    [[655, 238], [606, 206], [706, 206], [704, 288], [655, 150], [655, 84]].forEach(([x, y]) => {
+      [[-7, -4], [6, -2], [-1, 6]].forEach(([ox, oy]) => { s += `<ellipse cx="${x + ox}" cy="${y + oy}" rx="5" ry="3.5" fill="#cfe0b0" stroke="#7f9a5a" stroke-width="1"/>`; });
+    });
+    s += al('Vías linfáticas', 650, 292, 'end');
+    return s;
+  }
+
   /* =====================================================================
      1) RIÑÓN Y VÍAS URINARIAS
      ===================================================================== */
@@ -97,18 +179,13 @@
     s += `<path d="M130,128 Q168,140 206,186 M130,128 Q92,140 54,186" fill="none" stroke="#b5a48f" stroke-width="3"/>`;
     s += `<path d="M44,330 Q130,296 216,330" fill="none" stroke="#b5a48f" stroke-width="3"/>`;
     s += `<text x="238" y="58" class="svg-small">D</text><text x="14" y="58" class="svg-small">I</text>`;
-    s += `<g class="hintring"><ellipse cx="164" cy="172" rx="16" ry="36" fill="#c0504d" opacity=".25"/><ellipse cx="96" cy="160" rx="16" ry="36" fill="#c0504d" opacity=".25"/>` +
-         `<text x="130" y="116" text-anchor="middle" class="svg-hint">12.ª costilla</text><text x="130" y="318" text-anchor="middle" class="svg-hint">Cresta ilíaca</text></g>`;
+    s += `<g class="hintring"><text x="130" y="116" text-anchor="middle" class="svg-hint">12.ª costilla</text><text x="130" y="318" text-anchor="middle" class="svg-hint">Cresta ilíaca</text></g>`;
     /* vista anterior */
     s += panelTitle(385, 26, 'Vista anterior (esquema)');
     s += `<path d="M290,40 L480,40 C488,150 474,260 482,340 L470,446 L300,446 L288,340 C296,260 282,150 290,40 Z" fill="${FILL}" stroke="${INK}" stroke-width="2.5"/>`;
     s += `<ellipse cx="385" cy="270" rx="5" ry="7" fill="#d8c3a8" stroke="${INK}" stroke-width="1.2"/>`;
     s += `<text x="272" y="58" class="svg-small">D</text><text x="490" y="58" class="svg-small">I</text>`;
-    s += `<g class="hintring"><ellipse cx="338" cy="225" rx="14" ry="32" fill="#c0504d" opacity=".25"/><ellipse cx="432" cy="213" rx="14" ry="32" fill="#c0504d" opacity=".25"/>` +
-         `<path d="M342,256 C344,300 356,346 366,384 M428,244 C426,300 414,346 404,384" fill="none" stroke="#c9a23a" stroke-width="3"/>` +
-         `<ellipse cx="385" cy="402" rx="30" ry="18" fill="${SOFT}" stroke="#b79a1a" stroke-width="1.5"/>` +
-         `<text x="385" y="406" class="svg-hint" text-anchor="middle">Vejiga</text>` +
-         `<path d="M300,350 H470" stroke="${TEAL}" stroke-width="1.4" stroke-dasharray="4 5" fill="none"/><text x="472" y="354" class="svg-hint">línea biilíaca</text></g>`;
+    s += `<g class="hintring"><path d="M300,350 H470" stroke="${TEAL}" stroke-width="1.4" stroke-dasharray="4 5" fill="none"/><text x="472" y="354" class="svg-hint">línea biilíaca</text></g>`;
     /* muestra de orina y tira reactiva */
     s += panelTitle(610, 26, 'Orina');
     s += `<path d="M568,90 L652,90 L644,240 C643,252 628,258 610,258 C592,258 577,252 576,240 Z" fill="${p.color}" fill-opacity=".72" stroke="${INK}" stroke-width="2.5"/>`;
@@ -164,6 +241,7 @@
     id: 'rin', label: 'Riñón y vías urinarias', viewBox: '0 0 720 520',
     hint: 'Diagrama esquemático. Puñopercusión lumbar en la vista posterior; palpación bimanual (Guyon), peloteo renal y puntos ureterales en la vista anterior; muestra de orina y tira reactiva.',
     svg: rinSvg,
+    anatomy: anatRin,
     tools: [
       { id: 'perc', icon: '👊', label: 'Puñopercusión lumbar', hint: 'Haz clic en un ángulo costovertebral (vista posterior; signo de Giordano) o percute la región suprapúbica.' },
       { id: 'palp', icon: '🤲', label: 'Palpación', hint: 'Palpación bimanual de los riñones (maniobra de Guyon, peloteo), puntos ureterales y región suprapúbica en la vista anterior.' },
@@ -231,6 +309,7 @@
     id: 'masc', label: 'Genitales masculinos', viewBox: '0 0 760 520',
     hint: 'Diagrama esquemático. Garantiza consentimiento, privacidad y, si procede, acompañante. Inspección, palpación testicular, transiluminación, hernias con Valsalva y tacto rectal.',
     svg: mascSvg,
+    anatomy: anatMasc,
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Vello púbico, pene, glande y meato, escroto y testículos.' },
       { id: 'palp', icon: '✋', label: 'Palpación', hint: 'Testículos, epidídimo, cordón espermático y ganglios inguinales con ambas manos, comparando los dos lados.' },
@@ -356,6 +435,7 @@
     id: 'fem', label: 'Genitales femeninos', viewBox: '0 0 780 520',
     hint: 'Diagrama esquemático. Prepara a la paciente (consentimiento, acompañante, privacidad) y sigue el orden: inspección externa, espéculo, tacto bimanual.',
     svg: femSvg,
+    anatomy: anatFem,
     tools: [
       { id: 'prep', icon: '🤝', label: 'Preparación', hint: 'Haz clic en el recuadro inferior: consentimiento, acompañante, privacidad y posición.' },
       { id: 'insp', icon: '👁️', label: 'Inspección externa', hint: 'Vello, labios, clítoris, meato uretral, introito y periné.' },
@@ -498,6 +578,7 @@
     id: 'mama', label: 'Mama', viewBox: '0 0 780 520',
     hint: 'Mapa de cuadrantes. Elige la postura para la inspección y la técnica para la palpación (decúbito).',
     svg: mamaSvg,
+    anatomy: anatMama,
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección (sentada)', hint: 'Elige la postura arriba a la izquierda: brazos caídos, brazos elevados o manos en las caderas.' },
       { id: 'palp', icon: '✋', label: 'Palpación (decúbito)', hint: 'Decúbito supino, brazo homolateral tras la cabeza; con la pulpa de los dedos y movimientos circulares con tres presiones (superficial, media, profunda).' },

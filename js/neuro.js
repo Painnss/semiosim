@@ -5,20 +5,148 @@
 
   const SKIN = '#f1c9a5', SKIN_D = '#b98a63';
   const SIDE_NAME = { R: 'derecho', L: 'izquierdo' };
+  /* [clave, nombre, estructura percutida, raíz y nervio] */
   const REFL = [
-    ['biceps', 'Bicipital', 'tendón bicipital'],
-    ['triceps', 'Tricipital', 'tendón tricipital'],
-    ['brachio', 'Estilorradial', 'reflejo estilorradial'],
-    ['patellar', 'Rotuliano', 'tendón rotuliano'],
-    ['achilles', 'Aquíleo', 'tendón de Aquiles']
+    ['biceps', 'Bicipital', 'tendón bicipital', 'C5-C6, n. musculocutáneo'],
+    ['triceps', 'Tricipital', 'tendón tricipital', 'C7, n. radial'],
+    ['brachio', 'Estilorradial', 'reflejo estilorradial', 'C5-C6, n. radial'],
+    ['patellar', 'Rotuliano', 'tendón rotuliano', 'L2-L4, n. femoral'],
+    ['achilles', 'Aquíleo', 'tendón de Aquiles', 'S1-S2, n. tibial']
   ];
   const GRADE_TXT = [
     '0: abolido (arreflexia)', '1+: disminuido (hiporreflexia)', '2+: normal',
     '3+: vivo (hiperreflexia; puede ser normal si es simétrico y sin otros signos)', '4+: exaltado, con clonus'
   ];
-  const limb = (x1, y1, x2, y2, w) =>
-    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${SKIN_D}" stroke-width="${w + 5}" stroke-linecap="round"/>` +
-    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${SKIN}" stroke-width="${w}" stroke-linecap="round"/>`;
+
+  /* ------------------------------------------------- capa anatómica (helpers) */
+  const BONE = '#f1e9dc', BONE_D = '#b8a98c', MUS = '#cf7f78', MUS_D = '#9c4f48',
+    TEND = '#f5f0e6', TEND_D = '#bfb294', NERV = '#f2d35b', NERV_D = '#a8891e', LAB = '#2f3f50', LEAD = '#6b7a8c';
+  const skinPath = d => `<path d="${d}" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3" stroke-linejoin="round"/>`;
+  const bone = d => `<path d="${d}" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  const muscle = d => `<path d="${d}" fill="${MUS}" stroke="${MUS_D}" stroke-width="1"/>`;
+  const tendon = (d, w) => `<path d="${d}" fill="none" stroke="${TEND_D}" stroke-width="${(w || 5) + 2}" stroke-linecap="round"/>` +
+    `<path d="${d}" fill="none" stroke="${TEND}" stroke-width="${w || 5}" stroke-linecap="round"/>`;
+  const nerve = (d, w) => `<path d="${d}" fill="none" stroke="${NERV_D}" stroke-width="${(w || 2.2) + 1.2}" stroke-linecap="round"/>` +
+    `<path d="${d}" fill="none" stroke="${NERV}" stroke-width="${w || 2.2}" stroke-linecap="round"/>`;
+  /* rótulo pequeño; b = negrita (nervio y raíz) */
+  const alab = (x, y, t, anchor, b, extra) =>
+    `<text x="${x}" y="${y}" class="svg-small" text-anchor="${anchor || 'middle'}" style="font-size:10.5px;fill:${LAB};font-weight:${b ? 700 : 500}" ${extra || ''}>${t}</text>`;
+  const lead = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${LEAD}" stroke-width="1" stroke-dasharray="2 2"/>`;
+  const ANAT_OPEN = cls => `<g ${cls ? `class="anat"` : 'id="anat"'} style="opacity:0;pointer-events:none">`;
+
+  /* Esquema del arco reflejo miotático (esquina inferior izquierda de la escena de reflejos). */
+  function reflexArcMarkup() {
+    return `
+      <defs><marker id="arcArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="${NERV_D}"/></marker></defs>
+      ${alab(40, 326, 'Arco reflejo miotático (monosináptico)', 'start', true)}
+      <ellipse cx="100" cy="392" rx="44" ry="31" fill="#efe9e0" stroke="${BONE_D}" stroke-width="1.2"/>
+      <path d="M 86 370 Q 78 380 86 392 Q 78 404 86 414 L 94 414 Q 100 402 106 414 L 114 414 Q 122 404 114 392 Q 122 380 114 370 L 106 370 Q 100 382 94 370 Z" fill="#cdbfc9" stroke="#9f8ba0" stroke-width="1"/>
+      <circle cx="100" cy="392" r="1.6" fill="#7a6a7c"/>
+      <ellipse cx="282" cy="396" rx="40" ry="15" fill="${MUS}" stroke="${MUS_D}" stroke-width="1"/>
+      <ellipse cx="282" cy="396" rx="13" ry="4.5" fill="#f7e3e1" stroke="${MUS_D}" stroke-width="1"/>
+      <path d="M 252 392 C 220 386, 196 364, 168 356 C 150 352, 128 364, 116 374" fill="none" stroke="${NERV_D}" stroke-width="2.2" marker-end="url(#arcArrow)"/>
+      <circle cx="162" cy="356" r="5" fill="${NERV}" stroke="${NERV_D}" stroke-width="1.2"/>
+      <path d="M 114 410 C 128 420, 150 430, 170 428 C 200 424, 232 410, 252 400" fill="none" stroke="${NERV_D}" stroke-width="2.2" marker-end="url(#arcArrow)"/>
+      <circle cx="112" cy="410" r="4" fill="#7a4fc0" stroke="#4e2f85" stroke-width="1"/>
+      ${alab(282, 374, 'Músculo', 'middle')}
+      ${alab(282, 426, 'Huso neuromuscular (aferente Ia)', 'middle')}
+      ${alab(170, 345, 'Raíz posterior (ganglio)', 'middle')}
+      ${alab(100, 441, 'Médula', 'middle')}
+      ${alab(205, 447, 'Raíz anterior · motoneurona α', 'middle')}`;
+  }
+
+  /* Capa anatómica estática del miembro superior e inferior (no se mueve con los golpes). */
+  function reflexAnatStatic() {
+    return ANAT_OPEN() + `
+      <!-- miembro superior -->
+      ${nerve('M 118 62 C 134 92, 160 118, 170 150')}
+      ${nerve('M 112 70 C 114 120, 120 170, 131 194 M 131 194 C 140 214, 158 218, 172 214')}
+      ${bone('M 141 82 C 141 66, 159 66, 159 82 L 157 212 Q 168 220 160 228 L 140 228 Q 132 220 143 212 Z')}
+      ${muscle('M 139 92 C 116 125, 114 180, 128 198 C 138 190, 146 140, 139 92 Z')}
+      ${tendon('M 128 196 L 128 238')}
+      ${muscle('M 163 90 C 190 120, 190 182, 174 204 C 160 190, 156 125, 163 90 Z')}
+      ${tendon('M 174 202 L 181 228')}
+      ${lead(203, 95, 160, 104)}${alab(206, 98, 'Húmero', 'start')}
+      ${lead(203, 123, 184, 132)}${alab(206, 126, 'Bíceps braquial', 'start')}
+      ${lead(210, 178, 197, 206)}${alab(206, 160, 'Bicipital C5-C6', 'start', true)}${alab(206, 174, 'n. musculocutáneo', 'start')}
+      ${lead(111, 149, 123, 152)}${alab(108, 152, 'Tríceps braquial', 'end')}
+      ${lead(108, 232, 126, 222)}${alab(108, 229, 'Tricipital C7', 'end', true)}${alab(108, 243, 'n. radial', 'end')}
+      ${lead(111, 254, 130, 240)}${alab(108, 257, 'Olécranon', 'end')}
+      ${alab(204, 201, 'Braquiorradial', 'start')}
+      ${lead(200, 254, 200, 226)}${alab(200, 265, 'Radio', 'middle')}
+      ${lead(252, 254, 252, 243)}${alab(252, 265, 'Cúbito', 'middle')}
+      ${lead(312, 254, 296, 234)}${alab(338, 265, 'Estilorradial C5-C6', 'middle', true)}${alab(338, 279, 'n. radial', 'middle')}
+      <!-- miembro inferior -->
+      ${nerve('M 516 170 C 560 158, 620 160, 660 172')}
+      ${nerve('M 516 230 C 580 236, 650 230, 686 238')}
+      ${bone('M 522 190 Q 508 200 522 212 L 676 208 Q 684 200 676 192 Z')}
+      <ellipse cx="686" cy="200" rx="16" ry="18" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.5"/>
+      ${muscle('M 540 172 C 600 150, 660 158, 690 180 C 650 177, 590 180, 540 172 Z')}
+      ${tendon('M 690 180 L 730 190', 6)}
+      <ellipse cx="734" cy="206" rx="10" ry="15" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.5"/>
+      ${lead(600, 144, 600, 160)}${alab(600, 140, 'Cuádriceps', 'middle')}
+      ${lead(600, 252, 600, 212)}${alab(600, 263, 'Fémur', 'middle')}
+      ${lead(759, 198, 746, 204)}${alab(762, 201, 'Rótula', 'start')}
+      ${lead(759, 243, 750, 240)}${alab(762, 239, 'Rotuliano L2-L4', 'start', true)}${alab(762, 253, 'n. femoral', 'start')}
+      ${lead(749, 318, 724, 318)}${alab(752, 321, 'Tibia', 'start')}
+      ${lead(639, 293, 657, 290)}${alab(636, 296, 'Gastrocnemio-sóleo', 'end')}
+      ${lead(653, 342, 678, 346)}${alab(650, 345, 'Tendón de Aquiles', 'end')}
+      ${lead(653, 408, 661, 396)}${alab(650, 405, 'Aquíleo S1-S2', 'end', true)}${alab(650, 419, 'n. tibial', 'end')}
+      ${lead(643, 441, 674, 428)}${alab(640, 444, 'Calcáneo', 'end')}
+      ${reflexArcMarkup()}
+    </g>`;
+  }
+  /* Partes de la capa anatómica que viajan con los segmentos animados. */
+  const forearmAnat = () => ANAT_OPEN(true) + `
+      ${bone('M 134 232 L 314 236 Q 322 239 314 242 L 136 245 Q 124 239 134 232 Z')}
+      ${bone('M 160 217 L 312 219 Q 320 222 312 225 L 160 224 Q 150 220 160 217 Z')}
+      ${nerve('M 172 214 C 200 208, 240 210, 268 212', 1.6)}
+      ${muscle('M 166 212 C 200 204, 240 206, 264 213 C 240 219, 200 220, 166 218 Z')}
+      ${tendon('M 262 213 L 314 216', 4)}
+    </g>`;
+  const shankAnat = () => ANAT_OPEN(true) + `
+      ${nerve('M 686 238 C 700 290, 692 330, 688 352')}
+      ${bone('M 696 232 L 702 232 L 704 382 L 696 382 Z')}
+      ${bone('M 706 214 Q 722 210 728 220 L 720 384 Q 712 392 704 384 L 706 220 Z')}
+      ${tendon('M 734 222 L 724 252', 7)}
+      ${muscle('M 690 215 C 650 250, 652 320, 684 350 C 700 320, 700 260, 690 215 Z')}
+      ${tendon('M 684 350 L 684 404', 6)}
+    </g>`;
+  const heelAnat = () => ANAT_OPEN(true) + `
+      <ellipse cx="688" cy="420" rx="16" ry="14" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.5"/>
+      ${bone('M 702 412 L 782 428 L 792 438 L 702 432 Z')}
+    </g>`;
+
+  function reflexMarkup() {
+    return `
+      <!-- hombro / tronco -->
+      <rect x="40" y="44" width="130" height="92" rx="26" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3"/>
+      <!-- brazo -->
+      ${skinPath('M 116 78 C 110 125, 118 175, 126 228 Q 150 246 174 228 C 184 175, 192 125, 184 78 C 180 50, 120 50, 116 78 Z')}
+      <circle cx="150" cy="230" r="22" fill="${SKIN}"/>
+      <g id="forearm">
+        ${skinPath('M 150 209 C 200 206, 270 212, 318 216 L 318 244 C 270 250, 200 254, 150 251 A 21 21 0 0 1 150 209 Z')}
+        ${skinPath('M 316 213 Q 358 204 384 220 Q 398 232 384 248 Q 356 256 316 247 Z')}
+        ${skinPath('M 380 220 Q 414 216 418 232 Q 414 246 380 248 Z')}
+        <path d="M 392 219 L 392 247 M 404 218 L 404 246" fill="none" stroke="${SKIN_D}" stroke-width="1.5"/>
+        <ellipse cx="346" cy="209" rx="15" ry="7" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2.5"/>
+        ${forearmAnat()}
+      </g>
+      <!-- muslo -->
+      ${skinPath('M 514 158 C 484 166, 484 234, 514 242 L 690 242 Q 714 200 690 158 C 640 150, 560 150, 514 158 Z')}
+      <circle cx="700" cy="200" r="37" fill="${SKIN}"/>
+      <ellipse cx="734" cy="206" rx="14" ry="20" fill="#f6dcc2" stroke="${SKIN_D}" stroke-width="2"/>
+      <g id="shank">
+        ${skinPath('M 674 204 C 640 240, 646 330, 684 392 L 716 392 C 724 330, 734 260, 727 204 Z')}
+        <g id="foot">
+          ${skinPath('M 684 380 L 720 380 Q 736 398 762 408 L 796 420 Q 814 432 798 448 L 690 448 Q 666 442 670 416 Q 672 396 684 380 Z')}
+          ${heelAnat()}
+        </g>
+        <ellipse cx="712" cy="386" rx="9" ry="7" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="2"/>
+        ${shankAnat()}
+      </g>
+      ${reflexAnatStatic()}`;
+  }
 
   /* ---------------------------------------------------------------- REFLEJOS */
   const AMP = {
@@ -52,21 +180,9 @@
         <rect width="900" height="520" fill="#e8eef4"/>
         <text x="450" y="52" text-anchor="middle" class="svg-title" id="sideLbl"></text>
         <rect x="40" y="462" width="820" height="10" rx="5" fill="#cfd8e2"/>
-        <text x="270" y="130" class="svg-small" id="armLbl" text-anchor="middle"></text>
-        <!-- brazo -->
-        ${limb(150, 70, 150, 230, 46)}
-        <g id="forearm">${limb(150, 230, 322, 230, 38)}
-          <ellipse cx="356" cy="232" rx="34" ry="21" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3"/></g>
-        <circle cx="150" cy="230" r="22" fill="${SKIN}"/>
-        <!-- pierna -->
-        ${limb(500, 200, 700, 200, 76)}
-        <g id="shank">
-          <path d="M674 200 L726 200 L716 396 L684 396 Z" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3" stroke-linejoin="round"/>
-          <g id="foot"><path d="M682 384 L722 384 L792 420 Q806 438 784 448 L688 448 Q672 438 682 384 Z" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3" stroke-linejoin="round"/></g>
-        </g>
-        <circle cx="700" cy="200" r="37" fill="${SKIN}"/>
-        <ellipse cx="734" cy="206" rx="14" ry="20" fill="#f6dcc2" stroke="${SKIN_D}" stroke-width="2"/>
+        <text x="330" y="84" class="svg-small" id="armLbl" text-anchor="middle"></text>
         <text x="600" y="110" class="svg-small" text-anchor="middle" id="legLbl"></text>
+        ${reflexMarkup()}
         <!-- zona de clonus -->
         <rect id="clonusZone" x="666" y="376" width="148" height="80" fill="transparent" style="display:none"/>
         <g id="hints"></g>
@@ -167,7 +283,7 @@
       const info = REFL.find(r => r[0] === key);
       sh.explored(`reflex:${key}:${side}`);
       if (sh.mode === 'learn') {
-        sh.log(`<b>Reflejo ${info[1].toLowerCase()} ${SIDE_NAME[side]}</b> → ${GRADE_TXT[g]}`, 'find');
+        sh.log(`<b>Reflejo ${info[1].toLowerCase()} ${SIDE_NAME[side]}</b> (${info[3]}) → ${GRADE_TXT[g]}`, 'find');
       } else {
         sh.log(`Percusión del ${info[2]} ${SIDE_NAME[side]}. Observa la respuesta y regístrala en “Mis hallazgos”.`);
       }
@@ -234,6 +350,38 @@
     return `translate(0 ${o.dy || 0}) rotate(${o.rot || 0} ${t.cx} ${by}) translate(${t.cx} ${by}) scale(1 ${o.sy || 1}) translate(${-t.cx} ${-by})`;
   };
 
+  /* Capa anatómica del pie (coordenadas locales del pie; el pie izquierdo está espejado con scale(-1 1),
+     por lo que los textos se vuelven a invertir para que se lean y los anclajes se intercambian). */
+  const DERM = { L4: '#3f86e0', L5: '#5fbf55', S1: '#f2a03c' };
+  function footAnat(side, base) {
+    const mir = side === 'L';
+    const T = (x, y, txt, anchor, b) => {
+      const a = !mir ? (anchor || 'middle') : anchor === 'end' ? 'start' : anchor === 'start' ? 'end' : 'middle';
+      const pos = mir ? `transform="translate(${x} ${y}) scale(-1 1)"` : `x="${x}" y="${y}"`;
+      return `<text ${pos} text-anchor="${a}" class="svg-small" style="font-size:10.5px;fill:${LAB};font-weight:${b ? 700 : 500}">${txt}</text>`;
+    };
+    const derm = (k, d) => `<path d="${d}" fill="${DERM[k]}" fill-opacity=".7" stroke="${DERM[k]}" stroke-width="1"/>`;
+    const toeFill = [DERM.L4, DERM.L5, DERM.L5, DERM.L5, DERM.S1];
+    return ANAT_OPEN(true) + `
+      <defs><clipPath id="sole${side}">${base}</clipPath></defs>
+      <g clip-path="url(#sole${side})">
+        ${derm('L4', 'M -20 90 L 84 90 C 78 160, 82 220, 100 262 C 106 300, 104 330, 102 350 L -20 372 Z')}
+        ${derm('L5', 'M 84 90 L 140 90 C 136 180, 124 250, 118 300 C 114 325, 113 340, 112 350 L 102 350 C 104 330, 106 300, 100 262 C 82 220, 78 160, 84 90 Z')}
+        ${derm('S1', 'M 140 90 L 220 90 L 220 460 L -20 460 L -20 372 L 102 350 L 112 350 C 113 340, 114 325, 118 300 C 124 250, 136 180, 140 90 Z')}
+      </g>
+      ${TOES.map((t, i) => `<ellipse cx="${t.cx}" cy="${t.cy}" rx="${t.rx - 1}" ry="${t.ry - 1}" fill="${toeFill[i]}" fill-opacity=".7"/>`).join('')}
+      ${nerve('M 40 300 C 56 320, 66 332, 76 338', 1.8)}
+      ${nerve('M 76 338 C 80 290, 76 230, 72 170 C 70 150, 66 130, 60 118 M 72 170 C 78 150, 84 135, 88 118 M 72 170 C 92 150, 108 135, 114 122', 1.6)}
+      ${nerve('M 76 338 C 100 326, 120 300, 128 250 C 134 210, 140 170, 150 134 M 150 134 C 146 124, 142 118, 138 112 M 150 134 C 156 126, 158 120, 160 118', 1.6)}
+      ${nerve('M 136 420 C 146 390, 150 340, 156 300 C 160 250, 164 200, 162 150', 1.6)}
+      ${T(56, 214, 'L4', 'middle', true)}${T(112, 226, 'L5', 'middle', true)}${T(152, 332, 'S1', 'middle', true)}${T(108, 416, 'S1', 'middle', true)}
+      ${T(30, 299, 'N. tibial', 'end')}
+      <line x1="31" y1="247" x2="68" y2="252" stroke="${LEAD}" stroke-width="1" stroke-dasharray="2 2"/>${T(28, 250, 'N. plantar medial', 'end')}
+      <line x1="178" y1="247" x2="134" y2="245" stroke="${LEAD}" stroke-width="1" stroke-dasharray="2 2"/>${T(182, 250, 'N. plantar lateral', 'start')}
+      <line x1="178" y1="357" x2="156" y2="330" stroke="${LEAD}" stroke-width="1" stroke-dasharray="2 2"/>${T(182, 360, 'N. sural', 'start')}
+    </g>`;
+  }
+
   function footMarkup(side, c) {
     const base = `<ellipse cx="108" cy="375" rx="46" ry="52"/><rect x="88" y="250" width="76" height="120" rx="30"/><ellipse cx="105" cy="190" rx="68" ry="75"/>`;
     const toes = TOES.map((t, i) =>
@@ -249,6 +397,7 @@
       <g fill="${SKIN_D}" stroke="${SKIN_D}" stroke-width="7" stroke-linejoin="round">${base}</g>
       <g fill="${SKIN}">${base}</g>
       ${toes}${ulcer}
+      ${footAnat(side, base)}
       <g class="hintring">${ring}</g>
       <path class="guide hintring" d="M 126 405 C 156 360 160 300 150 235 C 148 205 148 190 138 180 C 114 168 88 170 66 178" fill="none" stroke="#0e6a78" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>
       <path class="strokePath" d="M 126 405 C 156 360 160 300 150 235 C 148 205 148 190 138 180 C 114 168 88 170 66 178" fill="none" stroke="#e08a1e" stroke-width="6" stroke-linecap="round" style="display:none"/>
@@ -278,6 +427,12 @@
         <g transform="translate(470 50)">${footMarkup('R', c)}</g>
         <text x="210" y="500" text-anchor="middle" class="svg-title">Pie izquierdo (I)</text>
         <text x="570" y="500" text-anchor="middle" class="svg-title">Pie derecho (D)</text>
+        ${ANAT_OPEN()}
+          <rect x="300" y="60" width="12" height="12" fill="${DERM.L4}" fill-opacity=".7"/>${alab(316, 70, 'L4: borde medial y hallux', 'start')}
+          <rect x="300" y="80" width="12" height="12" fill="${DERM.L5}" fill-opacity=".7"/>${alab(316, 90, 'L5: centro de la planta, dedos 2.º-4.º', 'start')}
+          <rect x="300" y="100" width="12" height="12" fill="${DERM.S1}" fill-opacity=".7"/>${alab(316, 110, 'S1: borde lateral, 5.º dedo y talón', 'start')}
+          ${alab(390, 522, 'Dermatomas plantares (aproximados) · n. tibial → plantar medial (dedos 1.º-3.º) y lateral (4.º-5.º); n. sural: borde lateral y talón', 'middle')}
+        </g>
         <g id="arrows"></g>
       </svg>`;
       this.svg = stage.querySelector('svg');
@@ -409,6 +564,52 @@
   const WAYPOINTS = [[0, 0], [-1, 0], [-1, -1], [-1, 1], [-1, 0], [1, 0], [1, -1], [1, 1], [1, 0], [0, 0]];
   const level = v => v >= 0.85 ? 'presente' : v >= 0.2 ? 'disminuido' : 'ausente';
 
+  /* Capa anatómica de la escena de ojos: músculos extraoculares sobre cada ojo (con su par), esquema de
+     las posiciones diagnósticas (arriba a la izquierda) y vía pupilar en miniatura (arriba a la derecha). */
+  function eyesAnat() {
+    const mus = d => `<path d="${d}" fill="${MUS}" fill-opacity=".85" stroke="${MUS_D}" stroke-width="1" stroke-linejoin="round"/>`;
+    const eye = side => {
+      const { cx, cy } = EYE_C[side], lat = side === 'R' ? -1 : 1;   // lateral = hacia fuera del rostro
+      const sIn = lat < 0 ? 'start' : 'end', sOut = lat < 0 ? 'end' : 'start';
+      return `
+        ${mus(`M ${cx - 10} ${cy - 44} L ${cx + 10} ${cy - 44} L ${cx + 6} ${cy - 78} L ${cx - 6} ${cy - 78} Z`)}
+        ${mus(`M ${cx - 10} ${cy + 44} L ${cx + 10} ${cy + 44} L ${cx + 6} ${cy + 72} L ${cx - 6} ${cy + 72} Z`)}
+        ${mus(`M ${cx + lat * 82} ${cy - 10} L ${cx + lat * 82} ${cy + 10} L ${cx + lat * 120} ${cy + 6} L ${cx + lat * 120} ${cy - 6} Z`)}
+        ${mus(`M ${cx - lat * 82} ${cy - 10} L ${cx - lat * 82} ${cy + 10} L ${cx - lat * 112} ${cy + 6} L ${cx - lat * 112} ${cy - 6} Z`)}
+        ${mus(`M ${cx - lat * 70} ${cy - 66} L ${cx + lat * 26} ${cy - 42} L ${cx + lat * 22} ${cy - 34} L ${cx - lat * 70} ${cy - 58} Z`)}
+        ${mus(`M ${cx - lat * 70} ${cy + 62} L ${cx + lat * 26} ${cy + 40} L ${cx + lat * 22} ${cy + 32} L ${cx - lat * 70} ${cy + 54} Z`)}
+        ${alab(cx + lat * 14, cy - 60, 'RS · III', sOut, true)}
+        ${alab(cx + lat * 14, cy + 62, 'RI · III', sOut, true)}
+        ${alab(cx + lat * 126, cy + 4, 'RL · VI', sOut, true)}
+        ${alab(cx - lat * 100, cy + (lat < 0 ? -16 : 24), 'RM · III', sIn, true)}
+        ${alab(cx - lat * 56, cy - 54, 'OS · IV', sIn, true)}
+        ${alab(cx - lat * 56, cy + 80, 'OI · III', sIn, true)}`;
+    };
+    const arrow = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${MUS_D}" stroke-width="2" marker-end="url(#eyeArrow)"/>`;
+    const node = (x, fill, stroke) => `<circle cx="${x}" cy="48" r="8" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+    return ANAT_OPEN() + `
+      <defs><marker id="eyeArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="${MUS_D}"/></marker>
+        <marker id="pupArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="${NERV_D}"/></marker></defs>
+      ${eye('R')}${eye('L')}
+      <!-- esquema: posiciones diagnósticas del ojo derecho -->
+      ${alab(8, 14, 'Músculos extraoculares (ojo D, de frente)', 'start', true)}
+      <circle cx="70" cy="58" r="17" fill="#fbfbfb" stroke="#8a5f45" stroke-width="1.5"/><circle cx="70" cy="58" r="6" fill="#6b4a2f"/>
+      ${arrow(52, 58, 30, 58)}${arrow(88, 58, 110, 58)}
+      ${arrow(58, 46, 42, 30)}${arrow(82, 46, 98, 30)}${arrow(58, 70, 42, 86)}${arrow(82, 70, 98, 86)}
+      ${alab(27, 61, 'RL', 'end')}${alab(113, 61, 'RM', 'start')}${alab(40, 27, 'RS', 'end')}${alab(100, 27, 'OI', 'start')}
+      ${alab(40, 97, 'RI', 'end')}${alab(100, 97, 'OS', 'start')}
+      ${alab(130, 42, 'III: RS, RI, RM, OI', 'start')}${alab(130, 56, 'IV: OS (abajo y adentro)', 'start')}${alab(130, 70, 'VI: RL (abducción)', 'start')}
+      <!-- vía pupilar -->
+      ${alab(600, 14, 'Vía pupilar (reflejo fotomotor)', 'start', true)}
+      ${node(616, '#fbfbfb', '#8a5f45')}<circle cx="616" cy="48" r="3" fill="#0b0b0b"/>
+      ${node(656, NERV, NERV_D)}${node(696, '#b9a0e0', '#7a4fc0')}${node(736, NERV, NERV_D)}
+      ${node(776, '#fbfbfb', '#8a5f45')}<circle cx="776" cy="48" r="2" fill="#0b0b0b"/>
+      ${[616, 656, 696, 736].map(x => `<line x1="${x + 10}" y1="48" x2="${x + 30}" y2="48" stroke="${NERV_D}" stroke-width="2" marker-end="url(#pupArrow)"/>`).join('')}
+      ${alab(616, 70, 'Retina', 'middle')}${alab(656, 70, 'II par', 'middle')}${alab(696, 70, 'N. E-W', 'middle')}${alab(736, 70, 'III par', 'middle')}${alab(776, 70, 'Pupila', 'middle')}
+      ${alab(600, 86, 'aferente II · eferente III → ambas pupilas', 'start')}
+    </g>`;
+  }
+
   const EyesScene = {
     label: 'Ojos y pupilas',
     hint: '',
@@ -459,6 +660,7 @@
         ${eyeSvg('R')}${eyeSvg('L')}
         <text x="270" y="288" text-anchor="middle" class="svg-small">Ojo derecho (D)</text>
         <text x="530" y="288" text-anchor="middle" class="svg-small">Ojo izquierdo (I)</text>
+        ${eyesAnat()}
         <g id="finger" visibility="hidden">
           <rect x="-12" y="8" width="24" height="170" rx="12" fill="${SKIN}" stroke="${SKIN_D}" stroke-width="3"/>
           <circle r="9" fill="#d9534f" stroke="#fff" stroke-width="2"/>

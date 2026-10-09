@@ -123,6 +123,123 @@
     return b;
   }
 
+  /* ----- capa anatómica translúcida (#anat): huesos y vísceras bajo la piel, misma escala que el torso ----- */
+  const AC = { bone: '#f1e9dc', lung: '#d9a1a1', heart: '#c0504d', heartLt: '#d98b84', heartDk: '#a8403d', liver: '#9e4b3a', stom: '#d8b08c',
+    kidney: '#8c4a3f', spleen: '#7a3b4a', vein: '#6b8fc9', art: '#c0504d', trach: '#e9dfd0', diaph: '#b36b5e', ink: '#5a4636' };
+  const lbl = (x, y, t, anchor, extra) => `<text class="svg-small" x="${x}" y="${y}"${anchor ? ` text-anchor="${anchor}"` : ''}${extra ? ` style="${extra}"` : ''}>${t}</text>`;
+
+  function anatAnt() {
+    const K = AC;
+    let a = '';
+    // tráquea (anillos) y bronquios principales; la carina queda a la altura del ángulo de Louis
+    a += `<path d="M203,22 L203,122 Q210,132 217,122 L217,22 Z" fill="${K.trach}" stroke="${K.ink}" stroke-width="1"/>`;
+    for (let y = 30; y <= 118; y += 9) a += `<path d="M204,${y} L216,${y}" stroke="${K.ink}" stroke-width=".8" opacity=".6"/>`;
+    a += `<path d="M205,124 L188,146 L180,166 M215,124 L240,150 L252,166" fill="none" stroke="${K.ink}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>` +
+         `<path d="M205,124 L188,146 L180,166 M215,124 L240,150 L252,166" fill="none" stroke="${K.trach}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // pulmones (el izquierdo con la escotadura cardíaca y la língula)
+    a += `<path d="M198,112 C185,94 160,92 145,100 C110,118 86,160 76,210 C68,250 64,300 70,338 C100,318 130,280 150,258 C170,254 190,254 198,250 Z" fill="${K.lung}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M222,112 C235,94 260,92 275,100 C310,118 334,160 344,210 C352,250 356,300 350,338 C320,318 290,280 270,258 L244,262 C256,240 268,215 262,200 C254,180 236,172 224,160 Z" fill="${K.lung}" stroke="${K.ink}" stroke-width="1"/>`;
+    // cisuras: horizontal (4.ª costilla) y oblicuas (del 5.º arco lateral al 6.º cartílago costal)
+    a += `<path d="M196,190 Q140,200 74,250" fill="none" stroke="${K.ink}" stroke-width="1" stroke-dasharray="4 3"/>` +
+         `<path d="M72,250 Q105,270 150,258 M348,250 Q315,270 270,258" fill="none" stroke="${K.ink}" stroke-width="1" stroke-dasharray="4 3"/>`;
+    a += lbl(104, 150, 'LSD') + lbl(100, 232, 'LMD') + lbl(84, 272, 'LID') + lbl(320, 150, 'LSI') + lbl(322, 300, 'LII') + lbl(254, 290, 'Língula', 'middle');
+    // diafragma, hígado y estómago (espacio de Traube)
+    a += `<path d="M70,322 C92,246 160,236 208,268 L244,274 C250,300 236,322 210,324 C160,342 100,348 70,322 Z" fill="${K.liver}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M262,290 C282,268 322,276 334,304 C342,334 322,362 292,358 C266,352 254,326 262,300 Z" fill="${K.stom}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M70,322 C92,246 160,236 208,268 M212,268 C262,250 330,262 350,328" fill="none" stroke="${K.diaph}" stroke-width="2.5"/>`;
+    a += lbl(170, 282, 'Diafragma', 'middle') + lbl(120, 318, 'Hígado', 'middle') + lbl(300, 352, 'Estómago (esp. de Traube)', 'middle');
+    // grandes vasos: cava superior, aorta ascendente y cayado, tronco pulmonar
+    a += `<path d="M200,108 L200,160" stroke="${K.vein}" stroke-width="7" stroke-linecap="round"/>`;
+    a += `<path d="M242,128 C238,160 236,200 238,250" fill="none" stroke="${K.art}" stroke-width="4" opacity=".55" stroke-dasharray="6 3"/>`;
+    a += `<path d="M216,174 C214,150 210,136 214,122 C222,108 240,110 246,124" fill="none" stroke="${K.art}" stroke-width="9" stroke-linecap="round"/>`;
+    a += `<path d="M224,160 C230,150 236,142 240,134 M240,134 L204,140 M240,134 L262,146" fill="none" stroke="#5b7fb5" stroke-width="6" stroke-linecap="round"/>`;
+    // corazón: aurícula derecha, ventrículo derecho (cara anterior), ventrículo izquierdo (punta) y orejuela izquierda
+    a += `<ellipse cx="254" cy="160" rx="14" ry="8" fill="${K.heartLt}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M197,160 C186,185 188,228 203,250 L222,248 C214,220 214,185 214,160 Z" fill="${K.heartLt}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M214,160 C214,185 214,220 222,248 L262,254 C252,220 244,185 240,158 Z" fill="${K.heart}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M240,158 C244,185 252,220 262,254 L280,250 C292,236 288,196 272,168 C266,160 252,156 240,158 Z" fill="${K.heartDk}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += `<path d="M197,160 C186,185 188,228 203,250 C230,262 262,264 280,250 C292,236 288,196 272,168 C262,150 236,140 222,150 C214,146 204,150 197,160 Z" fill="none" stroke="${K.ink}" stroke-width="1.4"/>`;
+    a += lbl(188, 240, 'AD', 'end') + lbl(238, 230, 'VD', 'middle', 'fill:#fff') + lbl(270, 212, 'VI', 'middle', 'fill:#fff') + lbl(258, 168, 'AI', 'middle', 'fill:#fff');
+    // huesos encima de las vísceras: clavículas, esternón con ángulo de Louis y xifoides, costillas y reborde costal
+    for (let j = 1; j <= 9; j++) {
+      const y = 110 + 26 * (j - 1);
+      a += `<path d="M210,${y} Q150,${y + 6} 68,${y + 52} M210,${y} Q270,${y + 6} 352,${y + 52}" fill="none" stroke="${K.bone}" stroke-width="3" opacity=".75"/>`;
+    }
+    a += `<path d="M210,320 C190,330 150,345 110,345 C90,345 75,335 68,318 M210,320 C230,330 270,345 310,345 C330,345 345,335 352,318" fill="none" stroke="${K.bone}" stroke-width="3" opacity=".75"/>`;
+    a += `<path d="M172,100 Q130,108 80,124 M248,100 Q290,108 340,124" fill="none" stroke="${K.ink}" stroke-width="9" stroke-linecap="round"/>` +
+         `<path d="M172,100 Q130,108 80,124 M248,100 Q290,108 340,124" fill="none" stroke="${K.bone}" stroke-width="7" stroke-linecap="round"/>`;
+    a += `<path d="M201,98 L219,98 L221,126 L217,128 L215,298 Q210,316 205,298 L203,128 L199,126 Z" fill="${K.bone}" fill-opacity=".6" stroke="${K.ink}" stroke-width="1"/>` +
+         `<path d="M198,126 L222,126" stroke="${K.ink}" stroke-width="1.2"/>`;
+    a += lbl(84, 112, 'Clavícula') + lbl(226, 131, 'Ángulo de Louis') + lbl(196, 308, 'Xifoides', 'end') + lbl(210, 30, 'Tráquea', 'middle');
+    // válvulas (proyección real) y línea discontinua hacia el foco donde se propaga el sonido
+    const V = [['P', 224, 160, 230, 149], ['A', 216, 176, 190, 149], ['M', 222, 194, 275, 246], ['T', 210, 212, 230, 213]];
+    V.forEach(([t, x, y, fx, fy]) => {
+      a += `<path d="M${x},${y} L${fx},${fy}" stroke="#2b2b2b" stroke-width="1.2" stroke-dasharray="3 3"/>`;
+    });
+    V.forEach(([t, x, y]) => {
+      a += `<ellipse cx="${x}" cy="${y}" rx="7" ry="4.5" fill="#fff8e6" stroke="${K.ink}" stroke-width="1"/>` +
+           `<text class="svg-small" x="${x}" y="${y + 3.5}" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#2b2b2b">${t}</text>`;
+    });
+    a += lbl(210, 440, 'Válvulas: P pulmonar · A aórtica · M mitral · T tricúspide', 'middle') +
+         lbl(210, 456, '- - - : el sonido de cada válvula se propaga hasta su foco de auscultación', 'middle');
+    return a;
+  }
+
+
+  /* Pulsos periféricos (viewBox 460×720): trayecto de las arterias bajo los puntos de palpación. */
+  function pulsAnat() {
+    const K = AC, m = x => 460 - x;
+    const art = (d, w, dash) => `<path d="${d}" fill="none" stroke="${K.art}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${dash ? ' stroke-dasharray="6 4"' : ''}/>`;
+    const mir = d => d.replace(/([ML])(\d+(?:\.\d+)?),/g, (q, c, x) => c + m(+x) + ',').replace(/ (\d+(?:\.\d+)?),/g, (q, x) => ' ' + m(+x) + ',');
+    let a = '';
+    // corazón y cayado aórtico; aorta descendente y abdominal hasta la bifurcación ilíaca
+    a += `<ellipse cx="238" cy="182" rx="22" ry="27" transform="rotate(-20 238 182)" fill="${K.heart}" stroke="${K.ink}" stroke-width="1"/>`;
+    a += art('M232,165 L228,142 L244,140 L240,160 L238,200 L236,262 L236,278', 5);
+    a += `<text class="svg-small" x="252" y="140">Cayado aórtico</text><text class="svg-small" x="250" y="236">Aorta</text>`;
+    // ligamento inguinal (de la espina ilíaca anterosuperior al pubis): el pulso femoral se palpa bajo su punto medio
+    a += `<path d="M176,334 L222,354 M284,334 L238,354" fill="none" stroke="${K.bone}" stroke-width="2.5" stroke-dasharray="5 3"/>`;
+    const side = [
+      ['M228,142 L218,124 L216,112 L214,100', 3.5, false],                 // carótida común
+      ['M216,112 L214,100', 3.5, false],
+      ['M232,142 L196,138 L168,146 L150,196 L132,250 L128,258', 3.5, false], // subclavia · axilar · braquial
+      ['M128,258 L100,300 L76,366 L82,392', 2.5, false],                     // radial
+      ['M128,258 L112,300 L100,366 L82,392', 2.5, false],                    // cubital y arco palmar
+      ['M236,278 L214,318 L205,346', 4, false],                              // ilíaca común y externa
+      ['M205,346 L203,420 L200,506', 3.5, false],                            // femoral (cara anteromedial del muslo)
+      ['M200,506 L200,536', 3.5, true],                                      // poplítea (posterior, discontinua)
+      ['M200,536 L206,590 L208,648 L200,690', 2.5, false],                   // tibial posterior (tras el maléolo medial)
+      ['M200,536 L192,590 L190,650 L192,676 L188,696', 2.2, false]           // tibial anterior → pedia
+    ];
+    side.forEach(([d, w, dash]) => { a += art(d, w, dash) + art(mir(d), w, dash); });
+    // rótulos en el lado izquierdo del paciente (los rótulos de los puntos quedan por fuera de cada miembro)
+    const L = [[256, 100, 'A. carótida común'], [330, 214, 'A. braquial'], [396, 334, 'A. radial'], [250, 308, 'A. ilíaca'], [262, 420, 'A. femoral'],
+      [262, 476, 'A. poplítea (posterior)'], [268, 586, 'A. tibial posterior'], [268, 602, 'A. tibial anterior → pedia']];
+    L.forEach(([x, y, t]) => { a += `<text class="svg-small" x="${x}" y="${y}">${t}</text>`; });
+    a += `<text class="svg-small" x="344" y="334" text-anchor="end">A. cubital</text>`;
+    return a;
+  }
+
+  /* Cuello (vista lateral derecha, coordenadas locales en cm, giradas con el tronco): tráquea, ECM, carótida, yugulares, AD. */
+  function nkAnat(th) {
+    const K = AC, { PX, PY, K: sc } = NK;
+    const ve = 'vector-effect="non-scaling-stroke"';
+    let a = `<g transform="translate(${PX} ${PY}) rotate(${th + 180}) scale(${sc})">
+      <path d="M20,9.3 L36,9.3 L40.5,8.3" fill="none" stroke="${K.bone}" stroke-width="3.5" ${ve} stroke-linecap="round"/>
+      <path d="M51.5,6.4 L42,4.4" fill="none" stroke="${K.trach}" stroke-width="5" ${ve} stroke-linecap="round"/>
+      <circle cx="49.5" cy="6.2" r=".7" fill="${K.bone}" stroke="${K.ink}" stroke-width="1" ${ve}/>
+      <path d="M57,0.5 L41.5,8" fill="none" stroke="#c98a7a" stroke-width="7" ${ve} stroke-linecap="round" opacity=".75"/>
+      <ellipse cx="29" cy="2.5" rx="5.5" ry="4" transform="rotate(-15 29 2.5)" fill="${K.heart}" stroke="${K.ink}" stroke-width="1" ${ve}/>
+      <circle cx="31" cy="3.5" r=".7" fill="${K.heartLt}" stroke="${K.ink}" stroke-width="1" ${ve}/>
+      <path d="M31,4.5 C34,6.8 37,7.6 40,7.7 L43.5,7.6 L50,6.8 L53.5,6.2 M53.5,6.2 L56.2,7.2 M53.5,6.2 L56.2,5.2" fill="none" stroke="${K.art}" stroke-width="2.5" ${ve} stroke-linecap="round"/>
+      <path d="M33,4.2 C34.5,4.6 35.5,6 37,7.2 L51,5.7 L55.5,4.2" fill="none" stroke="${K.vein}" stroke-width="2.5" ${ve} stroke-linecap="round"/>
+      <path d="M56.5,3 L44,2.4" fill="none" stroke="#7fa0d0" stroke-width="1.5" ${ve} stroke-dasharray="4 3"/>
+    </g>`;
+    const T = (x, y, t, anchor) => { const q = lpt(x, y, th); return `<text class="svg-small" x="${q.x.toFixed(1)}" y="${q.y.toFixed(1)}"${anchor ? ` text-anchor="${anchor}"` : ''}>${t}</text>`; };
+    a += T(44, 11.5, 'Carótida') + T(50.5, 9, 'Yugular interna') + T(47, -1.5, 'ECM', 'middle') + T(31, 1, 'AD');
+    a += `<text class="svg-small" x="60" y="70">Capa anatómica: carótida (rojo) · yugular interna (azul) · yugular externa (discontinua) · ECM (rosado) · tráquea (banda clara)</text>`;
+    return a;
+  }
+
   /* ============================================================ ESCENA 1: PRECORDIO */
   const POSTURES = { sup: 'decúbito dorsal', lat: 'decúbito lateral izquierdo', sen: 'sentado' };
 
@@ -143,6 +260,7 @@
     id: 'pre', label: 'Precordio', viewBox: '0 0 420 560', redrawOnMode: true,
     hint: 'Inspecciona y palpa el precordio con el paciente en decúbito dorsal; cambia la posición para ver su efecto sobre el choque de la punta.',
     svg: learn => torsoSvg(learn),
+    anatomy: () => anatAnt(),
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Mira de frente y tangencialmente: abombamientos, cicatrices, latidos visibles (choque de la punta).' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Palma/yemas: choque de la punta en el 5.º EIC, levantamientos paraesternales y frémitos en la base.' },
@@ -353,6 +471,7 @@
     id: 'aus', label: 'Auscultación normal', viewBox: '0 0 420 560', redrawOnMode: true,
     hint: 'Ausculta los 5 focos con diafragma y campana. Cambia la posición y la fase respiratoria y observa el fonocardiograma.',
     svg: learn => torsoSvg(learn),
+    anatomy: () => anatAnt(),
     tools: [
       { id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma', hint: 'Diafragma, presión firme: ruidos agudos (R1, R2, soplos).' },
       { id: 'bell', icon: '🔔', label: 'Fonendoscopio · campana', hint: 'Campana, presión leve: ruidos graves (R3, R4, rolido mitral).' }
@@ -547,6 +666,10 @@
       const dyn = document.createElementNS(NS, 'g');
       dyn.setAttribute('id', 'nkdyn'); dyn.setAttribute('style', 'pointer-events:none');
       svg.insertBefore(dyn, svg.querySelector('#hits'));
+      /* capa anatómica propia (clase .anat): se redibuja con cada cambio de inclinación y el Shell regula su opacidad */
+      const anatG = document.createElementNS(NS, 'g');
+      anatG.setAttribute('class', 'anat'); anatG.setAttribute('style', 'opacity:0;pointer-events:none');
+      svg.insertBefore(anatG, svg.querySelector('#hits'));
       stage.insertAdjacentHTML('beforeend', `
         <div class="cv-bar">
           <span class="cv-lbl">Inclinación del tronco</span>
@@ -565,6 +688,7 @@
         const th = S.angle, J = jvpOf(c);
         const mk = nkMarkup(th, J);
         dyn.innerHTML = mk.html; geo = mk;
+        anatG.innerHTML = nkAnat(th);
         refs = { v2: dyn.querySelector('#nkV2'), lvl: dyn.querySelector('#nkLvl'), rd: dyn.querySelector('#nkRead') };
         Object.keys(NA).forEach(k => {
           const b = lpt(NA[k][0], NA[k][1], TH0), n = lpt(NA[k][0], NA[k][1], th);
@@ -715,6 +839,7 @@
       b += `<text x="230" y="716" class="svg-small" text-anchor="middle">Poplíteo: se palpa en la cara posterior de la rodilla</text>`;
       return b;
     },
+    anatomy: () => pulsAnat(),
     tools: [
       { id: 'palp', icon: '🖐️', label: 'Palpar pulso', hint: 'Palpa con la yema de los dedos (no con el pulgar); al palpar suena un pitido a la frecuencia del paciente.' },
       { id: 'aus', icon: '🩺', label: 'Auscultar soplos', hint: 'Ausculta carótidas, femorales y aorta abdominal en busca de soplos.' },

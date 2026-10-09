@@ -67,6 +67,28 @@
   /* Esquema de redacción de los hallazgos: «Técnica: … Hallazgo normal: …» */
   const TH = (t, h) => `<i>Técnica:</i> ${t} <i>Hallazgo normal:</i> ${h}`;
 
+  /* ---------------------------------------------------------------- capa anatómica translúcida (control «Anatomía» del Shell)
+     Las escenas declaran `anatomy: (learn, c) => '<g>…</g>'`; NormalEngine la coloca sobre la piel y bajo los puntos clicables. */
+  const BONE = '#f1e9dc', BONE_D = '#b9a98f', CART = '#e9e4d6', CART_D = '#b8ad96', SINUS = '#bcd6e8', SINUS_D = '#7fa3ba';
+  const GLAND = '#d8a48f', GLAND_D = '#b07a66', THYR = '#b8605a', THYR_D = '#8d3f3a', ART = '#c0392b', VEIN = '#5b7cc4', MUSC = '#b85c55', NODE = '#8fb08a', NODE_D = '#5e7f5a';
+  const aLab = (x, y, lines, anchor, size) => `<text class="svg-small" x="${x}" y="${y}" text-anchor="${anchor || 'start'}" style="font-size:${size || 10.5}px;paint-order:stroke;stroke:#e8eef4;stroke-width:3px">${
+    (Array.isArray(lines) ? lines : [lines]).map((l, i) => `<tspan x="${x}" dy="${i ? 12 : 0}">${l}</tspan>`).join('')}</text>`;
+  const vessel = (d, col, w) => `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w || 4}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  /* globo ocular en corte horizontal (anterior = derecha): córnea, iris, cristalino, vítreo, retina y nervio óptico */
+  function eyeGlobe(cx, cy, R, title) {
+    const k = R / 70;
+    return `<text x="${cx}" y="${cy - R - 20}" text-anchor="middle" class="svg-small" style="font-size:11px;font-weight:600">${title || 'Globo ocular · corte horizontal'}</text>
+      <rect x="${cx - R - 30 * k}" y="${cy - 8 * k}" width="${34 * k}" height="${16 * k}" rx="5" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.4"/>
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="#fbfbfb" stroke="#9aa8b6" stroke-width="${3 * k}"/>
+      <circle cx="${cx}" cy="${cy}" r="${R - 7 * k}" fill="#e8f0f7" stroke="#c0504d" stroke-width="${3 * k}"/>
+      <path d="M${cx + R * 0.72} ${cy - R * 0.55} Q${cx + R * 1.2} ${cy} ${cx + R * 0.72} ${cy + R * 0.55}" fill="#dbeefc" stroke="${SINUS_D}" stroke-width="${2 * k}"/>
+      <path d="M${cx + R * 0.72} ${cy - R * 0.55} L${cx + R * 0.7} ${cy - R * 0.2} M${cx + R * 0.72} ${cy + R * 0.55} L${cx + R * 0.7} ${cy + R * 0.2}" stroke="#6b4a2f" stroke-width="${4 * k}" stroke-linecap="round"/>
+      <ellipse cx="${cx + R * 0.6}" cy="${cy}" rx="${R * 0.13}" ry="${R * 0.3}" fill="#f4f8fb" stroke="#7fa3ba" stroke-width="${1.6 * k}"/>
+      <circle cx="${cx - R + 10 * k}" cy="${cy + 10 * k}" r="${3 * k}" fill="#c9a24a"/>
+      ${aLab(cx + R * 0.95, cy - R * 0.72, 'córnea', 'end')}${aLab(cx + R * 0.98, cy - R * 0.1, 'iris')}${aLab(cx + R * 0.6, cy + R + 14, 'cristalino', 'middle')}
+      ${aLab(cx - R * 0.25, cy + R + 14, 'retina', 'middle')}${aLab(cx - R * 0.1, cy + 4, 'vítreo', 'middle')}${aLab(cx - R - 12 * k, cy + 26 * k, 'n. óptico', 'middle')}`;
+  }
+
   /* ============================================================ 1. CABEZA Y CARA */
   const HX = 270;
   function faceSvg(learn, c) {
@@ -141,6 +163,28 @@
     ${wr}
     ${inset}
     ${learn ? '' : ''}`;
+  }
+
+  /* capa anatómica de la cara: senos frontales y maxilares, arco cigomático, mandíbula con cóndilos (ATM),
+     parótida con conducto de Stenon, glándula submaxilar y globo ocular en corte bajo el ojo ampliado */
+  function faceAnat() {
+    const mx = x => 540 - x;
+    let s = '';
+    s += `<path d="M152 318 Q146 334 152 352 L168 424 Q176 444 200 452 L270 468 L340 452 Q364 444 372 424 L388 352 Q394 334 388 318" fill="none" stroke="${BONE_D}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<path d="M152 318 Q146 334 152 352 L168 424 Q176 444 200 452 L270 468 L340 452 Q364 444 372 424 L388 352 Q394 334 388 318" fill="none" stroke="${BONE}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+    [0, 1].forEach(i => {
+      const X = i ? mx : (x => x);
+      s += `<path d="M${X(138)} 298 Q${X(170)} 290 ${X(206)} 306" fill="none" stroke="${BONE_D}" stroke-width="9" stroke-linecap="round"/><path d="M${X(138)} 298 Q${X(170)} 290 ${X(206)} 306" fill="none" stroke="${BONE}" stroke-width="6" stroke-linecap="round"/>`;
+      s += `<path d="M${X(146)} 314 Q${X(158)} 300 ${X(170)} 314" fill="none" stroke="${CART_D}" stroke-width="2.4"/><circle cx="${X(158)}" cy="318" r="7" fill="${BONE}" stroke="${BONE_D}" stroke-width="1.6"/>`;
+      s += `<path d="M${X(224)} 236 Q${X(224)} 206 ${X(246)} 208 Q${X(262)} 214 ${X(258)} 238 Q${X(242)} 246 ${X(224)} 236 Z" fill="${SINUS}" stroke="${SINUS_D}" stroke-width="1.4"/>`;
+      s += `<path d="M${X(188)} 326 L${X(236)} 334 L${X(232)} 368 L${X(196)} 362 Z" fill="${SINUS}" stroke="${SINUS_D}" stroke-width="1.4"/>`;
+      s += `<path d="M${X(146)} 356 Q${X(134)} 380 ${X(146)} 414 Q${X(160)} 430 ${X(176)} 418 Q${X(186)} 398 ${X(180)} 372 Q${X(168)} 352 ${X(146)} 356 Z" fill="${GLAND}" stroke="${GLAND_D}" stroke-width="1.4"/>`;
+      s += `<path d="M${X(176)} 384 Q${X(206)} 382 ${X(232)} 386" fill="none" stroke="${GLAND_D}" stroke-width="2.4" stroke-linecap="round"/>`;
+      s += `<ellipse cx="${X(212)}" cy="474" rx="22" ry="12" transform="rotate(${i ? 15 : -15} ${X(212)} 474)" fill="${GLAND}" stroke="${GLAND_D}" stroke-width="1.4"/>`;
+    });
+    s += aLab(270, 498, 'mandíbula', 'middle') + aLab(112, 296, 'arco cigomático', 'end') + aLab(236, 392, 'conducto de Stenon', 'start', 9.5);
+    s += eyeGlobe(660, 480, 72);
+    return s;
   }
 
   const eyeLook = c => TH('inspección de párpados, conjuntivas, esclera, córnea e iris con buena luz, comparando ambos ojos.',
@@ -340,6 +384,8 @@
     <circle cx="338" cy="262" r="244" fill="none" stroke="#050505" stroke-width="22" opacity=".75"/>
     ${panel}`;
   }
+  /* capa anatómica del fondo de ojo: globo ocular en corte (panel derecho, fuera del campo del oftalmoscopio) */
+  const fundusAnat = () => eyeGlobe(705, 400, 62, 'Globo ocular (corte)');
   function fundusRegions() {
     const X = fx, T = t => ({ oft: t, foto: t });
     return [
@@ -776,6 +822,31 @@
     <path id="hnJugL" d="M494 120 Q476 190 460 305" fill="none" stroke="#5b7cc4" stroke-width="1" stroke-linecap="round" opacity=".25"/>
 `;
   }
+  /* capa anatómica del cuello: hioides, cartílagos tiroides y cricoides, tráquea, tiroides (istmo y lóbulos),
+     carótidas con su bifurcación, yugulares internas, esternocleidomastoideos y cadenas ganglionares */
+  function neckAnat() {
+    const mx = x => 820 - x;
+    let s = '';
+    for (let y = 236; y <= 326; y += 10) s += `<path d="M400 ${y} Q410 ${y + 4} 420 ${y}" fill="none" stroke="${CART_D}" stroke-width="2.6"/>`;
+    s += `<path d="M392 164 Q410 171 428 164" fill="none" stroke="${BONE_D}" stroke-width="6" stroke-linecap="round"/><path d="M392 164 Q410 171 428 164" fill="none" stroke="${BONE}" stroke-width="3.5" stroke-linecap="round"/>`;
+    s += `<path d="M384 176 L410 190 L436 176 L434 206 L410 214 L386 206 Z" fill="${CART}" stroke="${CART_D}" stroke-width="1.6"/>`;
+    s += `<ellipse cx="410" cy="221" rx="15" ry="7" fill="${CART}" stroke="${CART_D}" stroke-width="1.6"/>`;
+    s += `<rect x="393" y="236" width="34" height="14" rx="5" fill="${THYR}" stroke="${THYR_D}" stroke-width="1.4"/>`;
+    [0, 1].forEach(i => {
+      const X = i ? mx : (x => x);
+      s += `<path d="M${X(326)} 70 L${X(400)} 334" fill="none" stroke="${MUSC}" stroke-width="22" stroke-linecap="round" opacity=".45"/>`;
+      s += `<path d="M${X(394)} 232 C${X(372)} 228 ${X(362)} 262 ${X(370)} 290 Q${X(380)} 304 ${X(392)} 292 Q${X(398)} 262 ${X(394)} 232 Z" fill="${THYR}" stroke="${THYR_D}" stroke-width="1.4"/>`;
+      s += vessel(`M${X(374)} 336 Q${X(368)} 280 ${X(360)} 220 Q${X(354)} 170 ${X(350)} 122`, VEIN, 5);
+      s += vessel(`M${X(386)} 334 Q${X(382)} 290 ${X(378)} 232 L${X(376)} 200`, ART, 5) + vessel(`M${X(376)} 200 Q${X(372)} 160 ${X(366)} 122`, ART, 4) + vessel(`M${X(376)} 200 Q${X(386)} 160 ${X(392)} 124`, ART, 3.2);
+      [[360, 165], [357, 205], [355, 245], [356, 285], [320, 146], [300, 212], [292, 252], [300, 318]].forEach(p => {
+        s += `<ellipse cx="${X(p[0])}" cy="${p[1]}" rx="5" ry="7" fill="${NODE}" stroke="${NODE_D}" stroke-width="1.2"/>`;
+      });
+    });
+    s += aLab(436, 158, 'hioides') + aLab(458, 204, 'cartílago tiroides') + aLab(462, 226, 'cricoides') + aLab(462, 262, 'tiroides: istmo y lóbulos');
+    s += aLab(462, 284, 'carótida común y bifurcación (C4)') + aLab(352, 290, 'v. yugular interna', 'end');
+    s += aLab(330, 316, 'ganglios yugulares', 'end') + aLab(304, 146, 'ganglios submaxilares', 'end') + aLab(300, 354, 'supraclaviculares', 'end') + aLab(286, 230, 'cadena posterior', 'end');
+    return s;
+  }
   const neckRegions = [
     { id: 'laring', label: 'Cartílago tiroides y laringe', short: 'Laringe', cx: 410, cy: 186, r: 13,
       tools: {
@@ -1118,7 +1189,7 @@
     ],
     scenes: [
       { id: 'face', label: 'Cabeza y cara', viewBox: '0 0 820 600', hint: 'Inspección, palpación, percusión de senos, linterna y agudeza visual: haz clic en cada zona.',
-        svg: faceSvg, regions: faceRegions, redrawOnMode: false,
+        svg: faceSvg, regions: faceRegions, redrawOnMode: false, anatomy: faceAnat,
         tools: [
           { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección: observa simetría, piel, cabello, ojos y facies.' },
           { id: 'touch', icon: '✋', label: 'Palpación / presión', hint: 'Palpación: cráneo, arteria temporal, senos (presión), ATM y glándulas salivales.' },
@@ -1128,14 +1199,15 @@
         ] },
       { id: 'fundus', label: 'Fondo de ojo', viewBox: '0 0 800 520', redrawOnMode: true,
         hint: 'Oftalmoscopio: mueve el cursor para recorrer el fondo del ojo (campo limitado) y haz clic en cada estructura.',
-        svg: fundusSvg, get regions() { return fundusRegions(); },
+        svg: fundusSvg, get regions() { return fundusRegions(); }, anatomy: fundusAnat,
         tools: [
           { id: 'oft', icon: '🔎', label: 'Oftalmoscopio (campo limitado)', hint: 'Oftalmoscopio: mueve el cursor para iluminar una zona estrecha del fondo y haz clic en lo que ves.' },
           { id: 'foto', icon: '🖼️', label: 'Retinografía (vista completa)', hint: 'Retinografía: se ve todo el fondo de ojo. Haz clic en cada estructura.' }
         ],
         after(stage, sh, ctx) {
           clearInterval(fTimer);
-          seg(stage, [['OD', 'Ojo derecho'], ['OI', 'Ojo izquierdo']], fSide, v => { fSide = v; ctx.scene.enter(stage, sh); });
+          /* al cambiar de ojo se vuelve a montar la escena (vacía el escenario): se restituye el control «Anatomía» del Shell */
+          seg(stage, [['OD', 'Ojo derecho'], ['OI', 'Ojo izquierdo']], fSide, v => { fSide = v; ctx.scene.enter(stage, sh); if (sh.anatomyControl) sh.anatomyControl(stage); });
           const svg = ctx.svg;
           const g = mk('g', { 'pointer-events': 'none' },
             '<defs><mask id="hnScopeM"><rect x="0" y="0" width="800" height="520" fill="#fff"/><circle id="hnScopeC" cx="338" cy="262" r="96" fill="#000"/></mask></defs>' +
@@ -1210,7 +1282,7 @@
         } },
       { id: 'neck', label: 'Cuello', viewBox: '0 0 820 600', redrawOnMode: false,
         hint: 'Inspecciona, palpa tráquea y carótidas (una a la vez), ausculta y usa el panel inferior para la movilidad y la yugular.',
-        svg: neckSvg, regions: neckRegions, after: neckAfter,
+        svg: neckSvg, regions: neckRegions, after: neckAfter, anatomy: neckAnat,
         tools: [
           { id: 'look', icon: '👁️', label: 'Inspección', hint: 'Inspección del cuello: forma, piel, simetría, yugulares y latidos.' },
           { id: 'palp', icon: '✋', label: 'Palpación', hint: 'Palpa tráquea (línea media) y carótidas (de una en una).' },
