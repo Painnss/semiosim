@@ -235,6 +235,24 @@
   };
   const CASES = BASE.map(p => Object.assign({}, p, { msk: mskOf(p) }));
 
+  /* ---------------------------------------------- PUNTO DE EXTENSIÓN (módulos patológicos)
+     Un paciente puede traer en `msk` datos extendidos; si faltan, todo se comporta como en la persona sana:
+       rom[idMovimiento] = { a, p, note, pnote?, say? }   topes activo/pasivo (°), descripción del tope y queja del paciente
+       path[clave] = texto | { txt, g?, log? } | { R: ..., L: ... }   hallazgo que sustituye al normal, por clave:
+         'insp:<art>', 'palp:<art>', 'spine:look:<región>', 'spine:palp:<región>' (con levels:{L5:…}),
+         'str:resist:<músculo>' (g = grado 0-5), 'str:gravity:<músculo>', 'str:tone:<arm|leg>', 'str:trophism:<arm|leg>',
+         'man:<maniobra>' (positiva), 'gait:<normal|heel|toe|tandem>', 'gait:trend:<L|R>' (positivo)
+       schoberNote, lasNote (Lasègue positivo a `las`°), bragardNote, fdNote, gk { ha, asym, kf, lean, arm } (cinemática de la marcha),
+       overlay.posture (SVG extra en «Columna y postura»). */
+  const ROMX = (c, id) => (c.msk && c.msk.rom && c.msk.rom[id]) || null;
+  function pick(c, key, side) {
+    let v = c.msk && c.msk.path ? c.msk.path[key] : null;
+    if (!v) return null;
+    if (typeof v === 'object' && (v.R || v.L)) v = v[side || 'R'];
+    if (!v) return null;
+    return typeof v === 'string' ? { txt: v } : v;
+  }
+
   /* --------------------------------------------------- CATÁLOGO DE MOVIMIENTOS */
   const MOT = {};
   const JOINTS = [
@@ -429,11 +447,17 @@
 
   /* Fracciones por persona */
   const activeTope = (m, c) => {
+    const r = ROMX(c, m.id);
+    if (r && r.a != null) return r.a;
     if (m.nmax === 0) return 0;
     const lo = m.nmin < m.nmax ? m.nmin : Math.round(m.nmax * 0.9);
     return clamp(Math.round(m.nmax * c.msk.f), lo, m.nmax);
   };
-  const passiveTope = (m, c) => (m.nmax === 0 ? 0 : Math.min(m.nmax, activeTope(m, c) + 4));
+  const passiveTope = (m, c) => {
+    const r = ROMX(c, m.id);
+    if (r && r.p != null) return r.p;
+    return m.nmax === 0 ? 0 : Math.min(m.nmax, activeTope(m, c) + 4);
+  };
 
   /* ================================================================ GONIÓMETRO */
   function romView(host, o) {
@@ -628,8 +652,9 @@
     let lifted = null, u = 0, cancel = null;
     const hipX = { L: 238, R: 322 };   // vista posterior: la derecha del paciente queda a la derecha de la pantalla
     function draw() {
-      const tilt = lifted ? (lifted === 'L' ? 2.5 : -2.5) * u : 0;
-      const sh = lifted ? (lifted === 'L' ? 6 : -6) * u : 0;           // el tronco se desplaza hacia el lado de apoyo
+      const pv = lifted && o.pos ? o.pos(lifted) : null;               // positivo: la pelvis cae hacia el lado levantado
+      const tilt = lifted ? (lifted === 'L' ? 2.5 : -2.5) * (pv ? -2.2 : 1) * u : 0;
+      const sh = lifted ? (lifted === 'L' ? 6 : -6) * (pv ? 2.4 : 1) * u : 0;   // el tronco se desplaza hacia el lado de apoyo (más si es positivo: Duchenne)
       const learn = o.learn();
       let legs = '';
       ['L', 'R'].forEach(s => {
@@ -653,7 +678,8 @@
           <text x="418" y="236" style="font:600 12px system-ui,sans-serif;fill:#237a4b">nivel de las crestas ilíacas</text>
           <text x="300" y="206" text-anchor="middle" class="svg-hint">hoyuelos de Venus</text>` : ''}`;
       stat.innerHTML = lifted
-        ? (learn ? `<div class="msk-card"><p><b>Trendelenburg negativo:</b> la pelvis del lado levantado se mantiene nivelada o asciende ligeramente (≈ 2-3°) y el tronco se desvía poco hacia el lado de apoyo. Mantén 30 s.</p>
+        ? (pv ? `<div class="msk-card"><p><span class="msk-bad">Trendelenburg positivo (apoyo sobre la pierna ${lifted === 'L' ? 'derecha' : 'izquierda'}):</span> ${esc(pv.txt)}</p>${learn ? '<p style="color:var(--muted)">Normal: la pelvis del lado levantado se mantiene nivelada o asciende ligeramente. Positivo: cae hacia el lado levantado (debilidad o inhibición dolorosa de los abductores de la cadera de apoyo), a veces con inclinación compensadora del tronco hacia el lado de apoyo (signo de Duchenne).</p>' : ''}</div>`
+          : learn ? `<div class="msk-card"><p><b>Trendelenburg negativo:</b> la pelvis del lado levantado se mantiene nivelada o asciende ligeramente (≈ 2-3°) y el tronco se desvía poco hacia el lado de apoyo. Mantén 30 s.</p>
           <p>Abductores del lado de apoyo (glúteo medio y menor, L4-S1, nervio glúteo superior) competentes. Si la pelvis cayera hacia el lado levantado sería positivo (debilidad o dolor de la cadera de apoyo).</p></div>`
           : '<div class="msk-card"><p>Resultado: pelvis nivelada durante 30 s.</p></div>')
         : '<div class="msk-card"><p>Elige la pierna que se levanta (el examinador observa por detrás los hoyuelos de Venus).</p></div>';
@@ -692,27 +718,30 @@
     toe: { ha: 0.85, ank: -28, mean: 9, toe: 7 },
     tandem: { ha: 1, ank: null, mean: 9, toe: 0 }
   };
-  function makeGait(H, mode, amp) {
+  /* gk (opcional, marcha patológica): ha = amplitud global de la cadera; side = miembro afectado ('R' cercano, 'L' lejano; por defecto 'L');
+     asym = factor de amplitud de la cadera del miembro afectado; kf = factor de flexión de su rodilla; lean = inclinación anterior del tronco; arm = factor del braceo. */
+  function makeGait(H, mode, amp, gk) {
+    gk = gk || {};
     const S = H / 170, TH = 44 * S, SH = 43 * S, FH = 8 * S, FB = 6 * S, FF = 12 * S;
-    const cfg = GMODE[mode];
-    const hip = ph => cfg.mean + 19 * amp * cfg.ha * Math.cos(2 * Math.PI * ph);
-    const knee = ph => interp(KNEE, ph);
+    const cfg = GMODE[mode], aff = gk.side || 'L';
+    const hip = (ph, side) => cfg.mean + 19 * amp * cfg.ha * (gk.ha || 1) * (side === aff && gk.asym ? gk.asym : 1) * Math.cos(2 * Math.PI * ph);
+    const knee = (ph, side) => interp(KNEE, ph) * (side === aff && gk.kf ? gk.kf : 1);
     const ankle = ph => (cfg.ank != null ? cfg.ank : interp(ANK, ph));
-    function leg(ph) {
-      const h = rad(hip(ph)), k = rad(knee(ph)), a = ankle(ph);
+    function leg(ph, side) {
+      const h = rad(hip(ph, side)), k = rad(knee(ph, side)), a = ankle(ph);
       const kx = TH * Math.sin(h), ky = -TH * Math.cos(h);
       const s = h - k;
       const ax = kx + SH * Math.sin(s), ay = ky - SH * Math.cos(s);
       const t = s + rad(a), fx = Math.cos(t), fy = Math.sin(t), nx = Math.sin(t), ny = -Math.cos(t);
       return {
-        hip: hip(ph), knee: knee(ph), ank: a, k: [kx, ky], a: [ax, ay],
+        hip: hip(ph, side), knee: knee(ph, side), ank: a, k: [kx, ky], a: [ax, ay],
         heel: [ax + FH * nx - FB * fx, ay + FH * ny - FB * fy],
         toe: [ax + FH * nx + FF * fx, ay + FH * ny + FF * fy]
       };
     }
     const st = { x: 0, anchor: null, prints: [] };
     function pose(phi, rec) {
-      const legs = { R: leg(((phi % 1) + 1) % 1), L: leg((((phi + 0.5) % 1) + 1) % 1) };
+      const legs = { R: leg(((phi % 1) + 1) % 1, 'R'), L: leg((((phi + 0.5) % 1) + 1) % 1, 'L') };
       const pts = [];
       ['R', 'L'].forEach(f => ['heel', 'toe'].forEach(p => pts.push({ f, p, x: legs[f][p][0], y: legs[f][p][1] })));
       let low = pts[0];
@@ -738,8 +767,8 @@
     }
     return { pose, st, S };
   }
-  function measureStep(H, mode, amp) {
-    const g = makeGait(H, mode, amp);
+  function measureStep(H, mode, amp, gk) {
+    const g = makeGait(H, mode, amp, gk);
     for (let k = 0; k < 900; k++) g.pose(k * 0.004, true);
     const p = g.st.prints, d = [];
     for (let i = 1; i < p.length; i++) d.push(Math.abs(p[i].wx - p[i - 1].wx));
@@ -747,17 +776,18 @@
   }
   const AMPC = {};
   function ampFor(c, mode) {
-    const key = c.id + mode;
-    if (AMPC[key]) return AMPC[key];
+    const key = c.id + mode, gk = c.msk.gk;
     const H = c.v.height * 100, step = c.msk.step;
-    const target = { normal: step, heel: step * 0.85, toe: step * 0.65, tandem: 30 }[mode];
-    let best = 1, bd = 1e9;
-    for (let amp = 0.2; amp <= (mode === 'tandem' ? 0.7 : 1.6); amp += 0.02) {
-      const d = Math.abs(measureStep(H, mode, amp) - target);
-      if (d < bd) { bd = d; best = amp; }
+    if (AMPC[key] == null) {
+      const target = { normal: step, heel: step * 0.85, toe: step * 0.65, tandem: 30 }[mode];
+      let best = 1, bd = 1e9;
+      for (let amp = 0.2; amp <= (mode === 'tandem' ? 0.7 : 1.6); amp += 0.02) {
+        const d = Math.abs(measureStep(H, mode, amp, gk) - target);
+        if (d < bd) { bd = d; best = amp; }
+      }
+      AMPC[key] = best;
     }
-    AMPC[key] = best;
-    if (mode === 'normal') c.msk.sim = measureStep(H, mode, best);
+    if (mode === 'normal' && c.msk.sim == null) c.msk.sim = measureStep(H, mode, AMPC[key], gk);
     return AMPC[key];
   }
   const GPH = [[0, 0.10, 'Respuesta a la carga (contacto inicial, 0 %)', 'Apoyo · doble apoyo inicial'], [0.10, 0.30, 'Apoyo medio', 'Apoyo · apoyo simple'],
@@ -835,12 +865,14 @@
       },
       /* inspección / palpación de la articulación elegida */
       inspect() {
-        const sh = this.sh, J = JOINTS.find(x => x.id === this.j), txt = INSP[this.j][this.mode === 'palp' ? 'p' : 'i'];
+        const sh = this.sh, J = JOINTS.find(x => x.id === this.j);
+        const ov = pick(sh.case, (this.mode === 'palp' ? 'palp:' : 'insp:') + this.j);
+        const txt = ov ? ov.txt : INSP[this.j][this.mode === 'palp' ? 'p' : 'i'];
         const I = this.stage.querySelector('#mI');
         const what = this.mode === 'palp' ? 'Palpación' : 'Inspección';
         I.style.display = '';
-        I.innerHTML = `<div class="msk-card"><p><b>${what} · ${esc(J.n)}:</b> ${esc(txt)}</p>${sh.mode === 'learn' ? '<p style="color:var(--muted)">Orden del examen osteoarticular: inspección → palpación → movilidad activa → movilidad pasiva (goniometría) → maniobras especiales; siempre comparando con el lado contrario.</p>' : ''}</div>`;
-        sh.log(`<b>${what} · ${esc(J.n)}:</b> ${esc(txt)}`, 'find');
+        I.innerHTML = `<div class="msk-card"><p><b>${what} · ${esc(J.n)}:</b> ${ov ? '<span class="msk-bad">' + esc(txt) + '</span>' : esc(txt)}</p>${sh.mode === 'learn' ? '<p style="color:var(--muted)">Orden del examen osteoarticular: inspección → palpación → movilidad activa → movilidad pasiva (goniometría) → maniobras especiales; siempre comparando con el lado contrario.</p>' : ''}</div>`;
+        sh.log(`<b>${what} · ${esc(J.n)}:</b> ${esc(txt)}`, ov ? 'warn' : 'find');
         sh.explored(`rom:${this.mode}:${this.j}`);
       },
       refresh() { if (this.view) { this.view.refresh(); this.draw(); } },
@@ -861,28 +893,33 @@
       },
       status(m, t, limited) {
         const sh = this.sh, c = sh.case, learn = sh.mode === 'learn', mode = this.isIP() ? 'active' : this.mode;
-        const A = activeTope(m, c), Pp = passiveTope(m, c);
+        const A = activeTope(m, c), Pp = passiveTope(m, c), r = mode === 'free' ? null : ROMX(c, m.id);
         const over = t > m.nmax + m.tol + 0.5;
+        const say = r && limited && r.say ? ` · el paciente refiere: «${esc(r.say)}»` : '';
         if (!learn) {
-          return `<p>Ángulo medido: <b>${Math.round(t)}°</b>${limited ? ' · el paciente no puede avanzar más.' : ''}</p>`;
+          return `<p>Ángulo medido: <b>${Math.round(t)}°</b>${limited ? ' · el paciente no puede avanzar más.' : ''}${say}</p>`;
         }
         const note = { active: 'Movilidad activa: el paciente mueve por sí mismo (explora arco, fuerza y dolor).', passive: 'Movilidad pasiva: mueve el examinador con el paciente relajado (explora cápsula, ligamentos y sensación terminal).', free: 'Libre: sin tope; puedes superar el rango para ver el aviso.' }[mode];
         let msg;
         if (over) msg = `<span class="msk-bad">⚠ Excede el rango normal (${m.rng}${m.tol ? ' + ' + m.tol + '° tolerables' : ''}): hipermovilidad (p. ej., laxitud ligamentaria) o maniobra forzada con riesgo de lesión.</span>`;
+        else if (r && limited) msg = `<span class="msk-bad">Tope ${MODE_NAME[mode]} a ${mode === 'passive' ? Pp : A}° (normal ${m.rng}): ${esc(mode === 'passive' && r.pnote ? r.pnote : r.note)}</span>${say}`;
+        else if (r) msg = `${Math.round(t)}° de ${m.rng}. Continúa hasta el tope del paciente y observa la sensación terminal, el dolor y la comparación con el lado contrario.`;
         else if (limited) msg = `<span class="msk-warn">Tope ${MODE_NAME[mode]} alcanzado: ${mode === 'passive' ? Pp : A}°.</span> ${mode === 'active' ? `Prueba la movilidad pasiva: llega a ${Pp}° con ayuda del examinador (normalmente la pasiva supera a la activa en pocos grados).` : `Sensación terminal: ${esc(m.ef)}. Sin dolor ni crepitación.`}`;
         else msg = `<span class="msk-ok">Dentro del rango normal</span> (${m.rng}${m.tol ? ', hasta ' + m.tol + '° de hiperextensión fisiológica' : ''}).`;
+        const who = r ? `Este paciente alcanza: activo ${A}°, pasivo ${Pp}° (limitado respecto del rango normal ${m.rng}).` : `Esta persona (${sh.case.age} años) alcanza: activo ${A}°, pasivo ${Pp}° (normal para su edad, simétrico y sin dolor).`;
         return `<div class="msk-card"><p><b>${esc(m.n)}:</b> ${Math.round(t)}° · normal <b>${m.rng}</b>${m.nmin < m.nmax ? ' (rango según la fuente)' : ''}</p><p>${msg}</p>
-          <p style="color:var(--muted)">${note} Esta persona (${sh.case.age} años) alcanza: activo ${A}°, pasivo ${Pp}° (normal para su edad, simétrico y sin dolor).</p>
+          <p style="color:var(--muted)">${note} ${who}</p>
           <p style="color:var(--muted)"><b>Técnica:</b> ${esc(m.tech)}</p></div>`;
       },
       ended(m, t, limited) {
         if (t < 3 && !(m.nmax === 0 && limited)) return;   // la extensión de rodilla «normal» es 0°: se registra al intentar sobrepasarla
         const sh = this.sh, mode = this.isIP() ? 'active' : this.mode;
-        const J = JOINTS.find(x => x.id === m.j);
+        const J = JOINTS.find(x => x.id === m.j), r = mode === 'free' ? null : ROMX(sh.case, m.id);
+        if (r && limited && r.say) sh.say(r.say, 'no');
         if (sh.mode === 'learn') {
           const over = t > m.nmax + m.tol + 0.5;
-          sh.log(`<b>${esc(J.n)} · ${esc(m.n)} (${MODE_NAME[mode]}):</b> ${t}° · normal ${m.rng}${over ? ' · <b>excede el rango</b>' : limited ? ' · tope alcanzado' : ' · dentro del rango'}.`, over ? 'warn' : 'find');
-        } else sh.log(`${esc(m.n)} (${MODE_NAME[mode]}): ${t}°.`);
+          sh.log(`<b>${esc(J.n)} · ${esc(m.n)} (${MODE_NAME[mode]}):</b> ${t}° · normal ${m.rng}${over ? ' · <b>excede el rango</b>' : limited ? (r ? ' · <b>limitado</b>: ' + esc(mode === 'passive' && r.pnote ? r.pnote : r.note) : ' · tope alcanzado') : ' · dentro del rango'}.`, over || (r && limited) ? 'warn' : 'find');
+        } else sh.log(`${esc(m.n)} (${MODE_NAME[mode]}): ${t}°${r && limited && r.say ? ' · refiere «' + esc(r.say) + '»' : ''}.`);
         if (mode !== 'free') sh.explored(`rom:${mode}:${m.id}`);
       }
     };
@@ -1009,7 +1046,7 @@
           <rect width="780" height="560" fill="#e8eef4"/>
           <text x="190" y="18" text-anchor="middle" class="svg-title">Vista lateral</text><line x1="390" y1="10" x2="390" y2="550" stroke="#cfd8e2" stroke-width="2"/>
           <text x="570" y="0" class="svg-small"></text>
-          ${lat}${back}<g class="anat">${postureAnat()}</g>${guides}${labels}
+          ${lat}${back}${(c.msk.overlay && c.msk.overlay.posture) || ''}<g class="anat">${postureAnat()}</g>${guides}${labels}
           <g id="hits">
             <rect data-r="cerv" x="238" y="75" width="80" height="85" fill="transparent"/>
             <rect data-r="dors" x="195" y="165" width="80" height="150" fill="transparent"/>
@@ -1047,16 +1084,21 @@
           const g = e.target.closest('[data-r]');
           if (!g) { sh.log('Haz clic sobre una región de la columna o de la postura.', 'warn'); return; }
           const r = g.dataset.r;
+          const pov = pick(c, 'spine:palp:' + r), lov = pick(c, 'spine:look:' + r);
           if (this.tool === 'palp') {
             if (r === 'spine') {
               const p = svgPoint(svg, e);
               const i = clamp(Math.round((p.y - 100) / 10), 0, LEVELS.length - 1), lv = LEVELS[i];
-              sh.log(`<b>Apófisis espinosa de ${lv}</b>${learn ? (LEVEL_NOTE[lv] || '') : ''}: en la línea media, indolora; la percusión suave con el puño no despierta dolor.`, 'find');
+              const lt = pov && pov.levels && pov.levels[lv];
+              if (lt) sh.log(`<b>Apófisis espinosa de ${lv}</b>${learn ? (LEVEL_NOTE[lv] || '') : ''}: ${esc(lt)}`, 'warn');
+              else sh.log(`<b>Apófisis espinosa de ${lv}</b>${learn ? (LEVEL_NOTE[lv] || '') : ''}: ${pov && !pov.levels ? esc(pov.txt) : 'en la línea media, indolora; la percusión suave con el puño no despierta dolor.'}`, pov && !pov.levels ? 'warn' : 'find');
               sh.explored('spine:palp:spine');
-            } else if (PAL[r]) { sh.log(PAL[r].replace(/^(.*?):/, '<b>$1:</b>'), 'find'); sh.explored('spine:palp:' + r); }
+            } else if (pov) { sh.log(pov.txt.replace(/^(.*?):/, '<b>$1:</b>'), 'warn'); sh.explored('spine:palp:' + r); }
+            else if (PAL[r]) { sh.log(PAL[r].replace(/^(.*?):/, '<b>$1:</b>'), 'find'); sh.explored('spine:palp:' + r); }
             else sh.log('Palpa la línea de las apófisis espinosas o los músculos paravertebrales.', 'warn');
           } else {
-            if (TX[r]) { sh.log(TX[r], 'find'); sh.explored('spine:look:' + r); }
+            if (lov) { sh.log(lov.txt, 'warn'); sh.explored('spine:look:' + r); }
+            else if (TX[r]) { sh.log(TX[r], 'find'); sh.explored('spine:look:' + r); }
             else if (PAL[r]) { sh.log(PAL[r], 'find'); sh.explored('spine:look:' + r); }
             else if (r === 'spine') { sh.log('Apófisis espinosas visibles en la línea media, sin escalones ni desviación lateral.', 'find'); sh.explored('spine:look:spine'); }
           }
@@ -1104,7 +1146,7 @@
             const ok = d >= 15 - 0.01;
             st.innerHTML = learn
               ? `<div class="msk-card"><p>Distancia entre marcas: <b>${fmt(d)} cm</b> (en bipedestación: 10 cm). Normal: aumenta hasta <b>≥ 15 cm</b> (incremento de al menos 4-5 cm según la fuente).</p>
-                 <p>${u > 0.97 ? (ok ? '<span class="msk-ok">Schober normal: ' + fmt(D2) + ' cm en flexión máxima (+' + fmt(D2 - 10) + ' cm).</span>' : '') : 'Flexiona el tronco al máximo con las rodillas extendidas.'}</p>
+                 <p>${u > 0.97 ? (ok ? '<span class="msk-ok">Schober normal: ' + fmt(D2) + ' cm en flexión máxima (+' + fmt(D2 - 10) + ' cm).</span>' : '<span class="msk-bad">Schober patológico: ' + fmt(D2) + ' cm en flexión máxima (+' + fmt(D2 - 10) + ' cm, < 15 cm): ' + esc(c.msk.schoberNote || 'limitación de la flexión lumbar.') + '</span>') : 'Flexiona el tronco al máximo con las rodillas extendidas.'}</p>
                  <p style="color:var(--muted)">Schober modificado: marcas 10 cm por encima y 5 cm por debajo de la unión lumbosacral (15 cm); normal ≥ 20 cm. Una cifra menor indica rigidez lumbar (p. ej., espondilitis anquilosante).</p></div>`
               : `<p>Distancia entre marcas: <b>${fmt(d)} cm</b>.</p>`;
           } else st.innerHTML = learn ? '<div class="msk-card"><p>Primero localiza la unión lumbosacral (L5-S1): se toma como referencia la línea que une los hoyuelos de Venus (espinas ilíacas posterosuperiores) o un punto apenas por encima, según la fuente. Haz clic sobre esa zona de la columna.</p></div>' : '<p>Marca el punto de partida.</p>';
@@ -1121,7 +1163,11 @@
         });
         sl.addEventListener('input', () => { u = sl.value / 100; redraw(); });
         sl.addEventListener('change', () => {
-          if (placed && u > 0.97) { sh.log(learn ? `Schober: 10 → <b>${fmt(D2)} cm</b> en flexión (normal ≥ 15 cm).` : `Schober: distancia en flexión ${fmt(D2)} cm.`, 'find'); sh.explored('spine:schober'); }
+          if (placed && u > 0.97) {
+            const bad = D2 < 15 - 0.01;
+            sh.log(learn ? `Schober: 10 → <b>${fmt(D2)} cm</b> en flexión (normal ≥ 15 cm)${bad ? ' · <b>patológico</b>: ' + esc(c.msk.schoberNote || 'limitación de la flexión lumbar.') : ''}` : `Schober: distancia en flexión ${fmt(D2)} cm.`, bad ? 'warn' : 'find');
+            sh.explored('spine:schober');
+          }
         });
         redraw();
       },
@@ -1130,21 +1176,28 @@
         const sh = this.sh, c = sh.case, learn = sh.mode === 'learn';
         const W = this.stage.querySelector('#cW');
         W.innerHTML = '<div class="msk-row"><button class="msk-chip" id="brg">Dorsiflexión del pie (Bragard)</button></div><div id="lV"></div>';
-        const cp = c.msk.las;
+        const cp = c.msk.las, pos = c.msk.lasNote || null, brg = c.msk.bragardNote || null;
         this.view = romView(W.querySelector('#lV'), {
           learn: () => sh.mode === 'learn', interactive: true, cap: () => cp,
           status: (m, t, l) => {
-            if (!learn) return `<p>Elevación: <b>${Math.round(t)}°</b>${l ? ' · el paciente refiere tensión y detiene el ascenso.' : ''}</p>`;
+            const atTop = l || t >= cp - 0.5;
+            if (!learn) return `<p>Elevación: <b>${Math.round(t)}°</b>${l ? (pos ? ' · el paciente refiere dolor irradiado y detiene el ascenso.' : ' · el paciente refiere tensión y detiene el ascenso.') : ''}</p>`;
             return `<div class="msk-card"><p>Elevación de la pierna recta (signo de Lasègue): <b>${Math.round(t)}°</b> · normal 70-90° sin dolor radicular.</p>
-              <p>${l || t >= cp - 0.5 ? `<span class="msk-ok">Lasègue negativo:</span> a ${cp}° solo hay <b>tensión en la cara posterior del muslo</b> (isquiotibiales), sin dolor irradiado por debajo de la rodilla ni hacia la región lumbar o glútea.` : 'Eleva lentamente la pierna extendida (rodilla en extensión, pelvis apoyada); pregunta por dolor y por su localización.'}</p>
+              <p>${atTop ? (pos ? `<span class="msk-bad">Lasègue positivo a ${cp}°:</span> ${esc(pos)}` : `<span class="msk-ok">Lasègue negativo:</span> a ${cp}° solo hay <b>tensión en la cara posterior del muslo</b> (isquiotibiales), sin dolor irradiado por debajo de la rodilla ni hacia la región lumbar o glútea.`) : 'Eleva lentamente la pierna extendida (rodilla en extensión, pelvis apoyada); pregunta por dolor y por su localización.'}</p>
               <p style="color:var(--muted)">El Lasègue es positivo si desencadena dolor radicular (L5-S1, nervio ciático) entre 30° y 70° de elevación. Bragard: al bajar unos grados y dorsiflexionar el pie, el dolor reaparece solo si hay compresión radicular.</p></div>`;
           },
-          onEnd: (m, t, l) => { if (t >= 5) { sh.log(learn ? `<b>Lasègue:</b> ${t}° sin dolor radicular (tensión isquiotibial a ${cp}°). Negativo.` : `Elevación de la pierna recta: ${t}°.`, 'find'); sh.explored('spine:lasegue'); } }
+          onEnd: (m, t, l) => {
+            if (t < 5) return;
+            if (pos && l) sh.say('¡Ahí! Me baja el dolor por la pierna.', 'no');
+            sh.log(learn ? (pos && l ? `<b>Lasègue positivo a ${cp}°:</b> ${esc(pos)}` : pos ? `<b>Lasègue:</b> ${t}° (sigue elevando: el dolor aparece a ${cp}°).` : `<b>Lasègue:</b> ${t}° sin dolor radicular (tensión isquiotibial a ${cp}°). Negativo.`) : `Elevación de la pierna recta: ${t}°${pos && l ? ' · dolor irradiado' : ''}.`, pos && l ? 'warn' : 'find');
+            sh.explored('spine:lasegue');
+          }
         });
         this.view.load(MOT.las);
         W.querySelector('#brg').addEventListener('click', () => {
           const t = Math.round(this.view.th);
           if (t < 20) sh.log('Eleva primero la pierna (≈ 40-60°) y luego dorsiflexiona el pie.', 'warn');
+          else if (brg) { sh.say('¡Otra vez el dolor hasta el pie!', 'no'); sh.log(learn ? `<b>Bragard positivo:</b> ${esc(brg)}` : 'Dorsiflexión del pie con la pierna elevada: reaparece el dolor irradiado.', 'warn'); sh.explored('spine:bragard'); }
           else { sh.log(learn ? '<b>Bragard:</b> la dorsiflexión del pie no reproduce dolor radicular. Negativo.' : 'Dorsiflexión del pie con la pierna elevada: sin dolor.', 'find'); sh.explored('spine:bragard'); }
         });
       },
@@ -1178,6 +1231,7 @@
           sl.value = phi;
           st.innerHTML = learn
             ? `<div class="msk-card"><p>Distancia de la punta de los dedos al suelo: <b>${d <= 0.2 ? '0 cm (toca el suelo)' : fmt(d) + ' cm'}</b>. Normal ≈ <b>0-10 cm</b> con las rodillas extendidas.</p>
+               ${phi > phiMax - 1 && dF > 10 ? `<p class="msk-bad">Distancia aumentada (${dF} cm): ${esc(c.msk.fdNote || 'limitación de la flexión del tronco.')}</p>` : ''}
                <p style="color:var(--muted)">Mide la flexión conjunta de columna lumbar y caderas, y depende también de la elasticidad de los isquiotibiales; se interpreta junto con Schober.</p></div>`
             : `<p>Distancia dedo-suelo: <b>${d <= 0.2 ? '0' : fmt(d)} cm</b>.</p>`;
         };
@@ -1192,7 +1246,11 @@
         svg.addEventListener('pointermove', e => { if (drag) move(e); });
         const fin = () => {
           if (!drag) return; drag = false;
-          if (phi > phiMax - 1) { sh.log(learn ? `<b>Distancia dedo-suelo:</b> ${dF === 0 ? '0 cm (toca el suelo)' : dF + ' cm'}; normal ≤ 10 cm.` : `Dedo-suelo: ${dF} cm.`, 'find'); sh.explored('spine:finger'); }
+          if (phi > phiMax - 1) {
+            const bad = dF > 10;
+            sh.log(learn ? `<b>Distancia dedo-suelo:</b> ${dF === 0 ? '0 cm (toca el suelo)' : dF + ' cm'}; normal ≤ 10 cm.${bad ? ' <b>Aumentada:</b> ' + esc(c.msk.fdNote || 'limitación de la flexión del tronco.') : ''}` : `Dedo-suelo: ${dF} cm.`, bad ? 'warn' : 'find');
+            sh.explored('spine:finger');
+          }
         };
         svg.addEventListener('pointerup', fin); svg.addEventListener('pointercancel', fin);
         sl.addEventListener('input', () => { phi = +sl.value; draw(); });
@@ -1293,22 +1351,39 @@
         const SN = side === 'R' ? 'derecho' : 'izquierdo', arm = m.limb === 'arm';
         const x = side === 'R' ? m.x : 520 - m.x, vx = side === 'R' ? m.v[0] : -m.v[0], vy = m.v[1];
         if (tool === 'tone') {
-          sh.log(arm
+          const ov = pick(c, 'str:tone:' + m.limb, side);
+          sh.log(ov ? `<b>Tono del miembro ${arm ? 'superior' : 'inferior'} ${SN}:</b> <i>Técnica:</i> ${arm ? 'motilidad pasiva de codo y muñeca con el paciente relajado; sacudida del antebrazo.' : 'motilidad pasiva de cadera, rodilla y tobillo; prueba del péndulo con la pierna colgando.'} <i>Hallazgo:</i> ${esc(ov.txt)}` : arm
             ? `<b>Tono del miembro superior ${SN}:</b> <i>Técnica:</i> motilidad pasiva de codo y muñeca con el paciente relajado; sacudida del antebrazo. <i>Hallazgo normal:</i> resistencia mínima, uniforme y fluida; sin espasticidad (aumento dependiente de la velocidad), rigidez en tubo de plomo ni rueda dentada; sin hipotonía (balanceo normal de la mano).`
-            : `<b>Tono del miembro inferior ${SN}:</b> <i>Técnica:</i> motilidad pasiva de cadera, rodilla y tobillo; prueba del péndulo con la pierna colgando. <i>Hallazgo normal:</i> sin resistencia anormal, la pierna oscila y se detiene de forma normal; sin espasticidad, rigidez ni clonus.`, 'find');
+            : `<b>Tono del miembro inferior ${SN}:</b> <i>Técnica:</i> motilidad pasiva de cadera, rodilla y tobillo; prueba del péndulo con la pierna colgando. <i>Hallazgo normal:</i> sin resistencia anormal, la pierna oscila y se detiene de forma normal; sin espasticidad, rigidez ni clonus.`, ov ? 'warn' : 'find');
           sh.explored('str:tone:' + m.limb);
           return;
         }
         if (tool === 'trophism') {
-          const pm = c.msk.perim;
-          sh.log(arm
+          const pm = c.msk.perim, ov = pick(c, 'str:trophism:' + m.limb, side);
+          sh.log(ov ? `<b>Trofismo del miembro ${arm ? 'superior' : 'inferior'} ${SN}:</b> <i>Técnica:</i> ${arm ? 'inspección comparativa y perímetro del brazo 10 cm por encima del epicóndilo.' : 'inspección y perímetros del muslo (15 cm por encima de la rótula) y de la pantorrilla (máximo).'} <i>Hallazgo:</i> ${esc(ov.txt)}` : arm
             ? `<b>Trofismo del miembro superior ${SN}:</b> <i>Técnica:</i> inspección comparativa y perímetro del brazo 10 cm por encima del epicóndilo. <i>Hallazgo normal:</i> masas musculares simétricas, sin atrofia ni fasciculaciones; perímetro ≈ ${pm[0]} cm (diferencia entre lados ≤ 1 cm; el lado dominante puede ser algo mayor).`
-            : `<b>Trofismo del miembro inferior ${SN}:</b> <i>Técnica:</i> inspección y perímetros del muslo (15 cm por encima de la rótula) y de la pantorrilla (máximo). <i>Hallazgo normal:</i> volumen simétrico, sin atrofia, hipertrofia ni fasciculaciones; muslo ≈ ${pm[1]} cm y pantorrilla ≈ ${pm[2]} cm; diferencia entre lados ≤ 1-2 cm.`, 'find');
+            : `<b>Trofismo del miembro inferior ${SN}:</b> <i>Técnica:</i> inspección y perímetros del muslo (15 cm por encima de la rótula) y de la pantorrilla (máximo). <i>Hallazgo normal:</i> volumen simétrico, sin atrofia, hipertrofia ni fasciculaciones; muslo ≈ ${pm[1]} cm y pantorrilla ≈ ${pm[2]} cm; diferencia entre lados ≤ 1-2 cm.`, ov ? 'warn' : 'find');
           sh.explored('str:trophism:' + m.limb);
           return;
         }
         const grav = tool === 'gravity';
         sh.explored(`str:${grav ? 'gravity' : 'resist'}:${m.id}`);
+        const rov = pick(c, 'str:resist:' + m.id, side);
+        const ov = grav ? (pick(c, 'str:gravity:' + m.id, side) || (rov && +rov.g < 3 ? rov : null)) : rov;
+        if (ov) {
+          const g = ov.g != null ? ov.g : (grav ? '2' : '4');
+          if (ov.say) sh.say(ov.say, 'no');
+          sh.log(learn
+            ? `<b>${esc(m.n)} ${SN} (${m.root}) · ${esc(m.act)}:</b> <i>Técnica:</i> ${grav ? 'se pide el movimiento activo completo sin oponer resistencia.' : esc(m.tech)} <i>Hallazgo:</i> <b>${esc(g)}/5</b>: ${esc(ov.txt)}`
+            : `${esc(m.n)} ${SN}: ${grav ? 'motilidad activa' : 'fuerza'} ${esc(g)}/5${ov.say ? ' · refiere «' + esc(ov.say) + '»' : ''}.`, 'warn');
+          this.sh.$('#fInfo').innerHTML = learn
+            ? `<div class="msk-card"><p><b>${esc(m.n)}</b> · raíz ${m.root} · ${esc(m.act)}</p><p>${esc(m.tech)}</p><p class="msk-bad">Resultado: ${esc(g)}/5 en el lado ${SN}: ${esc(ov.txt)}</p></div>` : '';
+          this.busy = true;
+          const fx0 = this.svg.querySelector('#fx');
+          U.tween(900, u => { fx0.innerHTML = arrowSvg(x, m.y, grav ? 0 : vx, grav ? 1 : vy, 54 * (0.2 + 0.4 * Math.min(1, u * 1.2)), '#c0392b') + `<circle cx="${x}" cy="${m.y}" r="${14 + 6 * Math.sin(u * 10)}" fill="none" stroke="#b3372f" stroke-width="3" opacity=".8"/>`; },
+            () => { this.busy = false; setTimeout(() => { fx0.innerHTML = ''; }, 600); });
+          return;
+        }
         this.busy = true;
         const fx = this.svg.querySelector('#fx');
         const col = grav ? '#2c7be5' : '#c0392b';
@@ -1480,7 +1555,12 @@
         st.querySelector('#nM').innerHTML = MAN.filter(m => m.j === this.j).map(m => `<button class="msk-chip${this.cur && this.cur.id === m.id ? ' on' : ''}${this.seen[m.id] ? ' seen' : ''}" data-m="${m.id}">${esc(m.n)}</button>`).join('');
       },
       info(m) {
-        const learn = this.sh.mode === 'learn';
+        const learn = this.sh.mode === 'learn', ov = pick(this.sh.case, 'man:' + m.id);
+        if (ov) {
+          return learn
+            ? `<div class="msk-card"><p><b>${esc(m.n)}</b> · ${esc(JOINTS.find(x => x.id === m.j).n)}</p><p><b>Técnica:</b> ${esc(m.tech)}</p><p><b>Qué busca:</b> ${esc(m.seek)}</p><p class="msk-bad">Resultado: positiva. ${esc(ov.txt)}</p><p style="color:var(--muted)">Resultado normal: ${esc(m.res)}</p></div>`
+            : `<div class="msk-card"><p><b>${esc(m.n)}</b></p><p class="msk-bad">Resultado: positiva. ${esc(ov.txt)}</p></div>`;
+        }
         return learn
           ? `<div class="msk-card"><p><b>${esc(m.n)}</b> · ${esc(JOINTS.find(x => x.id === m.j).n)}</p><p><b>Técnica:</b> ${esc(m.tech)}</p><p><b>Qué busca:</b> ${esc(m.seek)}</p><p class="msk-ok">Resultado normal: ${esc(m.res)}</p></div>`
           : `<div class="msk-card"><p><b>${esc(m.n)}</b></p><p class="msk-ok">Resultado: ${esc(m.res.split(':')[0])}.</p></div>`;
@@ -1491,12 +1571,16 @@
         const V = st.querySelector('#nV'), I = st.querySelector('#nI');
         const done = () => {
           this.seen[m.id] = true; this.draw();
-          sh.log(sh.mode === 'learn' ? `<b>${esc(m.n)}:</b> ${esc(m.res)}` : `${esc(m.n)}: ${esc(m.res.split(':')[0].toLowerCase())}.`, 'find');
+          const ov = pick(sh.case, 'man:' + m.id);
+          if (ov) {
+            if (ov.say) sh.say(ov.say, 'no');
+            sh.log(sh.mode === 'learn' ? `<b>${esc(m.n)} positiva:</b> ${esc(ov.txt)}` : `${esc(m.n)}: positiva. ${esc(ov.txt)}`, 'warn');
+          } else sh.log(sh.mode === 'learn' ? `<b>${esc(m.n)}:</b> ${esc(m.res)}` : `${esc(m.n)}: ${esc(m.res.split(':')[0].toLowerCase())}.`, 'find');
           I.innerHTML = this.info(m);
           sh.explored('man:' + m.id);
         };
         if (m.kind === 'trend') {
-          this.trend = trendView(V, { learn: () => sh.mode === 'learn', onDone: () => done() });
+          this.trend = trendView(V, { learn: () => sh.mode === 'learn', pos: s => pick(sh.case, 'gait:trend:' + s), onDone: () => done() });
           I.innerHTML = this.info(m);
           return;
         }
@@ -1565,7 +1649,12 @@
           this.phi = e.target.value / 100; this.draw(true);
         });
         this.trendHost = stage.querySelector('#gT');
-        this.trend = trendView(this.trendHost, { learn: () => sh.mode === 'learn', onDone: s => { sh.log(sh.mode === 'learn' ? `<b>Trendelenburg ${s === 'L' ? 'derecho' : 'izquierdo'}:</b> negativo; pelvis nivelada durante 30 s.` : `Trendelenburg (apoyo ${s === 'L' ? 'derecho' : 'izquierdo'}): pelvis nivelada.`, 'find'); sh.explored('gait:trend:' + s); } });
+        this.trend = trendView(this.trendHost, { learn: () => sh.mode === 'learn', pos: s => pick(sh.case, 'gait:trend:' + s), onDone: s => {
+          const ov = pick(sh.case, 'gait:trend:' + s);
+          if (ov) sh.log(sh.mode === 'learn' ? `<b>Trendelenburg ${s === 'L' ? 'derecho' : 'izquierdo'} positivo:</b> ${esc(ov.txt)}` : `Trendelenburg (apoyo ${s === 'L' ? 'derecho' : 'izquierdo'}): positivo. ${esc(ov.txt)}`, 'warn');
+          else sh.log(sh.mode === 'learn' ? `<b>Trendelenburg ${s === 'L' ? 'derecho' : 'izquierdo'}:</b> negativo; pelvis nivelada durante 30 s.` : `Trendelenburg (apoyo ${s === 'L' ? 'derecho' : 'izquierdo'}): pelvis nivelada.`, 'find');
+          sh.explored('gait:trend:' + s);
+        } });
         this.setMode('normal');
         this.last = performance.now();
         const token = this._tok = {};
@@ -1596,7 +1685,8 @@
         }
         G.style.display = ''; T.style.display = 'none';
         const H = c.v.height * 100;
-        this.gait = makeGait(H, mode, ampFor(c, mode));
+        this.gk = c.msk.gk || {};
+        this.gait = makeGait(H, mode, ampFor(c, mode), this.gk);
         this.phi = 0; this.gait.st.prints = [];
         for (let k = 0; k < 160; k++) this.gait.pose(k * 0.0065, true);   // calienta la simulación
         this.gait.st.prints = [];
@@ -1627,14 +1717,15 @@
         };
         legSet(r.legs.L, pp.farTh, pp.farSh, pp.farFt);
         legSet(r.legs.R, pp.nearTh, pp.nearSh, pp.nearFt);
-        const T = 49 * S, shx = 0, shy = T;
+        const gk = this.gk || {};
+        const T = 49 * S, shx = (gk.lean || 0) * S, shy = T - Math.abs(gk.lean || 0) * S * 0.12;
         pp.trunk(X(0), Y(0), X(shx), Y(shy));
-        const hx = X(2), hy = Y(shy + 21 * S);
+        const hx = X(2 + shx), hy = Y(shy + 21 * S);
         this.head.setAttribute('cx', hx); this.head.setAttribute('cy', hy);
         this.nose.setAttribute('d', `M${hx + 17} ${hy - 2} l12 8 l-12 3 z`);
         this.hipDot.setAttribute('cx', X(0)); this.hipDot.setAttribute('cy', Y(0));
         // brazos: el brazo cercano avanza con la pierna contralateral (lejana)
-        const armAng = ph => -16 * Math.cos(2 * Math.PI * ph) * (mode === 'tandem' ? 0.5 : 1);
+        const armAng = ph => -16 * Math.cos(2 * Math.PI * ph) * (mode === 'tandem' ? 0.5 : 1) * (gk.arm != null ? gk.arm : 1);
         const arm = (a1, p1, p2) => {
           const a = rad(a1), e = rad(18 + 8 * Math.max(0, Math.sin(a * 3 + 1))), ex = shx + 28 * S * Math.sin(a), ey = shy - 28 * S * Math.cos(a);
           const wx = ex + 26 * S * Math.sin(a + e), wy = ey - 26 * S * Math.cos(a + e);
@@ -1679,9 +1770,10 @@
         const bar = this.stage.querySelector('#gBar');
         bar.style.display = learn ? '' : 'none';
         const stEl = this.stage.querySelector('#gSt');
+        const gov = pick(c, 'gait:' + mode);
         if (learn) {
           const m = c.msk, stp = Math.round(m.sim || m.step), sp = (stp * m.cad / 6000);
-          const tx = {
+          const tx = gov ? `<span class="msk-bad">${esc(gov.txt)}</span> Cadencia ${m.cad} pasos/min (normal 100-120), longitud del paso ≈ ${stp} cm (normal 60-80 cm), velocidad ≈ ${fmt(sp)} m/s (normal 1,2-1,4 m/s).` : {
             normal: `Ciclo = una zancada (dos pasos). <b>Apoyo 60 %</b> (doble apoyo 10 % + apoyo simple 40 % + doble apoyo 10 %) y <b>balanceo 40 %</b>. Cadencia ${m.cad} pasos/min (normal 100-120), longitud del paso ≈ ${stp} cm (60-80 cm), velocidad ≈ ${fmt(sp)} m/s (1,2-1,4 m/s en el adulto; algo menor en el adulto mayor), base de sustentación 5-10 cm, pies ligeramente abiertos (5-7°), braceo recíproco (el brazo avanza con la pierna contraria) y oscilación vertical de la pelvis de 4-5 cm.`,
             heel: 'Marcha en talones: sostiene la dorsiflexión durante todo el ciclo; explora el tibial anterior y los dorsiflexores (L4-L5, nervio peroneo profundo). Normal: camina sin que caigan las puntas ni pierda el equilibrio. Paso algo más corto.',
             toe: 'Marcha en puntas de pie: apoyo sobre el antepié sin que descienda el talón; explora gastrocnemio y sóleo (S1, nervio tibial). Normal: camina varios pasos con el talón elevado y sin balancearse.',
@@ -1689,11 +1781,12 @@
           }[mode];
           stEl.innerHTML = `<div class="msk-card"><p><b>Fase actual:</b> ${esc(name[2])} · <i>${esc(name[3])}</i> (${Math.round(ph * 100)} % del ciclo)${stepTxt ? ` · paso medido ${stepTxt} cm, zancada ${strideTxt} cm` : ''}</p><p>${tx}</p></div>`;
         } else {
-          stEl.innerHTML = `<p>Observa la marcha y registra tus conclusiones en el cuestionario.</p>`;
+          stEl.innerHTML = gov && gov.exam ? `<p>${esc(gov.exam)}</p>` : `<p>Observa la marcha y registra tus conclusiones en el cuestionario.</p>`;
         }
         if (!this._logged || this._logged !== mode) {
           this._logged = mode;
-          if (this.playing && sh.mode === 'learn') sh.log({ normal: 'Marcha normal observada: apoyo 60 % / balanceo 40 %.', heel: 'Marcha en talones normal.', toe: 'Marcha en puntas de pie normal.', tandem: 'Marcha en tándem normal, sin desviaciones.' }[mode], 'find');
+          if (gov) sh.log(sh.mode === 'learn' ? `<b>Marcha${mode === 'normal' ? '' : ' (' + { heel: 'talones', toe: 'puntas de pie', tandem: 'tándem' }[mode] + ')'}:</b> ${esc(gov.log || gov.txt)}` : esc(gov.exam || gov.log || gov.txt), 'warn');
+          else if (this.playing && sh.mode === 'learn') sh.log({ normal: 'Marcha normal observada: apoyo 60 % / balanceo 40 %.', heel: 'Marcha en talones normal.', toe: 'Marcha en puntas de pie normal.', tandem: 'Marcha en tándem normal, sin desviaciones.' }[mode], 'find');
           else if (sh.mode !== 'learn') sh.log({ normal: 'Marcha observada.', heel: 'Marcha en talones observada.', toe: 'Marcha en puntas de pie observada.', tandem: 'Marcha en tándem observada.' }[mode]);
           sh.explored('gait:' + mode);
         }
@@ -1721,13 +1814,11 @@
     ];
   };
 
-  function recordHTML(c) {
-    return QUIZ(c).map((q, i) => `<label class="field">${i + 1}. ${esc(q.q)}</label>
+  const recordHTML = Q => c => Q(c).map((q, i) => `<label class="field">${i + 1}. ${esc(q.q)}</label>
       <select data-q="${i}" style="width:100%;padding:5px;border:1px solid var(--line);border-radius:8px;background:var(--panel)">
       <option value="">–</option>${q.options.map((o, j) => `<option value="${j}">${esc(o)}</option>`).join('')}</select>`).join('');
-  }
-  function evaluate(c, rec) {
-    const qs = QUIZ(c);
+  const evaluate = Q => (c, rec) => {
+    const qs = Q(c);
     let ok = 0;
     const rows = qs.map((q, i) => {
       const v = rec.querySelector(`select[data-q="${i}"]`).value, good = v !== '' && +v === q.a;
@@ -1735,7 +1826,7 @@
       return `<li>${good ? '<span class="m-ok">✔</span>' : '<span class="m-bad">✘</span>'} <b>${esc(q.options[q.a])}</b>. ${esc(q.why)}</li>`;
     }).join('');
     return { ok, total: qs.length, html: `<h4>Cuestionario</h4><p><b>${ok}</b> de ${qs.length} correctas.</p><ul>${rows}</ul>` };
-  }
+  };
 
   /* Claves explorables (progreso): inspección y palpación por articulación, movilidad activa y pasiva por movimiento,
      columna, fuerza/tono/trofismo, maniobras y marcha. */
@@ -1753,25 +1844,33 @@
     'Medical Research Council. <i>Aids to the examination of the peripheral nervous system</i> (escala de fuerza 0-5).'
   ];
 
-  function mount(root) {
-    injectCSS();
-    const sh = new Shell(root, {
-      id: 'msk', progressTotal: PROGRESS_TOTAL, refs: REFS,
-      cases: CASES,
-      scenes: { rom: makeRomScene(), spine: makeColScene(), strength: makeStrScene(), special: makeManScene(), gait: makeGaitScene() },
-      order: ['rom', 'spine', 'strength', 'special', 'gait'],
-      hideDx: true,
-      checkLabel: 'Comprobar mis respuestas', recordTitle: 'Cuestionario', patientTitle: 'Persona examinada',
-      caseLabel: (c, i) => `Persona ${i + 1} · ${c.age} años, ${c.sex}`,
-      record: recordHTML, evaluate,
-      teaching: [
+  const TEACHING = [
         'Examen osteoarticular en orden: inspección (tumefacción, deformidad, atrofia), palpación (dolor, calor, derrame, crepitación), movilidad activa y luego pasiva (goniometría) y maniobras especiales; siempre comparando ambos lados.',
         'Goniómetro: eje sobre el eje articular, brazo fijo en el segmento proximal y brazo móvil en el distal; los rangos normales varían según la fuente, por eso se indica un rango, y descienden levemente con la edad.',
         'La sensación terminal normal es firme, blanda (flexión de codo, rodilla y cadera) o dura (extensión de codo); un tope anormal o doloroso sugiere patología articular.',
         'Fuerza: motilidad activa contra gravedad y luego contra resistencia, graduada de 0 a 5, por miotomas (C5-T1, L2-S1); se completa con tono (motilidad pasiva) y trofismo (perímetros).',
         'Columna: curvaturas, plomada y niveles, palpación de apófisis espinosas y paravertebrales, Schober (10 → ≥ 15 cm), Lasègue (negativo: tensión isquiotibial a 70-90° sin dolor radicular) y distancia dedo-suelo.',
-        'Las maniobras especiales se interpretan por comparación con el lado sano; en la exploración normal todas son negativas. La marcha normal tiene 60 % de apoyo y 40 % de balanceo.'
-      ]
+    'Las maniobras especiales se interpretan por comparación con el lado sano; en la exploración normal todas son negativas. La marcha normal tiene 60 % de apoyo y 40 % de balanceo.'
+  ];
+
+  /* mountWith(root, opts): monta las mismas escenas con otros pacientes (módulos patológicos).
+     opts = { id, cases, hideDx, refs, teaching, quiz(c) -> preguntas, caseLabel, patientTitle, checkLabel, progressTotal }.
+     Los `msk` de los pacientes se completan con MSK_DEFAULT; sin opts se comporta exactamente como el módulo normal. */
+  function mountWith(root, opts) {
+    opts = opts || {};
+    injectCSS();
+    const cases = opts.cases ? opts.cases.map(c => Object.assign({}, c, { msk: Object.assign({}, MSK_DEFAULT, c.msk || {}) })) : CASES;
+    const Q = opts.quiz || QUIZ;
+    const sh = new Shell(root, {
+      id: opts.id || 'msk', progressTotal: opts.progressTotal || PROGRESS_TOTAL, refs: opts.refs || REFS,
+      cases,
+      scenes: { rom: makeRomScene(), spine: makeColScene(), strength: makeStrScene(), special: makeManScene(), gait: makeGaitScene() },
+      order: ['rom', 'spine', 'strength', 'special', 'gait'],
+      hideDx: opts.hideDx != null ? opts.hideDx : true,
+      checkLabel: opts.checkLabel || 'Comprobar mis respuestas', recordTitle: 'Cuestionario', patientTitle: opts.patientTitle || 'Persona examinada',
+      caseLabel: opts.caseLabel || ((c, i) => `Persona ${i + 1} · ${c.age} años, ${c.sex}`),
+      record: recordHTML(Q), evaluate: evaluate(Q),
+      teaching: opts.teaching || TEACHING
     });
     sh.start();
     /* capa anatómica: los dibujos se regeneran, por lo que el control del Shell se escucha por delegación */
@@ -1779,8 +1878,9 @@
     if (stage) stage.addEventListener('input', e => { if (e.target.closest('.anat-ctl')) applyAnat(stage, +e.target.value); });
     return sh;
   }
+  const mount = root => mountWith(root);
 
-  window.MskModule = { mount, _test: { makeGait, measureStep, ampFor, MOT, MAN, MUS, CASES, PROGRESS_TOTAL, QUIZ } };
+  window.MskModule = { mount, mountWith, _test: { makeGait, measureStep, ampFor, MOT, MAN, MUS, JOINTS, CASES, PROGRESS_TOTAL, QUIZ, REFS, TEACHING } };
 
   registerModule({
     id: 'msk', title: 'Aparato locomotor (normal)', icon: '🦴', group: 'Exploración normal',

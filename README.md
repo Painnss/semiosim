@@ -22,6 +22,8 @@ y abre <http://localhost:8765>. En el teléfono, «Añadir a la pantalla de inic
 Anamnesis e historia clínica · Signos vitales y estado general · Piel, faneras y mucosas · Cabeza y cuello · Pares craneales, motor y
 estado mental · Aparato respiratorio · Aparato cardiovascular y pulsos · Abdomen · Genitourinario y mama · Aparato locomotor.
 
+**Exploración patológica** (8 módulos que reutilizan las escenas normales con pacientes que presentan síndromes; con diagnóstico a adivinar en modo Examen): piel, cabeza y cuello, neurológico, respiratorio, cardiovascular, abdomen, genitourinario y mama, locomotor; más la **biblioteca de auscultación** (26 sonidos normales y patológicos con comparación A/B).
+
 **Casos clínicos** (pacientes con hallazgos patológicos):
 - Neurología: reflejos con martillo (0 a 4+), clonus, Babinski, monofilamento, diapasón, pares craneales y reflejo pupilar (9 casos).
 - Tórax: auscultación cardíaca y pulmonar, percusión, fonocardiograma (11 casos).

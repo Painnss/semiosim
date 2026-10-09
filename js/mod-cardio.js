@@ -431,7 +431,8 @@
     g.strokeStyle = ink; g.globalAlpha = 0.35; g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke(); g.globalAlpha = 1;
     const cur = Sound.current();
     if (!cur) { g.fillStyle = ink; g.font = '13px system-ui'; g.fillText('El fonocardiograma aparece al auscultar un foco.', 14, H / 2 + 4); return; }
-    if (!S.peaks) {
+    if (!S.peaks || S.peaksSrc !== cur.arr) {
+      S.peaksSrc = cur.arr;
       const n = W, step = cur.arr.length / n; S.peaks = new Float32Array(n);
       for (let x = 0; x < n; x++) {
         let m = 0; for (let i = Math.floor(x * step); i < Math.floor((x + 1) * step); i++) m = Math.max(m, Math.abs(cur.arr[i]));

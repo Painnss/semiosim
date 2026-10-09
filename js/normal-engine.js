@@ -95,7 +95,7 @@
           const learn = this.sh.mode === 'learn';
           this.svg.querySelectorAll('.hintring').forEach(n => { n.style.display = learn ? '' : 'none'; });
           const bg = this.svg.querySelector('#bg');
-          if (sc.svg && sc.redrawOnMode) bg.innerHTML = sc.svg(learn, this.sh.case);
+          if (sc.svg && sc.redrawOnMode) { const c = this.sh.case; bg.innerHTML = sc.svg(learn, c) + (c.overlay && c.overlay[sc.id] || ''); }
         },
         setTool(id) {
           const t = (sc.tools || []).find(x => x.id === id);
