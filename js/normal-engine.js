@@ -72,6 +72,7 @@
           stage.innerHTML = `<svg class="scene point" viewBox="${sc.viewBox || '0 0 800 520'}" style="max-height:660px;margin:0 auto">
             <rect width="100%" height="100%" fill="#e8eef4"/>
             <g id="bg">${sc.svg ? sc.svg(learn, c) : ''}</g>
+            ${sc.anatomy ? `<g id="anat" style="opacity:0">${sc.anatomy(learn, c)}</g>` : ''}
             <g id="hits">${hit}</g><g id="flash"></g></svg>`;
           this.svg = stage.querySelector('svg');
           this.svg.addEventListener('click', e => this.click(e));

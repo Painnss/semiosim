@@ -222,6 +222,23 @@
       this.hint(sc.hint || '');
       sc.enter(stage, this);
       if (sc.tools && sc.tools.length) this.selectTool(sc.tools[0].id);
+      this.anatomyControl(stage);
+    }
+
+    /* Capa anatómica translúcida: si la escena dibuja un grupo <g id="anat"> (o varios con clase .anat),
+       se añade un control deslizante que regula su opacidad. El valor se recuerda entre escenas. */
+    anatomyControl(stage) {
+      const layers = stage.querySelectorAll('#anat, .anat');
+      if (!layers.length) return;
+      let v = Progress.pref('anatomy');
+      if (typeof v !== 'number') v = this.mode === 'exam' ? 0 : 55;
+      const apply = x => layers.forEach(l => { l.style.opacity = x / 100; l.style.pointerEvents = 'none'; });
+      apply(v);
+      const ctl = document.createElement('div');
+      ctl.className = 'anat-ctl';
+      ctl.innerHTML = `<span>🫀 Anatomía</span><input type="range" min="0" max="100" value="${v}" aria-label="Transparencia de la capa anatómica">`;
+      ctl.querySelector('input').addEventListener('input', e => { apply(+e.target.value); Progress.pref('anatomy', +e.target.value); });
+      stage.appendChild(ctl);
     }
 
     setTools(list) {

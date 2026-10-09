@@ -70,3 +70,12 @@ Si necesitas widgets propios (deslizadores, animaciones) usa el gancho `after(st
 - Debe funcionar con ratón y táctil (usa `pointerdown/pointermove` o `click`), y en ancho de móvil (SVG con `viewBox` y `width:100%`).
 - Cada módulo debe tener: (1) varias escenas/pestañas, (2) interacción real (no solo texto), (3) hallazgos normales precisos con valores,
   (4) un cuestionario breve (5–8 preguntas, con explicación) que se evalúe al comprobar, y (5) 3–5 puntos de enseñanza sobre la técnica.
+
+## Capa anatómica translúcida (`#anat`)
+
+Cualquier escena puede dibujar la anatomía subyacente (huesos, órganos, tendones, nervios) en un grupo `<g id="anat">` colocado
+**encima** del dibujo de la piel y **debajo** de los puntos clicables. El Shell detecta ese grupo tras `enter()` y añade un control
+deslizante «Anatomía» que regula su opacidad (0 = oculta; el usuario lo recuerda entre escenas; en modo Examen arranca en 0).
+En `NormalEngine.build` basta con declarar `anatomy: (learn, c) => '<g>…</g>'` en la escena. Reglas de dibujo: colores anatómicos
+discretos (hueso `#f1e9dc`, pulmón `#d9a1a1`, corazón `#c0504d`, hígado `#9e4b3a`, tendón `#f5f0e6`, nervio `#f2d35b`), trazo fino,
+rótulos con `class="svg-small"`, y nunca tapar los rótulos de los puntos. Debe verse bien a opacidad 30–70 %.
