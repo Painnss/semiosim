@@ -1,6 +1,6 @@
 {
   "name": "semiosim",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Simulaciones interactivas de semiología médica (exploración física) para estudiantes de medicina.",
   "private": true,
   "scripts": {

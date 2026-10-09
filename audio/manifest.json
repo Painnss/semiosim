@@ -1,0 +1,4 @@
+{
+  "_doc": "Grabaciones reales de auscultación. Cada clave es el id de un sonido de js/mod-sounds.js. Si falta, la aplicación usa el sonido sintetizado. Solo archivos con licencia libre; conservar 'license', 'source' y 'attribution'.",
+  "sounds": {}
+}

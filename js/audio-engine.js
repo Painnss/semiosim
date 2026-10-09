@@ -201,6 +201,39 @@
     volume: 0.9, muted: false,
     setVolume(v) { this.volume = Math.max(0, Math.min(1, +v)); if (master) master.gain.value = this.muted ? 0 : this.volume; },
     setMuted(m) { this.muted = !!m; if (master) master.gain.value = this.muted ? 0 : this.volume; },
+    /* Grabaciones reales (audio/manifest.json). Devuelve una promesa que resuelve true si sonó el archivo
+       y false si no estaba disponible (el llamador usa entonces el sonido sintetizado). */
+    files: null,
+    async loadManifest() {
+      if (this.files) return this.files;
+      try { const r = await fetch('audio/manifest.json', { cache: 'no-cache' }); this.files = r.ok ? (await r.json()).sounds || {} : {}; }
+      catch (e) { this.files = {}; }
+      return this.files;
+    },
+    async playFile(id, mode) {
+      ensure();
+      const files = await this.loadManifest();
+      const f = files[id];
+      if (!f || !f.file) return false;
+      const key = 'file:' + f.file;
+      if (!cache.has(key)) {
+        try {
+          const r = await fetch('audio/' + f.file);
+          if (!r.ok) return false;
+          const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+          cache.set(key, { buf, arr: null });
+        } catch (e) { return false; }
+      }
+      setMode(mode);
+      this.stop();
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(hpf);
+      g.gain.linearRampToValueAtTime(f.gain || 1, ctx.currentTime + 0.1);
+      const s = ctx.createBufferSource(); s.buffer = cache.get(key).buf; s.loop = true;
+      s.connect(g); s.start();
+      cur = { g, srcs: [s], t0: ctx.currentTime, T: 0, hArr: null, hGain: 0, spec: null, file: f };
+      return true;
+    },
+    fileInfo(id) { return this.files && this.files[id] || null; },
     /* opts: { heart:{rate,s1,s2,s3,s4,snap,murmur}, heartGain, lung:{type,adv}, lungGain, mode:'diaphragm'|'bell' } */
     listen(opts) {
       ensure(); setMode(opts.mode);

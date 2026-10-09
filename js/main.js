@@ -3,9 +3,9 @@
   'use strict';
   const view = document.getElementById('view');
   const nav = document.getElementById('nav');
-  const GROUP_ORDER = ['Exploración normal', 'Casos clínicos', 'Referencia'];
+  const GROUP_ORDER = ['Exploración normal', 'Exploración patológica', 'Casos clínicos', 'Referencia'];
   // Orden didáctico (sigue el orden del examen físico en Argente-Álvarez)
-  const MOD_ORDER = ['history', 'vitals', 'skin', 'headneck', 'cranial', 'resp', 'cardio', 'abdomen', 'gu', 'msk', 'neuro', 'chest', 'glossary', 'biblio'];
+  const MOD_ORDER = ['history', 'vitals', 'skin', 'headneck', 'cranial', 'resp', 'cardio', 'abdomen', 'gu', 'msk', 'sounds', 'neuro', 'chest', 'glossary', 'biblio'];
   let active = null;
 
   const rank = id => { const i = MOD_ORDER.indexOf(id); return i < 0 ? 99 : i; };
@@ -58,9 +58,9 @@
     const next = MOD_ORDER.find(id => { const p = Progress.get(id); return window.MODULES.some(m => m.id === id && m.group !== 'Referencia') && (!p.total || p.explored < p.total); }) || 'history';
     return `<div class="home">
       <section class="hero">
-        <span class="kicker">⚕ Semiología médica · nomenclatura Argente-Álvarez</span>
+        <span class="kicker">⚕ Semiología médica interactiva</span>
         <h1>Practica la exploración física sin esperar al paciente adecuado</h1>
-        <p class="lead">Pacientes virtuales que se examinan con martillo, estetoscopio, linterna o goniómetro. Primero el examen normal de cada aparato y sistema; después, los casos clínicos. Sin registro: tu progreso se guarda en este navegador.</p>
+        <p class="lead">Pacientes virtuales que se examinan con martillo, estetoscopio, linterna o goniómetro. Examen normal de cada aparato y sistema, hallazgos patológicos y casos clínicos. Sin registro: tu progreso se guarda en este navegador.</p>
         <div class="cta">
           <button class="btn" data-go="${next}">${started ? 'Continuar donde lo dejé' : 'Empezar por la anamnesis'}</button>
           <button class="btn ghost" data-go="glossary">Glosario</button>
@@ -82,7 +82,7 @@
       <section class="roadmap">
         <h2 class="gh">Hoja de ruta</h2>
         <ul>
-          <li><b>Siguiente:</b> hallazgos patológicos por aparato (síndromes de Argente-Álvarez) sobre las mismas escenas.</li>
+          <li><b>Siguiente:</b> hallazgos patológicos por aparato sobre las mismas escenas (ya disponible: biblioteca de auscultación).</li>
           <li>Grabaciones reales de auscultación con licencia abierta en lugar de sonido sintetizado.</li>
           <li>Más casos clínicos integrados por sistema, con evaluación del razonamiento.</li>
           <li>Revisión clínica por docentes antes de uso formal en cursos.</li>
