@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marchas 3D · SemioSim</title>
+<meta name="description" content="Marchas normales y patológicas en 3D: hemipléjica, en tijera, parkinsoniana, cerebelosa, tabética, steppage, anadeante, magnética, vestibular, coreica y antálgica.">
+<meta name="theme-color" content="#0a4f5a">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="base3d.css">
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/three.module.min.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../#home"><span class="logo" aria-hidden="true">⚕</span>SemioSim <small>Marchas en 3D · prototipo</small></a>
+  <a class="back" href="../#msk">Ver versión 2D</a>
+</header>
+
+<main class="g3">
+  <aside class="col left">
+    <section class="card c-mov">
+      <h3>Marcha</h3>
+      <div id="gaits" class="gaitlist" role="group" aria-label="Tipo de marcha"></div>
+    </section>
+  </aside>
+
+  <section class="col mid">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Paciente caminando en 3D. Arrastra para girar la cámara."></canvas>
+      <div class="hud">
+        <div><div id="mname" class="mname"></div><div id="mplane" class="mplane"></div></div>
+        <div id="eyesTag" class="eyestag" hidden>Ojos cerrados</div>
+      </div>
+      <div class="views" role="group" aria-label="Vista de cámara">
+        <button data-view="side" class="on">Lateral</button>
+        <button data-view="front">Frente</button>
+        <button data-view="back">Detrás</button>
+        <button data-view="three">3/4</button>
+      </div>
+      <div id="tip" class="tip">Arrastra para girar · pellizca o rueda para acercar</div>
+      <div id="nogl" class="nogl" hidden>Tu navegador no puede mostrar gráficos 3D (WebGL). <a href="../#msk">Abre la versión 2D</a>.</div>
+    </div>
+    <div class="ctrl wrap">
+      <button id="play" class="btn">❚❚ Pausa</button>
+      <div id="speed" class="seg mini" role="group" aria-label="Velocidad">
+        <button data-s="0.25">0,25×</button>
+        <button data-s="0.5">0,5×</button>
+        <button data-s="1" class="on">1×</button>
+      </div>
+      <label class="tog"><input type="checkbox" id="tPrints" checked> Huellas</label>
+      <label class="tog"><input type="checkbox" id="tEyes"> Ojos cerrados</label>
+    </div>
+  </section>
+
+  <aside class="col right">
+    <section class="card" id="info"></section>
+    <section class="card">
+      <h3>Reto: ¿qué marcha es?</h3>
+      <p class="hint">Se oculta el nombre. Mira al paciente desde varias vistas y elige.</p>
+      <button id="rStart" class="btn wide">Nuevo reto</button>
+      <div id="rOpts" class="ropts" hidden></div>
+      <p id="rOut" class="rout" aria-live="polite"></p>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">Prototipo 3D. Animación esquemática con fines educativos; las marchas reales varían según la gravedad y la persona. Nomenclatura según Argente-Álvarez, <i>Semiología Médica</i>.</footer>
+
+<script type="module" src="marchas3d.js"></script>
+</body>
+</html>

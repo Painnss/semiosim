@@ -118,3 +118,35 @@ canvas#c{display:block;width:100%;height:100%;outline:none}
 .lbl.lm.l{transform:translate(calc(-100% - 10px),-50%)}
 .rq{margin:12px 0 0;padding:10px 12px;border-radius:var(--radius-s);background:var(--brand-soft);color:var(--ink);font-size:14px}
 .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+
+/* ---- Marchas 3D */
+.gaitlist{display:flex;flex-direction:column;gap:4px}
+.gaitlist .gh{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 2px}
+.gaitlist .gh:first-child{margin-top:0}
+.gaitlist button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:var(--radius-s);padding:8px 11px;cursor:pointer;transition:background .15s,border-color .15s}
+.gaitlist button b{font-size:14px;font-weight:600}
+.gaitlist button span{font-size:12px;color:var(--muted)}
+.gaitlist button:hover{border-color:var(--line-2);background:var(--panel-2)}
+.gaitlist button.on{background:var(--brand-soft);border-color:var(--brand)}
+.gaitlist button.on b{color:var(--brand-2)}
+.gaitlist button:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
+.ctrl.wrap{flex-wrap:wrap;gap:10px 14px}
+.seg.mini{flex:none}
+.seg.mini button{flex:none;padding:6px 10px;font-size:13px}
+.ctrl .tog{padding:0}
+.eyestag{pointer-events:none;font-size:12px;font-weight:700;color:#fff;background:#0f1b2d;padding:4px 10px;border-radius:999px}
+#info h4{margin:14px 0 6px;font-size:13px;color:var(--ink)}
+#info ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+#info li{margin:3px 0}
+#info .alias{color:var(--muted);font-size:13px;margin-top:-4px}
+#info .lesion{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px}
+.ropts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.ropts button{border:1px solid var(--line-2);background:var(--panel);border-radius:var(--radius-s);padding:9px 8px;font-size:13.5px;font-weight:600;cursor:pointer}
+.ropts button:hover{border-color:var(--brand)}
+.ropts button.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.ropts button.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+@media (max-width:760px){
+  .gaitlist{display:grid;grid-template-columns:1fr 1fr}
+  .gaitlist .gh{grid-column:1/-1}
+  .gaitlist button span{display:none}
+}

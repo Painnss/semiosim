@@ -19,6 +19,14 @@ Objetivo: usar 3D donde la maniobra es espacial (girar, rotar, ver capas) y mant
 - Reto «¿dónde auscultarías?» con 8 consignas.
 - Estilos comunes de las páginas 3D en `3d/base3d.css`.
 
+## Fase 0c · Marchas (hecho)
+
+- `3d/marchas.html` + `3d/marchas3d.js`: paciente que camina con un ciclo de marcha procedural (cadera, rodilla y tobillo por fase) y 12 marchas: normal, hemipléjica, en tijera, parkinsoniana (festinación y congelamiento), cerebelosa, tabética, steppage, anadeante, magnética, vestibular, coreica y antálgica (diferencial).
+- Cada marcha: lesión, por qué camina así, qué observar y qué pasa con los ojos cerrados (Romberg).
+- El pie de apoyo no patina (el suelo se mueve con él) y deja huellas: se ven la base, la longitud del paso y la circunducción.
+- Cuerpo mejorado: superficies torneadas, iluminación de estudio y ropa de paciente.
+- Reto «¿qué marcha es?» con 4 opciones.
+
 ## Fase 1 · Validar (1-2 semanas)
 
 1. Probarlo en el celular propio y en 3-5 celulares de compañeros (gama media incluida). Anotar: ¿carga rápido?, ¿se entiende arrastrar el brazo?, ¿se ve mejor que el 2D?

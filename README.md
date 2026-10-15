@@ -63,7 +63,7 @@ js/audio-engine.js  síntesis de sonidos (ruidos cardíacos, respiratorios, perc
 js/mod-*.js         un módulo por aparato o sistema; mod-glossary.js = glosario y bibliografía
 js/neuro.js, js/chest.js, js/data-*.js   casos clínicos
 js/main.js          navegación, portada con progreso, volumen, service worker
-3d/                 prototipos 3D (tórax respiratorio, hombro) con Three.js; plan en docs/plan-3d.md
+3d/                 prototipos 3D (marchas, tórax respiratorio, hombro) con Three.js; plan en docs/plan-3d.md
 vendor/three/       Three.js (MIT) copiado para funcionar sin conexión
 test/smoke.js       prueba automática (jsdom)
 docs/               guía de módulos, criterios de revisión, auditoría
