@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tórax 3D · SemioSim</title>
+<meta name="description" content="Proyección de los lóbulos pulmonares sobre el tórax en 3D: cisuras, fondos de saco pleurales, líneas de referencia y reto de localización.">
+<meta name="theme-color" content="#0a4f5a">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="base3d.css">
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/three.module.min.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../#home"><span class="logo" aria-hidden="true">⚕</span>SemioSim <small>Tórax en 3D · prototipo</small></a>
+  <a class="back" href="../#resp">Ver versión 2D</a>
+</header>
+
+<main class="g3">
+  <aside class="col left">
+    <section class="card c-mov">
+      <h3>Vista</h3>
+      <div id="views" class="chips" role="group" aria-label="Vista del tórax">
+        <button data-view="ant" class="on">Anterior</button>
+        <button data-view="latR">Lateral derecha</button>
+        <button data-view="latL">Lateral izquierda</button>
+        <button data-view="post">Posterior</button>
+      </div>
+      <h3 class="mt">Respiración</h3>
+      <div class="breath">
+        <span>Espiración</span>
+        <input id="insp" type="range" min="0" max="100" value="0" aria-label="Profundidad de la inspiración">
+        <span>Inspiración profunda</span>
+      </div>
+      <button id="breathe" class="btn wide">▶ Respirar</button>
+      <p id="bhint" class="hint">Las bases bajan de T10 a T12 en inspiración profunda: excursión diafragmática normal de 3-5 cm.</p>
+    </section>
+    <section class="card">
+      <h3>Capas</h3>
+      <div id="lobes" class="legend"></div>
+      <label class="tog"><input type="checkbox" id="tLines" checked> Líneas de referencia</label>
+      <label class="tog"><input type="checkbox" id="tLabels" checked> Rótulos</label>
+      <label class="tog"><input type="checkbox" id="tSkin"> Solo piel (sin proyección)</label>
+    </section>
+  </aside>
+
+  <section class="col mid">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Modelo 3D del tórax. Toca la piel para saber qué lóbulo hay debajo; arrastra para girar."></canvas>
+      <div id="labels" class="labels" aria-hidden="true"></div>
+      <div class="hud">
+        <div><div id="mname" class="mname">Proyección pulmonar</div><div id="mplane" class="mplane">Vista anterior</div></div>
+      </div>
+      <div id="tip" class="tip">Toca la <b>piel</b> para ver qué lóbulo hay debajo · arrastra para girar · pellizca o rueda para acercar</div>
+      <div id="nogl" class="nogl" hidden>Tu navegador no puede mostrar gráficos 3D (WebGL). <a href="../#resp">Abre la versión 2D</a>.</div>
+    </div>
+  </section>
+
+  <aside class="col right">
+    <section class="card" id="info"></section>
+    <section class="card">
+      <h3>Reto: ¿dónde auscultarías?</h3>
+      <p class="hint">Se oculta la proyección. Toca sobre la piel el sitio donde auscultarías lo que se pide; puedes girar el tórax.</p>
+      <button id="rStart" class="btn wide">Nuevo reto</button>
+      <p id="rQ" class="rq" hidden></p>
+      <p id="rOut" class="rout" aria-live="polite"></p>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">Prototipo 3D. Figura esquemática; proyecciones aproximadas de pulmones, cisuras y pleura según la anatomía de superficie descrita en Argente-Álvarez, <i>Semiología Médica</i>. Uso educativo.</footer>
+
+<script type="module" src="torax3d.js"></script>
+</body>
+</html>

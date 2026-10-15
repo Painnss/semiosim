@@ -106,3 +106,15 @@ canvas#c{display:block;width:100%;height:100%;outline:none}
   .views{left:50%;right:auto;transform:translateX(-50%)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- Tórax 3D */
+.breath{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.breath input{flex:1;min-width:0;accent-color:var(--brand)}
+.legend{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.legend .tog i{display:inline-block;width:14px;height:14px;border-radius:4px;flex:none;border:1px solid rgba(15,27,45,.2)}
+@media (max-width:760px){.lbl{font-size:10.5px;padding:2px 6px}}
+.dotm{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#0f1b2d;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.lbl.lm{transform:translate(10px,-50%);font-weight:500}
+.lbl.lm.l{transform:translate(calc(-100% - 10px),-50%)}
+.rq{margin:12px 0 0;padding:10px 12px;border-radius:var(--radius-s);background:var(--brand-soft);color:var(--ink);font-size:14px}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:baseline}

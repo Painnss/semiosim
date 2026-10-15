@@ -11,6 +11,14 @@ Objetivo: usar 3D donde la maniobra es espacial (girar, rotar, ver capas) y mant
 - Reto «estima el ángulo» para entrenar el ojo clínico.
 - Figura esquemática hecha con primitivas: es el punto débil y lo que cambia en la fase 2.
 
+## Fase 0b · Tórax respiratorio (hecho)
+
+- `3d/torax.html` + `3d/torax3d.js`: proyección de lóbulos, cisuras, fondos de saco pleurales y área cardíaca sobre el tórax, calculada en el sombreador; la misma función en JS dice qué lóbulo hay bajo el punto tocado.
+- Vistas anterior, laterales (brazos elevados) y posterior; líneas medioesternal, medioclavicular, axilar media y escapular; escápula y apófisis espinosas.
+- Respiración: las bases bajan de T10 a T12 y ocupan el fondo de saco.
+- Reto «¿dónde auscultarías?» con 8 consignas.
+- Estilos comunes de las páginas 3D en `3d/base3d.css`.
+
 ## Fase 1 · Validar (1-2 semanas)
 
 1. Probarlo en el celular propio y en 3-5 celulares de compañeros (gama media incluida). Anotar: ¿carga rápido?, ¿se entiende arrastrar el brazo?, ¿se ve mejor que el 2D?
