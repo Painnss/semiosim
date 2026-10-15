@@ -1,5 +1,7 @@
 # SemioSim · Semiología médica interactiva
 
+**Web publicada:** <https://painnss.github.io/semiosim/> · Código: <https://github.com/Painnss/semiosim>
+
 Simulaciones interactivas de exploración física para estudiantes de medicina. Pacientes virtuales que se exploran con instrumentos
 (martillo de reflejos, fonendoscopio, linterna, monofilamento, goniómetro…), con modo Aprendizaje y modo Examen, cuestionario y solución.
 Nomenclatura y técnica según **Argente-Álvarez, *Semiología Médica*** (Panamericana).

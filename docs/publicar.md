@@ -1,5 +1,7 @@
 # Publicar SemioSim
 
+**Estado actual:** publicada en <https://painnss.github.io/semiosim/> desde el repositorio `Painnss/semiosim` (rama `master`, raíz). Cada `git push` a `master` actualiza la web en 1-2 minutos.
+
 SemioSim es un sitio estático: cualquier alojamiento de archivos sirve. Recomendado: **GitHub Pages** (gratis, HTTPS, sin servidor).
 
 ## GitHub Pages (una vez)
