@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hombro 3D · SemioSim</title>
+<meta name="description" content="Goniometría del hombro en 3D: flexión, extensión, abducción y rotaciones con goniómetro interactivo.">
+<meta name="theme-color" content="#0a4f5a">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="base3d.css">
+<script type="importmap">
+{ "imports": { "three": "../vendor/three/three.module.min.js", "three/addons/": "../vendor/three/addons/" } }
+</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../#home"><span class="logo" aria-hidden="true">⚕</span>SemioSim <small>Hombro en 3D · prototipo</small></a>
+  <a class="back" href="../#msk">Ver versión 2D</a>
+</header>
+
+<main class="g3">
+  <aside class="col left">
+    <section class="card c-per">
+      <h3>Persona examinada</h3>
+      <select id="persona" aria-label="Persona examinada"></select>
+      <p id="pdesc" class="pdesc"></p>
+    </section>
+    <section class="card c-mov">
+      <h3>Movimiento</h3>
+      <div id="movs" class="chips" role="group" aria-label="Movimiento del hombro"></div>
+      <h3 class="mt">Movilidad</h3>
+      <div id="modes" class="seg" role="group" aria-label="Tipo de movilidad">
+        <button data-mode="active" class="on">Activa</button>
+        <button data-mode="passive">Pasiva</button>
+        <button data-mode="free">Libre</button>
+      </div>
+      <p id="modehint" class="hint"></p>
+    </section>
+    <section class="card">
+      <h3>Capas y vista</h3>
+      <label class="tog"><input type="checkbox" id="tGon" checked> Goniómetro</label>
+      <label class="tog"><input type="checkbox" id="tPlane" checked> Plano del movimiento</label>
+      <label class="tog"><input type="checkbox" id="tBones"> Huesos (piel transparente)</label>
+      <label class="tog"><input type="checkbox" id="tLabels" checked> Puntos de referencia</label>
+    </section>
+  </aside>
+
+  <section class="col mid">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="Modelo 3D del paciente. Arrastra el brazo para moverlo; arrastra el fondo para girar la cámara."></canvas>
+      <div id="labels" class="labels" aria-hidden="true"></div>
+      <div class="hud">
+        <div><div id="mname" class="mname"></div><div id="mplane" class="mplane"></div></div>
+        <div id="deg" class="deg">0°</div>
+      </div>
+      <div class="views" role="group" aria-label="Vista de cámara">
+        <button data-view="auto" class="on">Auto</button>
+        <button data-view="front">Frente</button>
+        <button data-view="side">Lateral</button>
+        <button data-view="top">Arriba</button>
+      </div>
+      <div id="tip" class="tip">Arrastra el <b>brazo</b> para moverlo · arrastra el fondo para girar · pellizca o rueda para acercar</div>
+      <div id="nogl" class="nogl" hidden>Tu navegador no puede mostrar gráficos 3D (WebGL). <a href="../#msk">Abre la versión 2D</a>.</div>
+    </div>
+    <div class="ctrl">
+      <button id="play" class="btn">▶ Animar</button>
+      <input id="slider" type="range" min="0" max="195" step="1" value="0" aria-label="Ángulo">
+      <span id="smax" class="smax">195°</span>
+    </div>
+  </section>
+
+  <aside class="col right">
+    <section class="card" id="info"></section>
+    <section class="card">
+      <h3>Reto: estima el ángulo</h3>
+      <p class="hint">Entrena el ojo clínico: el brazo se coloca en un ángulo al azar, sin goniómetro. Escribe tu estimación.</p>
+      <button id="rStart" class="btn wide">Nuevo reto</button>
+      <div id="rBox" hidden>
+        <div class="rrow"><input id="rIn" type="number" inputmode="numeric" min="0" max="200" placeholder="Grados"><button id="rCheck" class="btn">Comprobar</button></div>
+      </div>
+      <p id="rOut" class="rout" aria-live="polite"></p>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">Prototipo 3D. Figura esquemática (no es un modelo anatómico); valores de referencia según Argente-Álvarez, <i>Semiología Médica</i>. Caso ficticio con fines educativos.</footer>
+
+<script type="module" src="hombro3d.js"></script>
+</body>
+</html>

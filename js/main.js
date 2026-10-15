@@ -64,6 +64,8 @@
         <div class="cta">
           <button class="btn" data-go="${next}">${started ? 'Continuar donde lo dejé' : 'Empezar por la anamnesis'}</button>
           <button class="btn ghost" data-go="glossary">Glosario</button>
+          <a class="btn ghost" href="3d/torax.html">Nuevo: tórax en 3D</a>
+          <a class="btn ghost" href="3d/hombro.html">Hombro en 3D</a>
         </div>
         <div class="stats">
           <div><b>${nMods}</b><span>módulos interactivos</span></div>
@@ -83,6 +85,7 @@
         <h2 class="gh">Hoja de ruta</h2>
         <ul>
           <li><b>Siguiente:</b> hallazgos patológicos por aparato sobre las mismas escenas (ya disponible: biblioteca de auscultación).</li>
+          <li><b>En prueba:</b> modelos 3D, ya disponibles: <a href="3d/torax.html">proyección pulmonar en el tórax</a> y <a href="3d/hombro.html">goniometría del hombro</a>; después focos cardíacos, presión venosa yugular y regiones abdominales.</li>
           <li>Grabaciones reales de auscultación con licencia abierta en lugar de sonido sintetizado.</li>
           <li>Más casos clínicos integrados por sistema, con evaluación del razonamiento.</li>
           <li>Revisión clínica por docentes antes de uso formal en cursos.</li>

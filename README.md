@@ -63,6 +63,8 @@ js/audio-engine.js  síntesis de sonidos (ruidos cardíacos, respiratorios, perc
 js/mod-*.js         un módulo por aparato o sistema; mod-glossary.js = glosario y bibliografía
 js/neuro.js, js/chest.js, js/data-*.js   casos clínicos
 js/main.js          navegación, portada con progreso, volumen, service worker
+3d/                 prototipos 3D (tórax respiratorio, hombro) con Three.js; plan en docs/plan-3d.md
+vendor/three/       Three.js (MIT) copiado para funcionar sin conexión
 test/smoke.js       prueba automática (jsdom)
 docs/               guía de módulos, criterios de revisión, auditoría
 ```
@@ -72,7 +74,7 @@ docs/               guía de módulos, criterios de revisión, auditoría
 - Los textos los redactó una IA siguiendo la nomenclatura de Argente-Álvarez; **antes de usarlo en un curso debe revisarlo un docente**.
   `docs/auditoria.md` resume la crítica y las decisiones tomadas.
 - Los sonidos son sintetizados (aproximaciones didácticas), no grabaciones reales.
-- Las figuras son esquemáticas (SVG), no modelos anatómicos.
+- Las figuras son esquemáticas (SVG), no modelos anatómicos. Hay prototipos 3D en `3d/` (ver `docs/plan-3d.md`).
 - Herramienta educativa: los casos son ficticios y no sustituyen la práctica con pacientes reales ni el criterio clínico.
 
 Licencia del código: MIT. El contenido no reproduce texto de ninguna obra; las referencias bibliográficas se citan por tema.
