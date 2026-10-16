@@ -1,0 +1,23 @@
+{
+ "Marcha_Ataxica_Cerebelosa": {
+  "duracion": 28.5
+ },
+ "Marcha_Hemiparetica_Derecha": {
+  "duracion": 20.77
+ },
+ "Marcha_Lenta_Insegura": {
+  "duracion": 33.7
+ },
+ "Marcha_Normal": {
+  "duracion": 13.77
+ },
+ "Marcha_Parkinsoniana": {
+  "duracion": 22.17
+ },
+ "Marcha_Steppage": {
+  "duracion": 18.37
+ },
+ "Marcha_Steppage_Derecha": {
+  "duracion": 18.37
+ }
+}

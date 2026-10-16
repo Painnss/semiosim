@@ -684,6 +684,15 @@
     }, () => { lbl.textContent = 'Romberg negativo: sin caída ni oscilación apreciable'; });
   }
   function runGait(mode) {
+    const svgRun = runGaitSvg(mode);
+    /* la marcha libre se muestra con el maniquí 3D (js/gait3d.js); si no hay WebGL se usa el dibujo SVG */
+    if (mode !== 'gait') return svgRun;
+    return ctx => {
+      if (!window.Gait3D) return svgRun(ctx);
+      Gait3D.show(ctx.svg.parentElement, 'normal').then(ok => { if (!ok) svgRun(ctx); });
+    };
+  }
+  function runGaitSvg(mode) {
     return ctx => {
       const svg = ctx.svg, c = ctx.c, fig = $q(svg, 'crFig'), lbl = $q(svg, 'crGLbl'), tk = $q(svg, 'crTicks');
       const speed = mode === 'tandem' ? 90 : mode === 'toes' ? 150 : mode === 'heels' ? 160 : (ageOld(c) ? 210 : 250);

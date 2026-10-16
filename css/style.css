@@ -164,6 +164,21 @@ input[type=range]{accent-color:var(--brand)}
 .stage svg.scene{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
 .stage svg.nocursor{cursor:none}
 .stage svg.point{cursor:pointer}
+/* visor 3D de la marcha (js/gait3d.js), superpuesto a la escena */
+.stage.g3-open{min-height:min(560px,78vh)}
+.gait3d{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;background:#e8eef4;color:#0f1b2d}
+.g3-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 10px;background:rgba(255,255,255,.92);border-bottom:1px solid #d2dbe5}
+.g3-title{font-size:14px;margin-right:auto}
+.g3-grp{display:inline-flex;border:1px solid #d2dbe5;border-radius:9px;overflow:hidden;background:#fff}
+.g3-grp button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font:600 12.5px var(--font);color:#334155}
+.g3-grp button+button{border-left:1px solid #e3e9f0}
+.g3-grp button.on{background:#0e8a84;color:#fff}
+.g3-close{border:1px solid #d2dbe5;background:#fff;border-radius:9px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#334155}
+.g3-canvas{position:relative;flex:1;min-height:0}
+.g3-canvas canvas{display:block;width:100%;height:100%;touch-action:none}
+.g3-cap{position:absolute;left:10px;right:10px;bottom:10px;padding:7px 12px;border-radius:10px;background:rgba(15,27,45,.82);color:#fff;font-size:13.5px;font-weight:600;line-height:1.35;text-align:center;pointer-events:none}
+.g3-msg{position:absolute;inset:0;display:grid;place-items:center;color:#64748b;font-size:14px}
+.g3-foot{padding:5px 10px;font-size:12px;color:#64748b;background:rgba(255,255,255,.85);border-top:1px solid #d2dbe5}
 .hint{margin:10px 2px 0;color:var(--muted);font-size:13px;min-height:20px;display:flex;gap:8px;align-items:flex-start}
 .hint:not(:empty)::before{content:"i";flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:11px;display:grid;place-items:center;margin-top:1px;font-family:Georgia,serif}
 .prog{display:flex;align-items:center;gap:10px;margin:8px 2px 0;font-size:12px;color:var(--muted)}
