@@ -148,8 +148,9 @@
     });
 
     const layerOn = {};
-    LAYERS.forEach(l => { layerOn[l.id] = true; });
-    let anatomy = typeof opts.anatomy === 'number' ? Math.max(0, Math.min(1, opts.anatomy)) : 0.55;
+    /* capas iniciales por modulo: opts.layers = { pulm:false, lineas:false, ... } (las no indicadas quedan visibles) */
+    LAYERS.forEach(l => { layerOn[l.id] = !(opts.layers && opts.layers[l.id] === false); });
+    let anatomy = typeof opts.anatomy === 'number' ? Math.max(0, Math.min(1, opts.anatomy)) : 0.6;
     const setOpacity = (m, v) => { m.opacity = v; m.transparent = v < 1; m.depthWrite = v >= 0.99; };
     const applyLayers = () => {
       LAYERS.forEach(l => l.mats.forEach(n => {

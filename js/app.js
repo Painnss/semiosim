@@ -334,15 +334,16 @@
       ctl.addEventListener('click', async e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.v === '3d') {
-          paint('3d');
-          const anat = Progress.pref('anatomy'); 
-          const ok = await Torso3D.show(stage, Object.assign({ anatomy: (typeof anat === 'number' ? anat : 55) / 100, mode: this.mode }, opts));
+          paint('3d'); Progress.pref('t3dAuto', true);
+          const anat = Progress.pref('anatomy');
+          const ok = await Torso3D.show(stage, Object.assign({ anatomy: typeof anat === 'number' && anat > 0 ? anat / 100 : 0.6, mode: this.mode }, opts));
           if (!ok) { paint('2d'); U.toast('No se pudo cargar la vista 3D (WebGL o modelo no disponibles).', 'bad'); }
           else if (opts.hint) this.hint(opts.hint);
-        } else { Torso3D.close(); paint('2d'); }
+        } else { Torso3D.close(); paint('2d'); Progress.pref('t3dAuto', false); }
       });
       (this.$('#prog') || stage).appendChild(ctl);
-      Progress.pref('t3dAuto') && ctl.querySelector('[data-v="3d"]').click();
+      // el 3D es la vista principal donde existe; «Esquema» la recuerda como preferencia
+      if (Progress.pref('t3dAuto') !== false) ctl.querySelector('[data-v="3d"]').click();
     }
 
     /* Burbuja de diálogo del paciente sobre la escena. kind: 'yes' | 'no' | undefined */

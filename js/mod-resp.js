@@ -133,10 +133,11 @@
      por detrás, el foco posterior inferior representa la base (la región infraescapular no tiene foco). */
   const T3D_HINT = 'Vista 3D: arrastra para girar, rueda o pellizco para acercar. Haz clic sobre un foco para explorarlo con el instrumento elegido; «Anatomía» regula la transparencia de la piel.';
   const sides = (obj, idR, idL) => ({ [obj + '_D']: idR, [obj + '_I']: idL });
-  const t3dAnt = extra => ({ view: 'ant', hint: T3D_HINT, map: Object.assign({},
+  const T3D_LAYERS = { cor: false, vasos: false, lineas: false };   // solo pulmones y caja torácica
+  const t3dAnt = extra => ({ view: 'ant', hint: T3D_HINT, layers: T3D_LAYERS, map: Object.assign({},
     sides('Foco_Pulm_Vertice', 'apR', 'apL'), sides('Foco_Pulm_Ant_Sup', extra.s2[0], extra.s2[1]), sides('Foco_Pulm_Ant_Inf', extra.s4[0], extra.s4[1]),
     sides('Foco_Pulm_Lat_Inf', extra.base[0], extra.base[1]), extra.more || {}) });
-  const t3dPost = () => ({ view: 'post', hint: T3D_HINT, map: Object.assign({},
+  const t3dPost = () => ({ view: 'post', hint: T3D_HINT, layers: T3D_LAYERS, map: Object.assign({},
     sides('Foco_Pulm_Post_Sup', 'apR', 'apL'), sides('Foco_Pulm_Post_Med', 'inR', 'inL'), sides('Foco_Pulm_Post_Inf', 'bR', 'bL')) });
 
   /* ----------------------------------------------------------- regiones */

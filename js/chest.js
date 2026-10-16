@@ -300,7 +300,7 @@
       const loop = () => { if (!this.alive) return; this.draw(); requestAnimationFrame(loop); };
       requestAnimationFrame(loop);
       sh.torso3dControl(stage, {
-        view: this.view, map: T3D[this.view], labels: T3D_LABELS, hint: T3D.hint,
+        view: this.view, map: T3D[this.view], labels: T3D_LABELS, hint: T3D.hint, layers: { lineas: false, huesos: false },
         onPick: id => (sh.tool === 'perc' ? this.percuss(id) : this.listen(id))
       });
     }
