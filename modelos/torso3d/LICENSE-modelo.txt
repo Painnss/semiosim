@@ -1,0 +1,27 @@
+Modelo 3D "Torso de auscultación" (SemioSim)
+Archivos: torso_auscultacion.blend, torso_auscultacion.glb, torso_auscultacion_draco.glb
+
+Licencia: Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-sa/4.0/deed.es
+
+Este modelo es una obra derivada de:
+
+  - Z-Anatomy (https://github.com/Z-Anatomy/The-blend)
+    Licencia CC BY-SA 4.0.
+
+  - BodyParts3D, © The Database Center for Life Science
+    (https://dbarchive.biosciencedbc.jp/en/bodyparts3d/)
+    Licencia CC Atribución-CompartirIgual 2.1 Japón.
+
+Modificaciones hechas por SemioSim:
+  - Selección de huesos, lóbulos pulmonares, corazón, diafragma, tráquea y grandes vasos;
+    fusión de piezas, nombres en español y reducción de polígonos para la web.
+  - Elevación de los vértices pulmonares (~1,3 cm) para situarlos 2-3 cm sobre la clavícula.
+  - Piel, pericardio, focos de auscultación y líneas de referencia modelados desde cero.
+  - Materiales con transparencia por capas.
+
+Puedes copiar, modificar y redistribuir este modelo, incluso con fines comerciales,
+siempre que cites a los autores anteriores y distribuyas tus versiones modificadas
+bajo esta misma licencia.
+
+Modelo con fines educativos. No sirve para diagnóstico. Se ofrece sin garantía de ningún tipo.
