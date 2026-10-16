@@ -57,7 +57,7 @@
     def.scenes.forEach(sc => {
       order.push(sc.id);
       scenes[sc.id] = {
-        label: sc.label, hint: sc.hint || '', tools: sc.tools || [],
+        label: def.hideDx === false ? String(sc.label).replace(/\s*\(normal\)|\s+normal\b/i, '') : sc.label, hint: sc.hint || '', tools: sc.tools || [],
         enter(stage, sh) {
           this.sh = sh;
           const c = sh.case, learn = sh.mode === 'learn';
@@ -79,7 +79,7 @@
           }).join('');
           stage.innerHTML = `<svg class="scene point" viewBox="${sc.viewBox || '0 0 800 520'}" style="max-height:660px;margin:0 auto">
             <rect width="100%" height="100%" fill="#e8eef4"/>
-            <g id="bg">${sc.svg ? sc.svg(learn, c) : ''}${c.overlay && c.overlay[sc.id] ? c.overlay[sc.id] : ''}</g>
+            <g id="bg">${sc.svg ? sc.svg(learn, c) : ''}${c.overlay && c.overlay[sc.id] ? `<g class="overlay-pat">${c.overlay[sc.id]}</g>` : ''}</g>
             ${sc.anatomy ? `<g id="anat" style="opacity:0">${sc.anatomy(learn, c)}</g>` : ''}
             <g id="hits">${hit}</g><g id="flash"></g></svg>`;
           this.svg = stage.querySelector('svg');
@@ -103,7 +103,7 @@
           const learn = this.sh.mode === 'learn';
           this.svg.querySelectorAll('.hintring').forEach(n => { n.style.display = learn ? '' : 'none'; });
           const bg = this.svg.querySelector('#bg');
-          if (sc.svg && sc.redrawOnMode) { const c = this.sh.case; bg.innerHTML = sc.svg(learn, c) + (c.overlay && c.overlay[sc.id] || ''); }
+          if (sc.svg && sc.redrawOnMode) { const c = this.sh.case; bg.innerHTML = sc.svg(learn, c) + (c.overlay && c.overlay[sc.id] ? `<g class="overlay-pat">${c.overlay[sc.id]}</g>` : ''); }
         },
         setTool(id) {
           const t = (sc.tools || []).find(x => x.id === id);

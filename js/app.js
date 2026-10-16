@@ -123,44 +123,47 @@
             <h3>Paciente</h3>
             <select id="caseSel" aria-label="Elegir paciente"></select>
             <div id="ptInfo"></div>
-            <button class="btn ghost small" id="rnd" style="margin-top:10px;width:100%">🎲 Caso aleatorio</button>
-          </section>
-          <section class="card modes">
-            <h3>Modo</h3>
-            <label><input type="radio" name="mode" value="learn" checked> Aprendizaje
-              <small>Muestra puntos de referencia y explica cada resultado.</small></label>
-            <label><input type="radio" name="mode" value="exam"> Examen
-              <small>Sin pistas: observa, registra y comprueba al final.</small></label>
+            <button class="btn ghost small" id="rnd" style="margin-top:10px;width:100%">&#127922; Otro paciente</button>
           </section>
           <section class="card">
             <h3>Instrumentos</h3>
             <div class="tools" id="tools" role="toolbar" aria-label="Instrumentos"></div>
           </section>
-          ${refs.length ? `<section class="card refs"><h3>Bibliografía</h3><ul>${refs.map(r => `<li>${r}</li>`).join('')}</ul></section>` : ''}
+          <section class="card modes">
+            <div class="seg modeseg" role="radiogroup" aria-label="Modo">
+              <label><input type="radio" name="mode" value="learn" checked> Aprendizaje</label>
+              <label><input type="radio" name="mode" value="exam"> Examen</label>
+            </div>
+            <small id="modeHelp">Con pistas y explicaciones.</small>
+          </section>
+          ${refs.length ? `<details class="card refs"><summary>Bibliografía</summary><ul>${refs.map(r => `<li>${r}</li>`).join('')}</ul></details>` : ''}
         </aside>
         <section class="center">
           <div class="tabs" id="tabs" role="tablist"></div>
           <div class="stage" id="stage"></div>
           <p class="hint" id="hint" aria-live="polite"></p>
-          <div class="prog" id="prog" title="Regiones o maniobras exploradas en este módulo (se guarda en este navegador)"><span class="bar"><i></i></span><span class="txt"></span></div>
+          <div class="prog" id="prog" title="Regiones o maniobras exploradas en este módulo (se guarda en este navegador)"><span class="bar"><i></i></span><span class="txt"></span>
+            <button type="button" class="lbl-btn" id="lblBtn" aria-pressed="false" title="Mostrar todos los rótulos del dibujo">Aa Rótulos</button></div>
         </section>
         <aside class="right">
-          <section class="card">
-            <h3>Registro de maniobras</h3>
-            <ol id="log" aria-live="polite"></ol>
-            <button class="btn ghost small" id="clr" style="width:100%;margin-top:0">Limpiar registro</button>
+          <section class="card found">
+            <h3>Hallazgo</h3>
+            <div id="last" class="last"><span class="empty">Elige un instrumento y toca el cuerpo.</span></div>
+            <details id="logBox"><summary>Historial <span id="logN"></span></summary>
+              <ol id="log" aria-live="polite"></ol>
+              <button class="btn ghost small" id="clr" style="width:100%;margin-top:6px">Limpiar historial</button>
+            </details>
           </section>
-          <section class="card">
-            <h3>Mis hallazgos</h3>
+          <details class="card quiz" id="quizBox">
+            <summary><h3 id="recTitle">Mis hallazgos</h3><span class="qhint">Cuando termines de explorar</span></summary>
             <div id="record"></div>
             <label class="field" for="dx" id="dxLbl">Diagnóstico</label>
             <select id="dx"></select>
             <button class="btn" id="check">Comprobar y ver solución</button>
             <div id="result"></div>
-          </section>
+          </details>
         </aside>
       </div>`;
-
       const sel = this.$('#caseSel');
       sel.innerHTML = this.cfg.cases.map((c, i) =>
         `<option value="${i}">${this.cfg.caseLabel ? this.cfg.caseLabel(c, i) : `Paciente ${i + 1} · ${c.age} años, ${c.sex}`}</option>`).join('');
@@ -171,10 +174,17 @@
       });
       this.root.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => {
         this.mode = r.value;
+        this.$('#modeHelp').textContent = r.value === 'exam' ? 'Sin pistas: explora, decide y comprueba al final.' : 'Con pistas y explicaciones.';
+        this.root.querySelector('.mod').classList.toggle('exam', r.value === 'exam');
         if (this.scene && this.scene.refresh) this.scene.refresh();
         if (this.cfg.onMode) this.cfg.onMode(this.mode);
       }));
-      this.$('#clr').addEventListener('click', () => { this.$('#log').innerHTML = ''; });
+      this.$('#clr').addEventListener('click', () => { this.$('#log').innerHTML = ''; this.$('#logN').textContent = ''; });
+      // rótulos del dibujo: ocultos por defecto (aparecen al pasar el cursor); el botón los muestra todos
+      const lb = this.$('#lblBtn'), modEl = this.root.querySelector('.mod'); const lblOn = !!Progress.pref('labels');
+      modEl.classList.toggle('labels', lblOn); lb.setAttribute('aria-pressed', lblOn ? 'true' : 'false');
+      lb.addEventListener('click', () => { const on = !modEl.classList.contains('labels'); modEl.classList.toggle('labels', on); lb.setAttribute('aria-pressed', on ? 'true' : 'false'); Progress.pref('labels', on); });
+      this.coach();
 
       const dx = this.$('#dx');
       const diags = [...new Set(this.cfg.cases.map(c => c.diag))].sort((a, b) => a.localeCompare(b, 'es'));
@@ -182,7 +192,7 @@
       this.$('#check').addEventListener('click', () => this.evaluate());
       if (this.cfg.hideDx) { this.$('#dx').style.display = 'none'; this.$('#dxLbl').style.display = 'none'; }
       if (this.cfg.checkLabel) this.$('#check').textContent = this.cfg.checkLabel;
-      if (this.cfg.recordTitle) this.$('#record').previousElementSibling.textContent = this.cfg.recordTitle;
+      if (this.cfg.recordTitle) this.$('#recTitle').textContent = this.cfg.recordTitle;
       if (this.cfg.patientTitle) this.$('.pt h3').textContent = this.cfg.patientTitle;
 
       const tabs = this.$('#tabs');
@@ -233,7 +243,7 @@
       const old = this.$('.anat-ctl');
       if (!layers.length) { if (old) old.remove(); return; }
       let v = Progress.pref('anatomy');
-      if (typeof v !== 'number') v = this.mode === 'exam' ? 0 : 55;
+      if (typeof v !== 'number') v = 0;
       const apply = x => layers.forEach(l => { l.style.opacity = x / 100; l.style.pointerEvents = 'none'; });
       apply(v);
       if (old) { old.querySelector('input').oninput = e => { apply(+e.target.value); old.querySelector('b').textContent = e.target.value + ' %'; Progress.pref('anatomy', +e.target.value); if (window.Torso3D) Torso3D.setAnatomy(+e.target.value / 100); }; return; }
@@ -268,6 +278,27 @@
       li.innerHTML = msg;
       ol.insertBefore(li, ol.firstChild);
       while (ol.children.length > 60) ol.lastChild.remove();
+      this.$('#logN').textContent = `(${ol.children.length})`;
+      // tarjeta del hallazgo actual: la técnica (si viene marcada) se pliega bajo el resultado
+      const last = this.$('#last');
+      let html = msg, tech = null;
+      const m = msg.match(/<i>\s*T[eé]cnica\s*:?\s*<\/i>\s*:?\s*([\s\S]*?)\s*<i>\s*Hallazgo( normal)?\s*:?\s*<\/i>\s*:?\s*([\s\S]*)$/i);
+      if (m) { tech = m[1]; html = msg.slice(0, m.index) + m[3]; }
+      last.className = 'last ' + (cls || '');
+      last.innerHTML = `<div class="lastTxt">${html}</div>` + (tech ? `<details class="tech"><summary>Técnica</summary><div>${tech}</div></details>` : '');
+      const coach = this.$('.coach'); if (coach) coach.remove();
+    }
+
+    /* Guía breve la primera vez que se abre un módulo (se oculta al primer hallazgo o al tocarla). */
+    coach() {
+      if (Progress.pref('coached')) return;
+      const stage = this.$('#stage');
+      const c = document.createElement('div');
+      c.className = 'coach';
+      c.innerHTML = '<b>1</b> Elige un instrumento &nbsp;·&nbsp; <b>2</b> Toca el cuerpo &nbsp;·&nbsp; <b>3</b> Lee el hallazgo <button type="button" aria-label="Cerrar">&#10005;</button>';
+      c.querySelector('button').addEventListener('click', () => { c.remove(); Progress.pref('coached', true); });
+      stage.appendChild(c);
+      setTimeout(() => { if (c.isConnected) { c.remove(); Progress.pref('coached', true); } }, 15000);
     }
 
     /* Marca una región/maniobra como explorada (progreso persistente). key: texto único dentro del módulo. */
@@ -347,6 +378,7 @@
         head + (res || '') +
         (findings.length ? `<h4>Hallazgos clave</h4><ul>${li(findings)}</ul>` : '') +
         (teaching.length ? `<h4>Puntos de enseñanza</h4><ul>${li(teaching)}</ul>` : '');
+      this.$('#quizBox').open = true;
       this.$('#result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 

@@ -38,56 +38,35 @@
   function card(m) {
     const p = Progress.get(m.id);
     const pct = p.total ? Math.min(100, Math.round(100 * p.explored / p.total)) : 0;
-    const quiz = p.quiz ? `<span class="badge ${p.quiz.pct >= 80 ? 'ok' : p.quiz.pct >= 50 ? 'mid' : 'low'}">Cuestionario ${p.quiz.pct} %</span>` : '';
-    const bar = p.total ? `<div class="pbar" title="${p.explored} de ${p.total} maniobras exploradas"><i style="width:${pct}%"></i></div><small>${pct} % explorado</small>` :
-      (p.explored ? `<small>${p.explored} maniobras exploradas</small>` : '<small>Sin empezar</small>');
-    return `<article class="mcard ${pct >= 100 ? 'done' : ''}">
-      <div class="ic">${m.icon}</div><h2>${m.title}</h2><p>${m.desc || ''}</p>
-      <ul>${(m.bullets || []).map(b => `<li>${b}</li>`).join('')}</ul>
-      <div class="pmeta">${bar}${quiz}</div>
-      <button class="btn go" data-go="${m.id}">${p.explored ? 'Continuar' : 'Entrar'}</button>
-    </article>`;
+    const quiz = p.quiz ? `<span class="badge ${p.quiz.pct >= 80 ? 'ok' : p.quiz.pct >= 50 ? 'mid' : 'low'}">${p.quiz.pct} %</span>` : '';
+    const bar = p.total ? `<div class="pbar" title="${p.explored} de ${p.total} maniobras exploradas"><i style="width:${pct}%"></i></div>` : '';
+    return `<button class="mcard mini ${pct >= 100 ? 'done' : ''}" data-go="${m.id}">
+      <span class="ic">${m.icon}</span><span class="mt"><b>${m.title}</b>${bar}</span>${quiz}</button>`;
   }
 
   function homeHTML() {
     const all = Progress.summary();
-    const done = all.filter(x => x.total && x.explored >= x.total).length;
     const started = all.filter(x => x.explored > 0).length;
-    const nMods = window.MODULES.filter(m => m.group !== 'Referencia').length;
-    const nTerms = (window.SEMIO_GLOSSARY || []).length;
     const next = MOD_ORDER.find(id => { const p = Progress.get(id); return window.MODULES.some(m => m.id === id && m.group !== 'Referencia') && (!p.total || p.explored < p.total); }) || 'history';
+    const nextMod = window.MODULES.find(m => m.id === next);
+    const door = (go, icon, title, sub) => `<button class="door" data-go="${go}"><span class="dic">${icon}</span><b>${title}</b><span>${sub}</span></button>`;
     return `<div class="home">
       <section class="hero">
-        <span class="kicker">⚕ Semiología médica interactiva</span>
-        <h1>Practica la exploración física sin esperar al paciente adecuado</h1>
-        <p class="lead">Pacientes virtuales que se examinan con martillo, estetoscopio, linterna o goniómetro. Examen normal de cada aparato y sistema, hallazgos patológicos y casos clínicos. Sin registro: tu progreso se guarda en este navegador.</p>
+        <h1>Practica la exploración física</h1>
+        <p class="lead">Pacientes virtuales para auscultar, percutir, palpar y explorar. Sin registro.</p>
         <div class="cta">
-          <button class="btn" data-go="${next}">${started ? 'Continuar donde lo dejé' : 'Empezar por la anamnesis'}</button>
-          <button class="btn ghost" data-go="glossary">Glosario</button>
-        </div>
-        <div class="stats">
-          <div><b>${nMods}</b><span>módulos interactivos</span></div>
-          <div><b>4</b><span>personas sanas de referencia</span></div>
-          <div><b>20</b><span>casos clínicos</span></div>
-          <div><b>${nTerms}</b><span>términos en el glosario</span></div>
+          <button class="btn" data-go="${next}">${started ? `Continuar: ${nextMod ? nextMod.title : ''}` : 'Empezar'}</button>
         </div>
       </section>
-      <section class="howto">
-        <div data-n="1"><b>Elige persona e instrumento</b><span>Cuatro personas sanas de distinta edad y sexo. Los valores cambian con cada una.</span></div>
-        <div data-n="2"><b>Explora sobre el cuerpo</b><span>En <i>Aprendizaje</i> ves los puntos de referencia y la explicación; en <i>Examen</i>, sin pistas.</span></div>
-        <div data-n="3"><b>Registra y comprueba</b><span>Anota los hallazgos, responde el cuestionario y compara con la solución.</span></div>
+      <section class="doors">
+        ${door('vitals', '🩺', 'Aprender lo normal', 'Exploración de cada aparato en personas sanas')}
+        ${door('pat-cardio', '🩻', 'Reconocer lo patológico', 'Pacientes con síndromes: explora y diagnostica')}
+        ${door('sounds', '🎧', 'Sonidos y 3D', 'Biblioteca de auscultación, torso y marcha en 3D')}
       </section>
-      ${started ? `<p class="stat">Progreso: <b>${started}</b> módulos empezados · <b>${done}</b> completados. <button class="link" id="resetProg">Reiniciar progreso</button></p>` : ''}
-      ${groups().map(g => `<h2 class="gh">${g.name}</h2><div class="cards">${g.mods.map(card).join('')}</div>`).join('')}
-      <section class="roadmap">
-        <h2 class="gh">Hoja de ruta</h2>
-        <ul>
-          <li><b>Siguiente:</b> hallazgos patológicos por aparato sobre las mismas escenas (ya disponible: biblioteca de auscultación).</li>
-          <li>Grabaciones reales de auscultación con licencia abierta en lugar de sonido sintetizado.</li>
-          <li>Más casos clínicos integrados por sistema, con evaluación del razonamiento.</li>
-          <li>Revisión clínica por docentes antes de uso formal en cursos.</li>
-        </ul>
-      </section>
+      <details class="catalog" ${started ? 'open' : ''}>
+        <summary>Todos los módulos${started ? ` · ${started} empezados` : ''} <button class="link" id="resetProg" ${started ? '' : 'hidden'}>reiniciar progreso</button></summary>
+        ${groups().map(g => `<h2 class="gh">${g.name}</h2><div class="cards">${g.mods.map(card).join('')}</div>`).join('')}
+      </details>
       <section class="sponsor" id="sponsor" hidden>
         <span><b>Con el apoyo de</b> · espacio reservado para un patrocinador educativo (sin rastreo ni scripts externos).</span>
       </section>
@@ -104,7 +83,7 @@
       view.innerHTML = homeHTML();
       view.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(b.dataset.go)));
       const r = view.querySelector('#resetProg');
-      if (r) r.addEventListener('click', () => { if (confirm('¿Borrar todo el progreso guardado en este navegador?')) { Progress.reset(); show('home'); } });
+      if (r) r.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (confirm('¿Borrar todo el progreso guardado en este navegador?')) { Progress.reset(); show('home'); } });
       document.title = 'SemioSim · Semiología médica interactiva';
     } else {
       active = m.mount(view);
