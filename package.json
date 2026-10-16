@@ -4,7 +4,7 @@
   "description": "Simulaciones interactivas de semiología médica (exploración física) para estudiantes de medicina.",
   "private": true,
   "scripts": {
-    "start": "python -m http.server 8765",
+    "start": "python -m http.server 8780",
     "test": "node test/smoke.js",
     "check": "node -e \"require('fs').readdirSync('js').filter(f=>f.endsWith('.js')).forEach(f=>require('child_process').execFileSync('node',['--check','js/'+f]))\" && echo sintaxis OK",
     "bump": "node tools/bump.js"

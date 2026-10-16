@@ -13,10 +13,10 @@ Web estática: HTML + CSS + JavaScript, sin compilación ni dependencias en tiem
 Doble clic en `index.html`, o con un servidor estático (recomendado, habilita el modo sin conexión):
 
 ```bash
-python -m http.server 8765
+python -m http.server 8780
 ```
 
-y abre <http://localhost:8765>. En el teléfono, «Añadir a la pantalla de inicio» instala la aplicación.
+y abre <http://localhost:8780>. En el teléfono, «Añadir a la pantalla de inicio» instala la aplicación.
 
 ## Qué incluye
 
