@@ -1,12 +1,36 @@
 {
+ "Marcha_Anserina": {
+  "duracion": 19.6
+ },
+ "Marcha_Antalgica_Lumbar": {
+  "duracion": 18.53
+ },
+ "Marcha_Apraxica": {
+  "duracion": 36.97
+ },
  "Marcha_Ataxica_Cerebelosa": {
   "duracion": 28.5
+ },
+ "Marcha_Claudicante_Cadera": {
+  "duracion": 20.07
+ },
+ "Marcha_Coreica": {
+  "duracion": 19.4
+ },
+ "Marcha_Gonartrosis_Derecha": {
+  "duracion": 20.7
  },
  "Marcha_Hemiparetica_Derecha": {
   "duracion": 20.77
  },
+ "Marcha_LCA_Izquierdo": {
+  "duracion": 21.3
+ },
  "Marcha_Lenta_Insegura": {
   "duracion": 33.7
+ },
+ "Marcha_Metatarsalgia": {
+  "duracion": 14.27
  },
  "Marcha_Normal": {
   "duracion": 13.77
@@ -14,10 +38,52 @@
  "Marcha_Parkinsoniana": {
   "duracion": 22.17
  },
+ "Marcha_Rigida_Espondilitis": {
+  "duracion": 18.4
+ },
  "Marcha_Steppage": {
   "duracion": 18.37
  },
  "Marcha_Steppage_Derecha": {
   "duracion": 18.37
+ },
+ "Marcha_Taloneante": {
+  "duracion": 21.13
+ },
+ "Marcha_Tijera": {
+  "duracion": 28.03
+ },
+ "Prueba_Puntas_Debil_Derecha": {
+  "duracion": 17.53
+ },
+ "Prueba_Puntas_Inestable": {
+  "duracion": 22.03
+ },
+ "Prueba_Puntas_Normal": {
+  "duracion": 16.73
+ },
+ "Prueba_Talones_Inestable": {
+  "duracion": 22.7
+ },
+ "Prueba_Talones_Normal": {
+  "duracion": 17.13
+ },
+ "Prueba_Talones_PieCaido_Bilateral": {
+  "duracion": 17.9
+ },
+ "Prueba_Talones_PieCaido_Derecho": {
+  "duracion": 17.93
+ },
+ "Prueba_Tandem_Ataxia": {
+  "duracion": 31.13
+ },
+ "Prueba_Tandem_Hemiparesia": {
+  "duracion": 31.33
+ },
+ "Prueba_Tandem_Inseguro": {
+  "duracion": 32.83
+ },
+ "Prueba_Tandem_Normal": {
+  "duracion": 24.73
  }
 }

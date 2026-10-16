@@ -1670,7 +1670,7 @@
         };
         requestAnimationFrame(loop);
       },
-      leave() { this.alive = false; if (this.trend) this.trend.destroy(); },
+      leave() { this.alive = false; if (this.trend) this.trend.destroy(); if (window.Gait3D) Gait3D.close(); },
       refresh() { this.setMode(this.mode); },
       setTool(id) { this.setMode(id === 'walk' ? 'normal' : id); },
       setMode(mode) {
@@ -1678,6 +1678,7 @@
         this.mode = mode;
         const G = st.querySelector('#gG'), T = st.querySelector('#gT');
         if (mode === 'trend') {
+          if (window.Gait3D) Gait3D.close();
           G.style.display = 'none'; T.style.display = '';
           this.trend.redraw();
           sh.hint('Trendelenburg: elige la pierna que se levanta y observa el nivel de la pelvis desde atrás.');
@@ -1700,6 +1701,12 @@
         };
         sh.hint(hints[mode]);
         this.draw(true);
+        /* paciente 3D (js/gait3d.js) sobre el esquema; al cerrarlo queda el esquema de fases y huellas */
+        if (window.Gait3D) {
+          const def3 = { normal: 'normal', heel: 'heelN', toe: 'toesN', tandem: 'tandN' }[mode];
+          const kind = (c.msk.g3d && c.msk.g3d[mode]) || def3;
+          if (kind) Gait3D.show(st, kind);
+        }
       },
       draw(scrub) {
         const sh = this.sh, c = sh.case, learn = sh.mode === 'learn', mode = this.mode, svg = this.svg;

@@ -17,6 +17,7 @@
       complaint: 'Albañil. Hace 10 días, al levantar una bolsa de cemento, dolor lumbar agudo que en 48 h se irradió al glúteo, la cara posterior del muslo y la pantorrilla derechos hasta el borde externo del pie y el 5.º dedo. Empeora al toser y al sentarse; hormigueo en el pie derecho.',
       vitals: 'FC 82 · PA 130/84 · FR 16 · T 36,7 °C · SpO₂ 98 %', v: { height: 1.75, weight: 80 },
       msk: {
+        g3d: { normal: 'm1', toe: 'toesR' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.96, las: 40, schober: 13.5, fd: 35, step: 48, cad: 92, perim: [31, 51, 35],
         lasNote: 'dolor lumbar que se irradia por la cara posterior del muslo y la pierna derechos hasta el pie (dolor radicular ciático, raíz S1) con la pierna extendida a 40°; también duele al elevar la pierna contralateral (Lasègue cruzado) a 70°.',
         bragardNote: 'al descender la pierna unos grados hasta que cede el dolor, la dorsiflexión pasiva del pie lo reproduce: confirma el origen radicular (tensión del ciático).',
@@ -62,6 +63,7 @@
       complaint: 'Dolor lumbar y glúteo alternante de 4 años de evolución, de tipo inflamatorio: despierta de madrugada, mejora al moverse y empeora con el reposo. Rigidez matinal de más de 1 hora. Episodios de uveítis anterior. HLA-B27 positivo.',
       vitals: 'FC 76 · PA 118/74 · FR 15 · T 36,8 °C · SpO₂ 98 %', v: { height: 1.72, weight: 68 },
       msk: {
+        g3d: { normal: 'm2' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.92, las: 70, schober: 12, fd: 30, step: 55, cad: 100, perim: [28, 47, 33],
         schoberNote: 'rigidez lumbar por anquilosis incipiente (sin dolor radicular): típico de la espondilitis anquilosante.',
         fdNote: 'rigidez de la columna lumbar; las caderas compensan solo en parte.',
@@ -112,6 +114,7 @@
       complaint: 'Dolor en la rodilla derecha de 3 años de evolución, mecánico: aparece al caminar, al subir y bajar escaleras y al levantarse de la silla; cede con el reposo. Rigidez de pocos minutos al iniciar la marcha. Sensación de crujidos. Obesidad (IMC 29,6).',
       vitals: 'FC 74 · PA 138/86 · FR 15 · T 36,5 °C · SpO₂ 97 %', v: { height: 1.58, weight: 74 },
       msk: {
+        g3d: { normal: 'm3', tandem: 'tandIns' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.93, las: 75, schober: 15.5, fd: 10, step: 50, cad: 96, perim: [28, 45, 35],
         gk: { side: 'R', kf: 0.6, asym: 0.85 },
         rom: {
@@ -146,6 +149,7 @@
       complaint: 'Futbolista. Ayer, al cambiar de dirección con el pie izquierdo apoyado, sintió un "chasquido" en la rodilla y cayó; dolor inmediato e hinchazón en las primeras 2 horas. No pudo seguir jugando; sensación de que la rodilla "se le va" al apoyar.',
       vitals: 'FC 70 · PA 120/76 · FR 14 · T 36,6 °C · SpO₂ 99 %', v: { height: 1.80, weight: 78 },
       msk: {
+        g3d: { normal: 'm4', tandem: 'tandIns' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.98, las: 90, schober: 17, fd: 0, step: 60, cad: 100, perim: [31, 54, 38],
         gk: { side: 'L', asym: 0.8, kf: 0.75 },
         rom: {
@@ -238,6 +242,7 @@
       complaint: 'Dolor y tumefacción de ambas muñecas y de los nudillos de ambas manos desde hace 8 meses, simétricos, con rigidez matinal de más de 1 hora que mejora con la actividad. Astenia, pérdida de 3 kg. Le cuesta abrir frascos y abrocharse.',
       vitals: 'FC 84 · PA 122/76 · FR 16 · T 37,2 °C · SpO₂ 98 %', v: { height: 1.60, weight: 58 },
       msk: {
+        g3d: { normal: 'm7' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.92, las: 80, schober: 16, fd: 6, step: 60, cad: 106, perim: [25, 45, 33],
         rom: {
           'wr.flex': { a: 45, p: 50, note: 'limitación dolorosa por sinovitis radiocarpiana; tope blando y doloroso', say: 'Me duele toda la muñeca' },
@@ -273,6 +278,7 @@
       complaint: 'Dolor inguinal derecho de 2 años, mecánico, que irradia a la cara anterior del muslo hasta la rodilla; aparece al caminar más de 300 m y al levantarse, y cede con el reposo. Rigidez breve al iniciar la marcha. Le cuesta ponerse los calcetines y cortarse las uñas del pie derecho. Cojea.',
       vitals: 'FC 68 · PA 142/86 · FR 16 · T 36,4 °C · SpO₂ 96 %', v: { height: 1.70, weight: 84 },
       msk: {
+        g3d: { normal: 'm8', tandem: 'tandIns' },   // animación 3D de la marcha (js/gait3d.js) por modo; el resto usa la normal
         f: 0.9, las: 70, schober: 15, fd: 15, step: 46, cad: 92, perim: [29, 44, 34],
         fdNote: 'limitación de la flexión de la cadera derecha (la columna lumbar flexiona con normalidad: Schober conservado).',
         gk: { side: 'R', asym: 0.7, lean: 4 },

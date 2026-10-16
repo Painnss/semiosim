@@ -3,3 +3,4 @@ node_modules/
 *.docx
 .DS_Store
 Thumbs.db
+*.blend1

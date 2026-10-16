@@ -448,9 +448,9 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, ojos abiertos y luego cerrados, con el examinador al lado.', 'de pie solo con ayuda; con los ojos abiertos ya oscila y <b>carga el peso sobre la pierna izquierda</b>; al cerrarlos no empeora de forma clara. <b>Romberg no valorable</b> por la paresia (la prueba exige poder mantener la bipedestación).'), run: rombergRun(2.2, false, 1, 'Romberg no valorable: inestabilidad por paresia, sin empeoramiento neto al cerrar los ojos') },
           'gait:pers:gait': { html: H('caminar ida y vuelta, con apoyo cercano.', '<b>marcha hemiparética (del segador)</b>: el miembro inferior derecho avanza en extensión y <b>circunducción</b> (describe un semicírculo), el pie en equino roza el suelo con la punta; el brazo derecho va flexionado y aducido, <b>sin braceo</b>; el tronco se inclina a la izquierda. Paso corto y lento.'), run: gait3d('hemi', gaitRun('hemi')) },
-          'gait:pers:tandem': { html: H('talón con punta en línea recta.', '<b>imposible</b>: no puede colocar el pie derecho delante del izquierdo sin perder el equilibrio.'), run: gaitRun('slow', 'Marcha en tándem imposible por la paresia derecha') },
-          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede elevar la punta del pie derecho</b> (dorsiflexión 2/5); con el izquierdo lo hace sin dificultad.'), run: gaitRun('slow', 'No puede caminar sobre el talón derecho') },
-          'gait:pers:toes': { html: H('caminar en puntas de pie.', 'se eleva en la punta del pie izquierdo; en el derecho apenas despega el talón (3/5), aunque la espasticidad extensora lo mantiene en equino.'), run: gaitRun('slow', 'Marcha en puntas asimétrica: claudica el lado derecho') },
+          'gait:pers:tandem': { html: H('talón con punta en línea recta.', '<b>imposible</b>: no puede colocar el pie derecho delante del izquierdo sin perder el equilibrio.'), run: gait3d('tandHemi', gaitRun('slow', 'Marcha en tándem imposible por la paresia derecha')) },
+          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede elevar la punta del pie derecho</b> (dorsiflexión 2/5); con el izquierdo lo hace sin dificultad.'), run: gait3d('heelR', gaitRun('slow', 'No puede caminar sobre el talón derecho')) },
+          'gait:pers:toes': { html: H('caminar en puntas de pie.', 'se eleva en la punta del pie izquierdo; en el derecho apenas despega el talón (3/5), aunque la espasticidad extensora lo mantiene en equino.'), run: gait3d('toesR', gaitRun('slow', 'Marcha en puntas asimétrica: claudica el lado derecho')) },
           'mening:mhead:look': 'Paciente afebril, sin cefalea ni fotofobia; en decúbito, el miembro superior derecho reposa en flexión. Sin actitud meníngea.',
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', '<b>sin rigidez de nuca</b>, Brudzinski negativo (no hay irritación meníngea en un infarto capsular).'), run: MRUN.neckNeg }
         }
@@ -511,7 +511,7 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, ojos abiertos y cerrados.', '<b>Romberg negativo</b>: estable con los ojos cerrados.'), run: rombergRun(1.2, false, 0, 'Romberg negativo') },
           'gait:pers:gait': { html: H('marcha libre.', 'marcha eubásica, con braceo simétrico; sin lateropulsión (el VIII no está afectado).'), run: gait3d('normal', gaitRun('slow', 'Marcha normal')) },
-          'gait:pers:tandem': { html: H('marcha en tándem.', 'la realiza sin desviarse.'), run: gaitRun('slow', 'Marcha en tándem normal') },
+          'gait:pers:tandem': { html: H('marcha en tándem.', 'la realiza sin desviarse.'), run: gait3d('tandN', gaitRun('slow', 'Marcha en tándem normal')) },
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', 'sin rigidez de nuca; afebril, sin cefalea (una parálisis facial con signos meníngeos o bilateral obliga a pensar en otras causas, como enfermedad de Lyme o sarcoidosis).'), run: MRUN.neckNeg },
           'mening:mhead:look': 'Paciente tranquila, afebril, sin fotofobia; asimetría facial izquierda evidente al hablar.'
         }
@@ -575,9 +575,9 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, brazos a los lados; ojos abiertos y luego cerrados.', 'no logra juntar los pies sin oscilar: <b>ya con los ojos abiertos hay inestabilidad</b> (ataxia estática) y al cerrarlos empeora solo un poco. En sentido estricto el <b>Romberg es negativo</b> (la prueba es positiva cuando la inestabilidad aparece o aumenta claramente al suprimir la visión: ataxia sensitiva o vestibular). Hay <b>danza de los tendones</b> en los pies.'), run: rombergRun(3.2, false, 0, 'Romberg «negativo»: oscila con los ojos abiertos y apenas empeora al cerrarlos (ataxia cerebelosa)') },
           'gait:pers:gait': { html: H('marcha libre, ida y vuelta, giros.', '<b>marcha atáxica cerebelosa («de ebrio»)</b>: <b>base de sustentación amplia</b>, pasos irregulares en longitud y dirección, <b>oscilación del tronco</b> y lateropulsión hacia ambos lados, brazos separados en busca de equilibrio; el <b>giro</b> es inseguro y lo descompone en varios pasos. No mejora al mirar el suelo.'), run: gait3d('atax', gaitRun('atax')) },
-          'gait:pers:tandem': { html: H('talón con punta en línea recta.', '<b>imposible</b>: al primer paso se sale de la línea y debe separar los pies para no caer (muy sensible para la ataxia de vermis).'), run: gaitRun('atax', 'Marcha en tándem imposible: ataxia de línea media') },
-          'gait:pers:heels': { html: H('caminar sobre los talones.', 'fuerza suficiente (eleva las puntas) pero <b>inestable</b> por la ataxia.'), run: gaitRun('atax', 'Marcha sobre talones: fuerza conservada, equilibrio precario') },
-          'gait:pers:toes': { html: H('caminar en puntas de pie.', 'se eleva bien en puntas pero <b>pierde el equilibrio</b> a los pocos pasos.'), run: gaitRun('atax', 'Marcha en puntas: inestable') },
+          'gait:pers:tandem': { html: H('talón con punta en línea recta.', '<b>imposible</b>: al primer paso se sale de la línea y debe separar los pies para no caer (muy sensible para la ataxia de vermis).'), run: gait3d('tandAtax', gaitRun('atax', 'Marcha en tándem imposible: ataxia de línea media')) },
+          'gait:pers:heels': { html: H('caminar sobre los talones.', 'fuerza suficiente (eleva las puntas) pero <b>inestable</b> por la ataxia.'), run: gait3d('heelX', gaitRun('atax', 'Marcha sobre talones: fuerza conservada, equilibrio precario')) },
+          'gait:pers:toes': { html: H('caminar en puntas de pie.', 'se eleva bien en puntas pero <b>pierde el equilibrio</b> a los pocos pasos.'), run: gait3d('toesX', gaitRun('atax', 'Marcha en puntas: inestable')) },
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', 'sin rigidez de nuca; afebril.'), run: MRUN.neckNeg },
           'mening:mhead:look': 'Afebril, sin cefalea; en decúbito, tranquilo; al sentarse, oscilación del tronco (titubeo).'
         }
@@ -714,9 +714,9 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, ojos abiertos y cerrados; luego <b>prueba del empujón</b> (el examinador, detrás, tira de los hombros hacia atrás).', 'Romberg negativo (no empeora al cerrar los ojos), pero hay <b>inestabilidad postural</b>: al tirar de los hombros da varios pasos hacia atrás (<b>retropulsión</b>) y caería si no se lo sujeta; los reflejos posturales están alterados.'), run: rombergRun(1.4, true, -1, 'Romberg negativo · prueba del empujón: retropulsión (inestabilidad postural)') },
           'gait:pers:gait': { html: H('observar el inicio, la marcha, el giro y la parada.', '<b>marcha parkinsoniana</b>: <b>dificultad para iniciarla</b> (vacilación, «pies pegados al suelo»), postura en <b>flexión</b> del tronco y las rodillas, <b>pasos cortos arrastrando los pies</b>, <b>sin braceo</b> (sobre todo el derecho), <b>festinación</b> (los pasos se aceleran persiguiendo el centro de gravedad) y <b>giro en bloque</b> en varios pasos; bloqueos al pasar por una puerta. Temblor de la mano derecha visible al caminar.'), run: gait3d('park', gaitRun('park')) },
-          'gait:pers:tandem': { html: H('talón con punta.', 'la realiza con lentitud y algo de inseguridad, sin salirse claramente de la línea (el equilibrio en tándem se conserva mejor que los reflejos posturales).'), run: gaitRun('slow', 'Marcha en tándem lenta, posible') },
-          'gait:pers:heels': { html: H('marcha sobre los talones.', 'puede hacerlo (fuerza conservada), con pasos cortos.'), run: gaitRun('slow', 'Marcha sobre talones posible: no hay paresia') },
-          'gait:pers:toes': { html: H('marcha en puntas.', 'posible, lenta.'), run: gaitRun('slow', 'Marcha en puntas posible') },
+          'gait:pers:tandem': { html: H('talón con punta.', 'la realiza con lentitud y algo de inseguridad, sin salirse claramente de la línea (el equilibrio en tándem se conserva mejor que los reflejos posturales).'), run: gait3d('tandIns', gaitRun('slow', 'Marcha en tándem lenta, posible')) },
+          'gait:pers:heels': { html: H('marcha sobre los talones.', 'puede hacerlo (fuerza conservada), con pasos cortos.'), run: gait3d('heelN', gaitRun('slow', 'Marcha sobre talones posible: no hay paresia')) },
+          'gait:pers:toes': { html: H('marcha en puntas.', 'posible, lenta.'), run: gait3d('toesN', gaitRun('slow', 'Marcha en puntas posible')) },
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', 'cuello <b>rígido en todas las direcciones</b> (rigidez extrapiramidal axial, con rueda dentada), sin dolor ni fiebre; <b>no es rigidez de nuca meníngea</b> (esta afecta sobre todo a la flexión y es dolorosa). Brudzinski negativo.'), run: MRUN.neckNeg },
           'mening:mhead:look': 'Afebril; en decúbito, la cabeza queda unos centímetros por encima de la almohada («almohada psíquica») por la rigidez axial.'
         }
@@ -796,9 +796,9 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, ojos abiertos y luego cerrados; el examinador la sujeta.', '<b>Romberg positivo</b>: con los ojos abiertos se mantiene (con algo de oscilación); <b>al cerrar los ojos oscila ampliamente y cae</b> hacia cualquier lado en pocos segundos (<b>ataxia sensitiva</b>: pierde la propiocepción y la visión que la compensaba).'), run: rombergRun(3.5, true, 1, 'Romberg POSITIVO: cae al cerrar los ojos (ataxia sensitiva)') },
           'gait:pers:gait': { html: H('marcha con y sin calzado, mirando al frente y al suelo.', '<b>marcha en steppage</b> bilateral: eleva mucho las rodillas para que las puntas de los pies caídos no rocen el suelo, y los apoya de golpe; componente <b>talonante</b> (golpea el suelo con los talones, «marcha tabética») por la pérdida propioceptiva; <b>mira el suelo</b> y empeora a oscuras; base algo ampliada.'), run: gait3d('step', gaitRun('step')) },
-          'gait:pers:tandem': { html: H('marcha en tándem.', 'con los ojos abiertos, insegura; <b>con los ojos cerrados, imposible</b>.'), run: gaitRun('step', 'Marcha en tándem insegura; imposible sin visión') },
-          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede</b>: la dorsiflexión es 3/5 y las puntas caen (confirma el déficit motor distal).'), run: gaitRun('step', 'No puede caminar sobre los talones (pies caídos)') },
-          'gait:pers:toes': { html: H('caminar en puntas.', 'lo consigue con dificultad (flexión plantar 4/5), inestable.'), run: gaitRun('step', 'Marcha en puntas difícil e inestable') },
+          'gait:pers:tandem': { html: H('marcha en tándem.', 'con los ojos abiertos, insegura; <b>con los ojos cerrados, imposible</b>.'), run: gait3d('tandIns', gaitRun('step', 'Marcha en tándem insegura; imposible sin visión')) },
+          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede</b>: la dorsiflexión es 3/5 y las puntas caen (confirma el déficit motor distal).'), run: gait3d('heelB', gaitRun('step', 'No puede caminar sobre los talones (pies caídos)')) },
+          'gait:pers:toes': { html: H('caminar en puntas.', 'lo consigue con dificultad (flexión plantar 4/5), inestable.'), run: gait3d('toesX', gaitRun('step', 'Marcha en puntas difícil e inestable')) },
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', 'sin rigidez de nuca; afebril.'), run: MRUN.neckNeg },
           'mening:mhead:look': 'Afebril, tranquila; pies con dedos en garra y úlcera plantar derecha, piel seca.'
         }
@@ -950,9 +950,9 @@
         {
           'gait:pers:romberg': { html: H('pies juntos, ojos abiertos y cerrados.', '<b>Romberg negativo</b>: estable (propiocepción conservada), aunque apoya menos el pie derecho.'), run: rombergRun(1.2, false, 0, 'Romberg negativo') },
           'gait:pers:gait': { html: H('marcha libre.', '<b>steppage derecho</b>: eleva más la rodilla derecha para no arrastrar la punta del pie caído y lo apoya de golpe; braceo derecho reducido con la mano en garra; base normal, sin ataxia.'), run: gait3d('stepR', gaitRun('step')) },
-          'gait:pers:tandem': { html: H('marcha en tándem.', 'posible, con alguna vacilación por el pie derecho.'), run: gaitRun('slow', 'Marcha en tándem posible') },
-          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede elevar la punta del pie derecho</b> (tibial anterior 3/5); el izquierdo lo hace.'), run: gaitRun('step', 'No puede caminar sobre el talón derecho') },
-          'gait:pers:toes': { html: H('caminar en puntas.', 'posible, con algo menos de altura en el lado derecho (gastrocnemio 4/5).'), run: gaitRun('slow', 'Marcha en puntas posible, asimétrica') },
+          'gait:pers:tandem': { html: H('marcha en tándem.', 'posible, con alguna vacilación por el pie derecho.'), run: gait3d('tandIns', gaitRun('slow', 'Marcha en tándem posible')) },
+          'gait:pers:heels': { html: H('caminar sobre los talones.', '<b>no puede elevar la punta del pie derecho</b> (tibial anterior 3/5); el izquierdo lo hace.'), run: gait3d('heelR', gaitRun('step', 'No puede caminar sobre el talón derecho')) },
+          'gait:pers:toes': { html: H('caminar en puntas.', 'posible, con algo menos de altura en el lado derecho (gastrocnemio 4/5).'), run: gait3d('toesR', gaitRun('slow', 'Marcha en puntas posible, asimétrica')) },
           'mening:mhead:neck': { html: H('flexión pasiva del cuello.', 'sin rigidez de nuca; afebril. Flexores del cuello algo débiles (le cuesta levantar la cabeza de la almohada).'), run: MRUN.neckNeg },
           'mening:mhead:look': 'Afebril, tranquilo; fasciculaciones visibles en los hombros al descubrirlo.'
         }

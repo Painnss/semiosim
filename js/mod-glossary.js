@@ -121,6 +121,21 @@
     ['Trofismo', 'Volumen y estado de la masa muscular; atrofia en lesiones de motoneurona inferior o desuso.', 'Neurológico'],
     ['Taxia (coordinación)', 'Se explora con dedo-nariz, talón-rodilla, diadococinesia y marcha; ataxia cuando falla (cerebelosa, sensitiva o vestibular).', 'Neurológico'],
     ['Dismetría / adiadococinesia', 'Error en la medida del movimiento y dificultad para alternar movimientos rápidos; signos cerebelosos.', 'Neurológico'],
+    // Marchas (4.º elemento: animación del visor 3D, js/gait3d.js)
+    ['Marcha eubásica (normal)', 'Base de sustentación de 5-10 cm, paso de 60-75 cm, 100-120 pasos/min, braceo simétrico, apoyo del talón y despegue de la punta, giro sin vacilación.', 'Neurológico', 'normal'],
+    ['Marcha hemiparética (del segador)', 'La pierna parética avanza rígida en circunducción con el pie en equino, que roza el suelo; brazo flexionado y aducido sin braceo (postura de Wernicke-Mann). Lesión de la vía piramidal.', 'Neurológico', 'hemi'],
+    ['Marcha parkinsoniana', 'Postura en flexión, dificultad para iniciarla, pasos cortos arrastrando los pies, festinación, sin braceo, giro en bloque y bloqueos (congelamiento) al pasar por puertas.', 'Neurológico', 'park'],
+    ['Marcha atáxica cerebelosa', 'Base amplia, pasos irregulares en longitud y dirección, oscilación del tronco y lateropulsión («de ebrio»); no mejora al mirar el suelo.', 'Neurológico', 'atax'],
+    ['Marcha en steppage', 'Por pie caído (paresia de los dorsiflexores): eleva mucho la rodilla para no arrastrar la punta y apoya el pie de golpe. Neuropatía del peroneo, polineuropatía, radiculopatía L5.', 'Neurológico', 'step'],
+    ['Marcha en tijera', 'Paraparesia espástica: muslos en aducción que se cruzan al avanzar, rodillas semiflexionadas y pies en equino; paso corto con balanceo del tronco.', 'Neurológico', 'tijera'],
+    ['Marcha taloneante (tabética)', 'Ataxia sensitiva: base amplia, lanza las piernas y golpea el suelo con los talones mirando hacia abajo; empeora a oscuras (Romberg positivo).', 'Neurológico', 'taloneante'],
+    ['Marcha anserina (de pato)', 'Debilidad de la cintura pelviana: la pelvis cae del lado que se eleva y el tronco se balancea hacia el apoyo, con hiperlordosis. Miopatías.', 'Neurológico', 'anserina'],
+    ['Marcha apráxica (magnética)', 'Pies «pegados» al suelo, dificultad para iniciar, pasos muy cortos y arrastrados con base amplia y tronco erguido. Hidrocefalia normotensiva, lesiones frontales.', 'Neurológico', 'apraxica'],
+    ['Marcha coreica', 'Marcha irregular y «danzante», interrumpida por movimientos involuntarios breves y cambiantes del tronco y de las extremidades.', 'Neurológico', 'coreica'],
+    ['Marcha lenta e insegura', 'Pasos cortos con base amplia, retropulsión y necesidad de apoyo; frecuente en el delirium y en el anciano frágil: alto riesgo de caídas.', 'Neurológico', 'slow'],
+    ['Marcha en tándem', 'Talón con punta en línea recta; sensible para la ataxia de la línea media (vermis cerebeloso).', 'Neurológico', 'tandN'],
+    ['Marcha antálgica', 'Acorta el apoyo sobre el miembro doloroso y avanza con cautela; el tronco suele ir rígido.', 'Locomotor', 'm1'],
+    ['Marcha claudicante (Trendelenburg / Duchenne)', 'Insuficiencia de los abductores de la cadera: en el apoyo sobre el lado afectado cae la pelvis contraria (Trendelenburg) o el tronco se inclina hacia el lado afectado (Duchenne).', 'Locomotor', 'm8'],
     ['Signo de Romberg', 'Pérdida del equilibrio al cerrar los ojos de pie con los pies juntos; ataxia sensitiva o vestibular (no cerebelosa).', 'Neurológico'],
     ['Praxia', 'Capacidad de ejecutar actos motores aprendidos; su pérdida es la apraxia.', 'Neurológico'],
     ['Palestesia', 'Sensibilidad vibratoria (diapasón de 128 Hz sobre prominencias óseas).', 'Neurológico'],
@@ -220,11 +235,12 @@
     const paint = () => {
       const qq = norm(q.value.trim()), sys = s.value;
       const hits = TERMS.filter(t => (!sys || t[2] === sys) && (!qq || norm(t[0] + ' ' + t[1]).includes(qq)));
-      list.innerHTML = hits.length ? hits.map(t => `<div class="gl-item"><small>${esc(t[2])}</small><b>${esc(t[0])}</b><p>${esc(t[1])}</p></div>`).join('')
+      list.innerHTML = hits.length ? hits.map(t => `<div class="gl-item"><small>${esc(t[2])}</small><b>${esc(t[0])}</b><p>${esc(t[1])}</p>${t[3] && window.Gait3D ? `<button type="button" class="gl-3d" data-g3="${esc(t[3])}">▶ Ver la marcha en 3D</button>` : ''}</div>`).join('')
         : '<p class="gl-empty">No hay términos que coincidan.</p>';
       n.textContent = `${hits.length} términos`;
     };
     q.addEventListener('input', paint); s.addEventListener('change', paint);
+    list.addEventListener('click', e => { const b = e.target.closest('[data-g3]'); if (b) Gait3D.openModal(b.dataset.g3); });
     paint();
     Progress.touch('glossary');
     return { destroy() { root.innerHTML = ''; } };

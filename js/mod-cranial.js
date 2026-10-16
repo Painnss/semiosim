@@ -685,11 +685,11 @@
   }
   function runGait(mode) {
     const svgRun = runGaitSvg(mode);
-    /* la marcha libre se muestra con el maniquí 3D (js/gait3d.js); si no hay WebGL se usa el dibujo SVG */
-    if (mode !== 'gait') return svgRun;
+    /* marcha libre y pruebas de marcha con el paciente 3D (js/gait3d.js); si no hay WebGL se usa el dibujo SVG */
+    const kind = { gait: 'normal', tandem: 'tandN', heels: 'heelN', toes: 'toesN' }[mode];
     return ctx => {
-      if (!window.Gait3D) return svgRun(ctx);
-      Gait3D.show(ctx.svg.parentElement, 'normal').then(ok => { if (!ok) svgRun(ctx); });
+      if (!window.Gait3D || !kind) return svgRun(ctx);
+      Gait3D.show(ctx.svg.parentElement, kind).then(ok => { if (!ok) svgRun(ctx); });
     };
   }
   function runGaitSvg(mode) {

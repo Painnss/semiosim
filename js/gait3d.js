@@ -69,8 +69,132 @@
         [9.4, 16.4, 'Giro muy lento, en varios pasos'],
         [16.4, 25.3, 'Tronco inclinado hacia atrás (retropulsión) · pasos cortos'],
         [25.3, 99, 'Giro lento: no debe deambular sin supervisión']]
-    }
+    },
+
+    /* ---- otras marchas neurológicas (glosario) ---- */
+    tijera: {
+      action: 'Marcha_Tijera', pack: 'neuro2', view: 'frente', title: 'Marcha en tijera (paraparesia espástica)',
+      caps: [[0, 4, 'Muslos en aducción: las rodillas se rozan y los pies se cruzan por delante (en tijera)'],
+        [4, 7.8, 'Rodillas semiflexionadas y pies en equino: avanza arrastrando la punta'],
+        [7.8, 13, 'Giro lento y rígido'],
+        [13, 20.2, 'Balanceo compensador del tronco hacia el lado del apoyo · paso corto'],
+        [20.2, 99, 'Giro lento']]
+    },
+    taloneante: {
+      action: 'Marcha_Taloneante', pack: 'neuro2', view: 'lat', title: 'Marcha taloneante (ataxia sensitiva)',
+      caps: [[0, 3, 'Base amplia: lanza las piernas hacia delante y afuera'],
+        [3, 6, 'Golpea el suelo con los talones'],
+        [6, 10.2, 'Mira el suelo constantemente: depende de la vista (empeora a oscuras, Romberg positivo)'],
+        [10.2, 15.6, 'Pasos algo irregulares: ataxia sensitiva (cordones posteriores, neuropatía)'],
+        [15.6, 99, 'Giro inseguro']]
+    },
+    anserina: {
+      action: 'Marcha_Anserina', pack: 'neuro2', view: 'frente', title: 'Marcha anserina (de pato)',
+      caps: [[0, 3.4, 'Base amplia: la pelvis cae hacia el lado del pie que se eleva en cada paso'],
+        [3.4, 6.2, 'El tronco se balancea hacia el lado del apoyo, como un pato'],
+        [6.2, 9.4, 'Hiperlordosis lumbar con los hombros hacia atrás'],
+        [9.4, 15, 'Debilidad de la cintura pelviana (glúteo medio): miopatías'],
+        [15, 99, 'Giro con balanceo']]
+    },
+    apraxica: {
+      action: 'Marcha_Apraxica', pack: 'neuro2', view: 'lat', title: 'Marcha apráxica o magnética',
+      caps: [[0, 0.6, 'De pie con base amplia y pies en rotación externa'],
+        [0.6, 2.5, 'Le cuesta iniciar: los pies parecen «pegados» al suelo'],
+        [2.5, 12.4, 'Pasos muy cortos, deslizando los pies sin despegarlos'],
+        [12.4, 18.5, 'Giro en muchos pasos pequeños'],
+        [18.5, 19.7, 'Nueva vacilación antes de reanudar'],
+        [19.7, 29.6, 'Tronco erguido y braceo relativamente conservado (a diferencia del parkinsonismo)'],
+        [29.6, 99, 'Hidrocefalia normotensiva, lesiones frontales']]
+    },
+    coreica: {
+      action: 'Marcha_Coreica', pack: 'neuro2', view: 'frente', title: 'Marcha coreica',
+      caps: [[0, 3, 'Movimientos involuntarios breves, irregulares y cambiantes de brazos, tronco y cabeza'],
+        [3, 6.1, 'Pasos de longitud y ritmo irregulares, con flexiones bruscas de las rodillas (marcha «danzante»)'],
+        [6.1, 9.3, 'Giro con sacudidas'],
+        [9.3, 14.8, 'Los movimientos se superponen al acto voluntario (Huntington, corea de Sydenham)'],
+        [14.8, 99, 'Giro irregular']]
+    },
+
+    /* ---- aparato locomotor (pacientes de mod-pat-msk.js) ---- */
+    m1: {
+      action: 'Marcha_Antalgica_Lumbar', pack: 'msk', view: 'sigue', title: 'Marcha antálgica (lumbociática derecha)',
+      caps: [[0, 2.7, 'Apoyo breve y cauteloso sobre la pierna derecha, la dolorosa'],
+        [2.7, 5.4, 'Tronco rígido, inclinado hacia delante y a la izquierda'],
+        [5.4, 8.9, 'Giro en bloque, con cuidado'],
+        [8.9, 13.7, 'Paso corto y braceo escaso'],
+        [13.7, 99, 'Marcha antálgica por lumbociática']]
+    },
+    m2: {
+      action: 'Marcha_Rigida_Espondilitis', pack: 'msk', view: 'lat', title: 'Marcha rígida (espondilitis anquilosante)',
+      caps: [[0, 2.9, 'El tronco avanza en bloque, inclinado hacia delante'],
+        [2.9, 5.2, 'Mirada dirigida al suelo (cifosis fija)'],
+        [5.2, 8.8, 'Para girar o mirar a los lados gira todo el cuerpo'],
+        [8.8, 13.5, 'Pasos cortos y braceo escaso'],
+        [13.5, 99, 'Marcha rígida de la espondilitis anquilosante']]
+    },
+    m3: {
+      action: 'Marcha_Gonartrosis_Derecha', pack: 'msk', view: 'sigue', title: 'Marcha en la gonartrosis derecha',
+      caps: [[0, 3, 'Marcha lenta; apoyo acortado sobre la pierna derecha (claudicación leve)'],
+        [3, 5.9, 'Rodilla derecha en ligera flexión durante el apoyo, sin extensión completa'],
+        [5.9, 9.4, 'Giro lento'],
+        [9.4, 14.7, 'Claudicación del miembro inferior derecho'],
+        [14.7, 99, 'Gonartrosis derecha']]
+    },
+    m4: {
+      action: 'Marcha_LCA_Izquierdo', pack: 'msk', view: 'sigue', title: 'Marcha en la rotura del LCA izquierdo',
+      caps: [[0, 3, 'Apoyo breve sobre la pierna izquierda (antálgica)'],
+        [3, 5.6, 'Rodilla izquierda semiflexionada: evita la extensión completa'],
+        [5.6, 10.3, 'Inestabilidad al girar: separa los brazos y se tambalea'],
+        [10.3, 15.2, 'Paso corto con el lado izquierdo'],
+        [15.2, 99, 'Giro inseguro']]
+    },
+    m7: {
+      action: 'Marcha_Metatarsalgia', pack: 'msk', view: 'lat', title: 'Marcha conservada (dolor metatarsofalángico)',
+      caps: [[0, 4.4, 'Marcha conservada'],
+        [4.4, 6.8, 'Giro normal'],
+        [6.8, 99, 'Despegue del antepié algo acortado por el dolor metatarsofalángico']]
+    },
+    m8: {
+      action: 'Marcha_Claudicante_Cadera', pack: 'msk', view: 'frente', title: 'Marcha claudicante (coxartrosis derecha)',
+      caps: [[0, 2.8, 'Apoyo acortado sobre la pierna derecha (claudicación)'],
+        [2.8, 5.6, 'En cada apoyo derecho cae la pelvis izquierda (Trendelenburg)'],
+        [5.6, 9.1, 'Giro lento'],
+        [9.1, 14, 'El tronco se inclina hacia la derecha para compensar (signo de Duchenne)'],
+        [14, 99, 'Pie derecho en rotación externa y paso corto']]
+    },
+
+    /* ---- pruebas de marcha ---- */
+    tandN: { action: 'Prueba_Tandem_Normal', pack: 'pruebas', view: 'sigue', title: 'Marcha en tándem (normal)',
+      caps: [[0, 9.6, 'Talón de un pie contra la punta del otro, en línea recta'], [9.6, 12, 'Giro'], [12, 99, 'Sin oscilar ni salirse de la línea: normal']] },
+    tandAtax: { action: 'Prueba_Tandem_Ataxia', pack: 'pruebas', view: 'sigue', title: 'Marcha en tándem: imposible (ataxia)',
+      caps: [[0, 9.8, 'Se sale de la línea y debe separar los pies para no caer'], [9.8, 14.6, 'Giro inseguro'], [14.6, 99, 'Tándem imposible: ataxia de la línea media (vermis)']] },
+    tandHemi: { action: 'Prueba_Tandem_Hemiparesia', pack: 'pruebas', view: 'sigue', title: 'Marcha en tándem: imposible (paresia derecha)',
+      caps: [[0, 10.2, 'No logra poner el pie derecho delante del izquierdo: lo apoya al costado'], [10.2, 14.7, 'Giro lento'], [14.7, 99, 'Tándem imposible por la paresia derecha']] },
+    tandIns: { action: 'Prueba_Tandem_Inseguro', pack: 'pruebas', view: 'sigue', title: 'Marcha en tándem: posible pero insegura',
+      caps: [[0, 12.1, 'Tándem lenta e insegura: pequeñas correcciones con los brazos'], [12.1, 16.1, 'Giro'], [16.1, 99, 'Se desvía un poco de la línea sin llegar a caer']] },
+    heelN: { action: 'Prueba_Talones_Normal', pack: 'pruebas', view: 'sigue', title: 'Marcha sobre los talones (normal)',
+      caps: [[0, 5.8, 'Camina sobre los talones con ambas puntas elevadas (dorsiflexores, L4-L5)'], [5.8, 8.2, 'Giro'], [8.2, 99, 'Normal: las puntas no caen']] },
+    heelR: { action: 'Prueba_Talones_PieCaido_Derecho', pack: 'pruebas', view: 'sigue', title: 'Marcha sobre los talones: falla el pie derecho',
+      caps: [[0, 6.2, 'No puede elevar la punta del pie derecho: apoya toda la planta'], [6.2, 8.6, 'Giro'], [8.6, 99, 'El izquierdo camina sobre el talón sin dificultad (paresia de los dorsiflexores derechos)']] },
+    heelB: { action: 'Prueba_Talones_PieCaido_Bilateral', pack: 'pruebas', view: 'sigue', title: 'Marcha sobre los talones: imposible (pies caídos)',
+      caps: [[0, 6.2, 'No puede caminar sobre los talones: las puntas caen en ambos lados'], [6.2, 8.6, 'Giro'], [8.6, 99, 'Déficit motor distal bilateral (polineuropatía)']] },
+    heelX: { action: 'Prueba_Talones_Inestable', pack: 'pruebas', view: 'sigue', title: 'Marcha sobre los talones: inestable',
+      caps: [[0, 6.8, 'Eleva las puntas (fuerza conservada) pero es inestable'], [6.8, 11, 'Giro inseguro'], [11, 99, 'Pasos irregulares y brazos separados: ataxia']] },
+    toesN: { action: 'Prueba_Puntas_Normal', pack: 'pruebas', view: 'sigue', title: 'Marcha en puntas de pie (normal)',
+      caps: [[0, 5.6, 'Camina sobre el antepié con ambos talones elevados (flexores plantares, S1)'], [5.6, 8, 'Giro'], [8, 99, 'Normal: los talones no descienden']] },
+    toesR: { action: 'Prueba_Puntas_Debil_Derecha', pack: 'pruebas', view: 'sigue', title: 'Marcha en puntas: desciende el talón derecho',
+      caps: [[0, 6, 'El talón derecho desciende a los pocos pasos'], [6, 8.4, 'Giro'], [8.4, 99, 'Debilidad de los flexores plantares derechos (S1); el izquierdo se mantiene en puntas']] },
+    toesX: { action: 'Prueba_Puntas_Inestable', pack: 'pruebas', view: 'sigue', title: 'Marcha en puntas: inestable',
+      caps: [[0, 6.4, 'Se eleva en puntas pero pierde el equilibrio a los pocos pasos'], [6.4, 10.6, 'Giro inseguro'], [10.6, 99, 'Apoya el talón para no caer; brazos separados']] }
   };
+  /* paquetes con solo animaciones (mismo esqueleto): se descargan cuando se necesitan */
+  const PACKS = { neuro2: 'modelos/marcha3d/marcha_neuro2.glb', msk: 'modelos/marcha3d/marcha_msk.glb', pruebas: 'modelos/marcha3d/marcha_pruebas.glb' };
+  const packP = {};
+  function loadPack(L, name) {
+    if (!name) return Promise.resolve(null);
+    if (!packP[name]) packP[name] = new Promise((res, rej) => new L.GLTFLoader().load(PACKS[name], res, undefined, rej));
+    return packP[name];
+  }
   /* vistas: lateral y de frente fijas (todo el pasillo); «seguir» acompaña a la persona conservando el ángulo que elija el usuario */
   const VIEWS = {
     lat: { pos: [-7.2, 1.35, 0], target: [0, 0.85, 0], label: 'Lateral' },
@@ -125,8 +249,8 @@
     stage.appendChild(box);
     stage.classList.add('g3-open');
     const holder = box.querySelector('.g3-canvas'), cap = box.querySelector('.g3-cap');
-    let L, gltf;
-    try { L = await loadLibs(); gltf = await loadModel(L); }
+    let L, gltf, pack;
+    try { L = await loadLibs(); [gltf, pack] = await Promise.all([loadModel(L), loadLibs().then(l => loadPack(l, def.pack))]); }
     catch (e) { console.warn('Visor 3D de marcha no disponible:', e); box.remove(); stage.classList.remove('g3-open'); return false; }
     if (!box.isConnected) { stage.classList.remove('g3-open'); return false; }
     const { THREE } = L;
@@ -155,7 +279,7 @@
     scene.add(model);
     const pelvis = model.getObjectByName('pelvis');
     const mixer = new THREE.AnimationMixer(model);
-    const clip = gltf.animations.find(a => a.name === def.action);
+    const clip = (pack ? pack.animations : gltf.animations).find(a => a.name === def.action);
     const action = clip ? mixer.clipAction(clip) : null;
     if (action) action.play();
 
@@ -239,5 +363,21 @@
     return out;
   }
 
-  window.Gait3D = { show, close, GAITS };
+  /* ventana flotante (glosario u otras páginas sin escena): el visor dentro de un .stage propio */
+  function openModal(kind) {
+    const def = GAITS[kind]; if (!def) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'g3-modal'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-label', def.title);
+    wrap.innerHTML = '<div class="stage g3-mstage"></div>';
+    document.body.appendChild(wrap);
+    const done = () => { document.removeEventListener('keydown', onKey); wrap.remove(); };
+    const onKey = e => { if (e.key === 'Escape') { close(); done(); } };
+    document.addEventListener('keydown', onKey);
+    wrap.addEventListener('click', e => { if (e.target === wrap) { close(); done(); } });
+    show(wrap.firstChild, kind, { onClose: done }).then(ok => {
+      if (!ok) { done(); alert('Este navegador no puede mostrar el visor 3D (WebGL no disponible).'); }
+    });
+  }
+
+  window.Gait3D = { show, close, openModal, GAITS };
 })();
