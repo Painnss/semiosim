@@ -48,6 +48,23 @@
 
   const lungAt = (c, id) => Object.assign({}, c.lung.base, c.lung.over[id] || {});
 
+  /* Vista 3D (js/torso3d.js): focos del glb (modelos/torso3d/README.md) → puntos PTS. Las carótidas no tienen foco en el modelo.
+     Aproximaciones: el foco lateral inferior representa la base anterior y el lateral superior izquierdo la axila;
+     por detrás, el foco posterior inferior representa la base (el campo infraescapular queda solo en el esquema). */
+  const T3D = {
+    ant: {
+      Foco_Aortico: 'AO', Foco_Pulmonar: 'PU', Foco_Erb: 'ER', Foco_Tricuspideo: 'TR', Foco_Mitral: 'MI', Foco_Pulm_Lat_Sup_I: 'AX',
+      Foco_Pulm_Vertice_D: 'RU', Foco_Pulm_Ant_Sup_D: 'RU', Foco_Pulm_Ant_Inf_D: 'RM', Foco_Pulm_Lat_Inf_D: 'RB',
+      Foco_Pulm_Vertice_I: 'LU', Foco_Pulm_Ant_Sup_I: 'LU', Foco_Pulm_Ant_Inf_I: 'LM', Foco_Pulm_Lat_Inf_I: 'LB'
+    },
+    post: {
+      Foco_Pulm_Post_Sup_D: 'pRU', Foco_Pulm_Post_Med_D: 'pRM', Foco_Pulm_Post_Inf_D: 'pRB',
+      Foco_Pulm_Post_Sup_I: 'pLU', Foco_Pulm_Post_Med_I: 'pLM', Foco_Pulm_Post_Inf_I: 'pLB'
+    },
+    hint: 'Vista 3D: arrastra para girar, rueda o pellizco para acercar. Haz clic sobre un foco para auscultarlo o percutirlo con el instrumento elegido.'
+  };
+  const T3D_LABELS = Object.fromEntries(Object.keys(PTS).map(k => [k, PTS[k].label]));
+
   function soundSpec(c, id) {
     const p = PTS[id], h = c.heart;
     const maxInt = Math.max(0, ...Object.values(h.int));
@@ -282,6 +299,10 @@
       this.refresh();
       const loop = () => { if (!this.alive) return; this.draw(); requestAnimationFrame(loop); };
       requestAnimationFrame(loop);
+      sh.torso3dControl(stage, {
+        view: this.view, map: T3D[this.view], labels: T3D_LABELS, hint: T3D.hint,
+        onPick: id => (sh.tool === 'perc' ? this.percuss(id) : this.listen(id))
+      });
     }
 
     leave() { this.alive = false; Sound.stop(); }

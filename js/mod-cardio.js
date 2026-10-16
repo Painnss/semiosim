@@ -256,11 +256,19 @@
       `sincrónico con el pulso carotídeo. Sin levantamientos sostenidos ni frémito.`;
   }
 
+  /* Vista 3D (js/torso3d.js): focos cardíacos del glb → regiones del esquema (el resto de regiones queda solo en el esquema) */
+  const T3D = {
+    view: 'ant',
+    map: { Foco_Aortico: 'ao', Foco_Pulmonar: 'pu', Foco_Erb: 'er', Foco_Tricuspideo: 'tr', Foco_Mitral: 'mi' },
+    hint: 'Vista 3D: arrastra para girar, rueda o pellizco para acercar. Haz clic sobre un foco para explorarlo con el instrumento elegido; «Anatomía» regula la transparencia de la piel.'
+  };
+
   const precordio = {
     id: 'pre', label: 'Precordio', viewBox: '0 0 420 560', redrawOnMode: true,
     hint: 'Inspecciona y palpa el precordio con el paciente en decúbito dorsal; cambia la posición para ver su efecto sobre el choque de la punta.',
     svg: learn => torsoSvg(learn),
     anatomy: () => anatAnt(),
+    torso3d: T3D,
     tools: [
       { id: 'insp', icon: '👁️', label: 'Inspección', hint: 'Mira de frente y tangencialmente: abombamientos, cicatrices, latidos visibles (choque de la punta).' },
       { id: 'palp', icon: '🖐️', label: 'Palpación', hint: 'Palma/yemas: choque de la punta en el 5.º EIC, levantamientos paraesternales y frémitos en la base.' },
@@ -473,6 +481,7 @@
     hint: 'Ausculta los 5 focos con diafragma y campana. Cambia la posición y la fase respiratoria y observa el fonocardiograma.',
     svg: learn => torsoSvg(learn),
     anatomy: () => anatAnt(),
+    torso3d: T3D,
     tools: [
       { id: 'steth', icon: '🩺', label: 'Fonendoscopio · diafragma', hint: 'Diafragma, presión firme: ruidos agudos (R1, R2, soplos).' },
       { id: 'bell', icon: '🔔', label: 'Fonendoscopio · campana', hint: 'Campana, presión leve: ruidos graves (R3, R4, rolido mitral).' }

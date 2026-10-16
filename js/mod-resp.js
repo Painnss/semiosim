@@ -126,6 +126,19 @@
     return g;
   }
 
+  /* ------------------------------------------- vista 3D (js/torso3d.js) */
+  /* Focos del glb (modelos/torso3d/README.md) → id de región de cada escena. Los focos sin equivalente se omiten y las
+     regiones sin foco (manubrio en percusión, hígado, Traube, columna, pared, pulgares…) quedan solo en el esquema.
+     Aproximaciones: el foco lateral inferior representa la base anterior (se ve en el flanco) y el lateral superior la axila;
+     por detrás, el foco posterior inferior representa la base (la región infraescapular no tiene foco). */
+  const T3D_HINT = 'Vista 3D: arrastra para girar, rueda o pellizco para acercar. Haz clic sobre un foco para explorarlo con el instrumento elegido; «Anatomía» regula la transparencia de la piel.';
+  const sides = (obj, idR, idL) => ({ [obj + '_D']: idR, [obj + '_I']: idL });
+  const t3dAnt = extra => ({ view: 'ant', hint: T3D_HINT, map: Object.assign({},
+    sides('Foco_Pulm_Vertice', 'apR', 'apL'), sides('Foco_Pulm_Ant_Sup', extra.s2[0], extra.s2[1]), sides('Foco_Pulm_Ant_Inf', extra.s4[0], extra.s4[1]),
+    sides('Foco_Pulm_Lat_Inf', extra.base[0], extra.base[1]), extra.more || {}) });
+  const t3dPost = () => ({ view: 'post', hint: T3D_HINT, map: Object.assign({},
+    sides('Foco_Pulm_Post_Sup', 'apR', 'apL'), sides('Foco_Pulm_Post_Med', 'inR', 'inL'), sides('Foco_Pulm_Post_Inf', 'bR', 'bL')) });
+
   /* ----------------------------------------------------------- regiones */
   const R = (id, label, short, cx, cy, r, tools, extra) => Object.assign({ id, label, short, cx, cy, r, tools }, extra || {});
   const RECT = (id, label, short, x, y, w, h, tools, extra) => Object.assign({ id, label, short, x, y, w, h, tools }, extra || {});
@@ -233,7 +246,11 @@
       ],
       svg: () => (ant ? antBody(false) + SIDE_ANT : postBody() + SIDE_POST),
       anatomy: ant ? anatAnt : anatPost,
-      regions
+      regions,
+      torso3d: ant
+        ? t3dAnt({ s2: ['m2R', 'm2L'], s4: ['m4R', 'm4L'], base: ['bR', 'bL'],
+          more: { Foco_Aortico: 'man', Foco_Pulmonar: 'man', Foco_Erb: 'prec', Foco_Tricuspideo: 'prec', Foco_Mitral: 'prec' } })
+        : t3dPost()
     };
   }
 
@@ -289,7 +306,11 @@
       ].concat(ant ? [] : [{ id: 'excur', icon: '↕️', label: 'Excursión de las bases', hint: 'Excursión de las bases: percute la base en espiración y tras inspirar profundo hasta que la sonoridad pasa a matidez; la diferencia (≈ 4–6 cm) es la excursión.' }]),
       svg: () => (ant ? antBody(false) + SIDE_ANT + LMC + lineA : postBody() + SIDE_POST + lineP),
       anatomy: ant ? anatAnt : anatPost,
-      regions
+      regions,
+      torso3d: ant
+        ? t3dAnt({ s2: ['s2R', 's2L'], s4: ['s4R', 's4L'], base: ['s5R', 's5L'],
+          more: { Foco_Erb: 'card', Foco_Tricuspideo: 'card', Foco_Mitral: 'card' } })
+        : t3dPost()
     };
   }
 
@@ -350,6 +371,10 @@
       svg: () => (ant ? antBody(false) + SIDE_ANT : postBody() + SIDE_POST),
       anatomy: ant ? anatAnt : anatPost,
       regions,
+      torso3d: ant
+        ? t3dAnt({ s2: ['m2R', 'm2L'], s4: ['m4R', 'm4L'], base: ['bR', 'bL'],
+          more: Object.assign({ Foco_Aortico: 'man', Foco_Pulmonar: 'man' }, sides('Foco_Pulm_Lat_Sup', 'axR', 'axL')) })
+        : t3dPost(),
       after(stage) {
         const bar = document.createElement('div');
         bar.className = 'overlay-top';
