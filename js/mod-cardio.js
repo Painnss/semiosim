@@ -260,7 +260,7 @@
   const T3D = {
     view: 'ant',
     map: { Foco_Aortico: 'ao', Foco_Pulmonar: 'pu', Foco_Erb: 'er', Foco_Tricuspideo: 'tr', Foco_Mitral: 'mi' },
-    layers: { pulm: false, huesos: false, lineas: false },   // solo corazón y grandes vasos; el resto se activa con los botones de capas
+    layers: { pulm: false, lineas: false },   // corazón, grandes vasos y huesos (referencia de los espacios intercostales); el resto con los botones de capas
     hint: 'Vista 3D: arrastra para girar, rueda o pellizco para acercar. Haz clic sobre un foco para explorarlo con el instrumento elegido; «Anatomía» regula la transparencia de la piel.'
   };
 
