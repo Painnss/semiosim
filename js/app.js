@@ -209,6 +209,7 @@
 
     setScene(id) {
       if (this.scene && this.scene.leave) this.scene.leave();
+      if (window.Torso3D) Torso3D.close();
       const sc = this.cfg.scenes[id];
       sc.id = id;
       this.scene = sc;
@@ -235,7 +236,7 @@
       if (typeof v !== 'number') v = this.mode === 'exam' ? 0 : 55;
       const apply = x => layers.forEach(l => { l.style.opacity = x / 100; l.style.pointerEvents = 'none'; });
       apply(v);
-      if (old) { old.querySelector('input').oninput = e => { apply(+e.target.value); old.querySelector('b').textContent = e.target.value + ' %'; Progress.pref('anatomy', +e.target.value); }; return; }
+      if (old) { old.querySelector('input').oninput = e => { apply(+e.target.value); old.querySelector('b').textContent = e.target.value + ' %'; Progress.pref('anatomy', +e.target.value); if (window.Torso3D) Torso3D.setAnatomy(+e.target.value / 100); }; return; }
       const ctl = document.createElement('div');
       ctl.className = 'anat-ctl';
       ctl.innerHTML = `<span>🫀 Anatomía</span><input type="range" min="0" max="100" value="${v}" aria-label="Transparencia de la capa anatómica"><b>${v} %</b>`;
@@ -287,6 +288,32 @@
       el.querySelector('.txt').textContent = total ? `Explorado ${p.explored}/${total} (${pct} %)` : `Explorado: ${p.explored}`;
     }
 
+    /* Vista 3D (torso de auscultación, js/torso3d.js): añade un conmutador «Esquema / Vista 3D» junto al progreso.
+       opts: { view:'ant'|'post', map:{ nombreObjetoGLB: regionId }, onPick(regionId), hint }.
+       Al abrir, el visor se superpone al SVG de la escena; al cambiar de escena o módulo se cierra solo. */
+    torso3dControl(stage, opts) {
+      const old = this.$('.t3d-ctl');
+      if (old) old.remove();
+      if (window.Torso3D) Torso3D.close();
+      if (!opts || !window.Torso3D || !Torso3D.supported()) return;
+      const ctl = document.createElement('div');
+      ctl.className = 't3d-ctl seg';
+      ctl.innerHTML = '<button type="button" data-v="2d" class="active">Esquema</button><button type="button" data-v="3d">🧊 Vista 3D</button>';
+      const paint = v => ctl.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+      ctl.addEventListener('click', async e => {
+        const b = e.target.closest('button'); if (!b) return;
+        if (b.dataset.v === '3d') {
+          paint('3d');
+          const anat = Progress.pref('anatomy'); 
+          const ok = await Torso3D.show(stage, Object.assign({ anatomy: (typeof anat === 'number' ? anat : 55) / 100, mode: this.mode }, opts));
+          if (!ok) { paint('2d'); U.toast('No se pudo cargar la vista 3D (WebGL o modelo no disponibles).', 'bad'); }
+          else if (opts.hint) this.hint(opts.hint);
+        } else { Torso3D.close(); paint('2d'); }
+      });
+      (this.$('#prog') || stage).appendChild(ctl);
+      Progress.pref('t3dAuto') && ctl.querySelector('[data-v="3d"]').click();
+    }
+
     /* Burbuja de diálogo del paciente sobre la escena. kind: 'yes' | 'no' | undefined */
     say(text, kind, ms) {
       const stage = this.$('#stage');
@@ -325,6 +352,7 @@
 
     destroy() {
       if (this.scene && this.scene.leave) this.scene.leave();
+      if (window.Torso3D) Torso3D.close();
       clearTimeout(this.sayTimer);
       if (window.Sound && Sound.stop) Sound.stop();
       this.root.innerHTML = '';

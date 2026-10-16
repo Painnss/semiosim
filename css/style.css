@@ -234,6 +234,16 @@ table.res td,table.res th{border-bottom:1px solid var(--line);padding:5px 4px;te
 .prog{flex-wrap:wrap}
 @media (max-width:600px){.anat-ctl{padding:4px 9px}.anat-ctl input{width:80px}}
 
+/* Vista 3D (torso) */
+.t3d-ctl{margin-left:8px}
+.t3d-wrap{position:absolute;inset:0;z-index:5;background:var(--stage)}
+.t3d-wrap canvas{display:block;width:100%;height:100%;touch-action:none}
+.t3d-ui{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:6}
+.t3d-ui .seg button{font-size:12px;padding:5px 9px}
+.t3d-tip{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;box-shadow:var(--shadow);pointer-events:none;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.t3d-credit{position:absolute;right:8px;bottom:6px;font-size:10px;color:var(--muted);opacity:.8;pointer-events:none}
+.t3d-load{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px}
+
 /* Tórax: fonocardiograma */
 .wave{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)}
 .wave canvas{flex:1;height:70px;min-width:0;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)}

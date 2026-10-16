@@ -89,6 +89,14 @@
           });
           this.refresh();
           if (sc.after) sc.after(stage, sh, { svg: this.svg, scene: this, c });
+          /* Vista 3D opcional: sc.torso3d = { view, map:{objetoGLB: regionId}, hint } → el clic sobre un foco del modelo
+             equivale al clic sobre la región del esquema (mismo instrumento, mismo hallazgo, mismo sonido). */
+          if (sc.torso3d) {
+            const t = typeof sc.torso3d === 'function' ? sc.torso3d(c) : sc.torso3d;
+            sh.torso3dControl(stage, Object.assign({}, t, {
+              onPick: rid => { const el = this.svg.querySelector(`[data-rid="${rid}"]`); if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 0, clientY: 0 })); }
+            }));
+          }
         },
         leave() { if (sc.onLeave) sc.onLeave(); },
         refresh() {
