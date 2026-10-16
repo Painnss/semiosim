@@ -4,3 +4,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.blend1
+# .blend con todas las animaciones horneadas (54 MB): solo local
+modelos/marcha3d/local/
