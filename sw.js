@@ -1,6 +1,6 @@
 /* Service worker: permite usar SemioSim sin conexión una vez visitado.
    Estrategia: red primero (siempre la versión más reciente cuando hay conexión) y caché como respaldo. */
-const VERSION = 'semiosim-v0.6.2';
+const VERSION = 'semiosim-v0.7.0';
 const CORE = ['./', 'index.html', 'css/style.css', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {

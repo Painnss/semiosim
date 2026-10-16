@@ -55,6 +55,26 @@
         if (o.material.name === 'Lineas_Referencia') o.renderOrder = 11;
         if (o.material.userData.foco) o.renderOrder = 12;
       });
+      /* Animacion fisiologica: corazon, pulmones y diafragma se envuelven en pivotes para latir y respirar
+         (escala alrededor de su centro; los pulmones, desde el vertice hacia abajo y afuera). */
+      const THREE = L.THREE;
+      const anim = { heart: [], lung: [], diaph: [] };
+      const pivot = (o, top) => {
+        const bb = new THREE.Box3().setFromObject(o), c = bb.getCenter(new THREE.Vector3());
+        if (top) c.y = bb.max.y;
+        const g = new THREE.Group(); g.position.copy(c);
+        const parent = o.parent; parent.add(g); parent.remove(o); g.add(o); o.position.sub(c);
+        return g;
+      };
+      const toWrap = [];
+      gltf.scene.traverse(o => { if (o.isMesh && ['Corazon', 'Pericardio', 'Pulmones', 'Diafragma'].includes(o.material.name)) toWrap.push(o); });
+      toWrap.forEach(o => {
+        const n = o.material.name;
+        if (n === 'Corazon' || n === 'Pericardio') anim.heart.push(pivot(o, false));
+        else if (n === 'Pulmones') anim.lung.push(pivot(o, true));
+        else anim.diaph.push(pivot(o, false));
+      });
+      gltf.userData.anim = anim;
       return gltf;
     }).catch(e => { gltfP = null; throw e; });
     return gltfP;
@@ -249,9 +269,28 @@
         if (u >= 1) { m.scale.copy(m.userData.scale).multiplyScalar(hover === m ? 1.25 : 1); m.material.emissive.copy(m.material.userData.emissive).addScalar(hover === m ? 0.35 : 0); pulse = null; }
         else { const s = 1 + 0.9 * Math.sin(Math.PI * u); m.scale.copy(m.userData.scale).multiplyScalar(s); m.material.emissive.copy(m.material.userData.emissive).addScalar(0.6 * (1 - u)); if (!learn) m.material.opacity = Math.max(0.35, 1 - u); }
       }
+      animateOrgans();
       controls.update();
       renderer.render(scene, camera);
     };
+    /* Latido y respiracion en sincronia con el audio (Sound.phase()); sin audio, ritmo de reposo (72 lpm, 15 rpm). */
+    const anim = gltf.userData.anim || { heart: [], lung: [], diaph: [] };
+    const breathVol = t => (t < 0.15 ? 0 : t < 1.65 ? Math.sin(Math.PI / 2 * (t - 0.15) / 1.5) : t < 1.95 ? 1 : t < 3.0 ? Math.cos(Math.PI / 2 * (t - 1.95) / 1.05) : 0);
+    function animateOrgans() {
+      const ph = (window.Sound && Sound.phase) ? Sound.phase() : null;
+      const now = performance.now() / 1000;
+      let pos, s1, s2;
+      if (ph && ph.heart) { pos = ph.heart.pos; s1 = ph.heart.s1; s2 = ph.heart.s2; }
+      else { const T = 60 / 72; pos = (now % T) / T; s1 = 0.03; s2 = 0.42; }
+      const u = (pos - s1) / (s2 - s1);
+      const contr = u >= 0 && u <= 1 ? Math.sin(Math.PI * u) : 0;          // sistole: contraccion
+      const hs = 1 - 0.085 * contr;
+      anim.heart.forEach(g => g.scale.set(hs, 1 - 0.11 * contr, hs));
+      const t = ph && ph.lung != null ? ph.lung * 4 : now % 4;
+      const v = breathVol(t);
+      anim.lung.forEach(g => g.scale.set(1 + 0.05 * v, 1 + 0.09 * v, 1 + 0.06 * v));
+      anim.diaph.forEach(g => { g.position.y = g.userData.y0 == null ? (g.userData.y0 = g.position.y) : g.userData.y0 - 0.022 * v; g.scale.set(1, 1 - 0.25 * v, 1); });
+    }
     const inst = {
       setAnatomy(v) { anatomy = Math.max(0, Math.min(1, +v || 0)); applyLayers(); },
       dispose() {

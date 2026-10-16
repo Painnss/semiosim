@@ -254,7 +254,7 @@
       };
       const hArr = add('h', opts.heart, opts.heartGain);
       add('l', opts.lung, opts.lungGain);
-      cur = { g, srcs, t0: ctx.currentTime, T: opts.heart ? timing(opts.heart.rate).T : 0, hArr, hGain: opts.heartGain || 0, spec: opts.heart };
+      cur = { g, srcs, t0: ctx.currentTime, T: opts.heart ? timing(opts.heart.rate).T : 0, hArr, hGain: opts.heartGain || 0, spec: opts.heart, hasLung: !!(opts.lung && opts.lungGain > 0) };
       return cur;
     },
     stop() {
@@ -278,6 +278,15 @@
     },
     timing,
     playing() { return !!cur; },
+    /* Fase actual de lo que suena, para animar el modelo 3D en sincronía con el audio:
+       heart: { pos (0..1 del ciclo), s1, s2 (posiciones de R1 y R2), rate }; lung: 0..1 del ciclo respiratorio de 4 s. */
+    phase() {
+      if (!cur || !ctx) return null;
+      const t = ctx.currentTime - cur.t0, out = { heart: null, lung: null };
+      if (cur.hArr && cur.T && cur.spec) { const tm = timing(cur.spec.rate); out.heart = { pos: (t % cur.T) / cur.T, s1: tm.tS1 / cur.T, s2: tm.tS2 / cur.T, rate: cur.spec.rate }; }
+      if (cur.hasLung) out.lung = (t % 4) / 4;
+      return out;
+    },
 
     /* ---- sonidos auxiliares (señales de aparatos, Korotkoff, ruidos hidroaéreos) ---- */
     beep(freq, dur, gain) {
